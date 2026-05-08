@@ -8,6 +8,7 @@ window.Starfield = (() => {
   let layers = [];
   let streaks = [];
   let running = true;
+  let starsVisible = true;
 
   let hueA = FX.hueA;
   let hueB = FX.hueB;
@@ -283,39 +284,41 @@ window.Starfield = (() => {
     updateMorph(now);
     drawBg();
 
-    const alphaMult = FX.intensity;
+    if (starsVisible) {
+      const alphaMult = FX.intensity;
 
-    for (const stars of layers) {
-      for (const s of stars) {
-        s.y += s.v * dt;
+      for (const stars of layers) {
+        for (const s of stars) {
+          s.y += s.v * dt;
 
-        if (s.y > H + 10) {
-          s.y = -10;
-          s.x = rand(0, W);
-          s.tint = tintForStar();
-          s.twPhase = rand(0, Math.PI * 2);
+          if (s.y > H + 10) {
+            s.y = -10;
+            s.x = rand(0, W);
+            s.tint = tintForStar();
+            s.twPhase = rand(0, Math.PI * 2);
+          }
+
+          const twStrength = 0.35 * FX.intensity;
+          const tw =
+            0.65 +
+            twStrength +
+            twStrength * Math.sin((now / 1000) * s.twSpeed + s.twPhase);
+
+          const a = clamp(s.baseA * tw * alphaMult, 0, 1);
+          if (a <= 0.001) continue;
+
+          ctx.beginPath();
+          ctx.globalAlpha = a;
+          ctx.fillStyle = s.tint;
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
         }
-
-        const twStrength = 0.35 * FX.intensity;
-        const tw =
-          0.65 +
-          twStrength +
-          twStrength * Math.sin((now / 1000) * s.twSpeed + s.twPhase);
-
-        const a = clamp(s.baseA * tw * alphaMult, 0, 1);
-        if (a <= 0.001) continue;
-
-        ctx.beginPath();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = s.tint;
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
       }
-    }
 
-    updateShootingStars(dt);
-    renderShootingStars();
+      updateShootingStars(dt);
+      renderShootingStars();
+    }
 
     requestAnimationFrame(tick);
   }
@@ -324,5 +327,7 @@ window.Starfield = (() => {
   resize();
   requestAnimationFrame(tick);
 
-  return { setIntensity, setHues, morphTo };
+  function setVisible(v) { starsVisible = v; }
+
+  return { setIntensity, setHues, morphTo, setVisible };
 })();

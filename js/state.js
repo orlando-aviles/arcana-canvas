@@ -8,6 +8,7 @@ window.FX = {
 window.App = {
   activeDeck: "text",
   cardScale: 1.0,
+  bg: "starfield", // "starfield" | "particles"
 };
 
 window.clamp = function clamp(v, a, b) {

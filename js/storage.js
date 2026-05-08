@@ -10,6 +10,7 @@ function saveSettings() {
     app: {
       activeDeck: App.activeDeck,
       cardScale: App.cardScale,
+      bg: App.bg,
     },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -40,6 +41,10 @@ function loadSettings() {
       ) {
         App.activeDeck = data.app.activeDeck;
       }
+      if (typeof data.app.cardScale === "number")
+        App.cardScale = clamp(data.app.cardScale, 0.6, 1.6);
+      if (data.app.bg === "starfield" || data.app.bg === "particles")
+        App.bg = data.app.bg;
     }
 
     return true;

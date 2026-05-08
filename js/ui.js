@@ -152,3 +152,33 @@ deckSelect.addEventListener("change", () => {
   syncDeckUI();
   saveSettings();
 });
+
+/*********************************************************
+ * BACKGROUND CONTROLS
+ *********************************************************/
+const bgSelect = document.getElementById("bgSelect");
+const bgLabel = document.getElementById("bgLabel");
+
+window.applyBg = function applyBg() {
+  // Nebula (#space canvas) always visible — carries auras for both modes.
+  // Animus canvas layers on top; starfield stars are drawn on #space itself.
+  if (App.bg === "particles") {
+    ParticlesBg.start();
+    Starfield.setVisible(false);
+  } else {
+    ParticlesBg.stop();
+    Starfield.setVisible(true);
+  }
+};
+
+function syncBgUI() {
+  bgSelect.value = App.bg;
+  bgLabel.textContent = App.bg === "particles" ? "Animus" : "Starfield";
+}
+
+bgSelect.addEventListener("change", () => {
+  App.bg = bgSelect.value;
+  syncBgUI();
+  applyBg();
+  saveSettings();
+});

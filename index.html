@@ -6,13 +6,13 @@
     <title>Tarot</title>
 
     <link rel="stylesheet" href="./styles/main.css" />
-    <!-- optional: removes favicon 404 noise -->
     <link rel="icon" href="data:," />
     <link rel="manifest" href="./manifest.json">
   </head>
 
   <body>
     <canvas id="space"></canvas>
+    <canvas id="animus"></canvas>
     <canvas id="tarotCanvas"></canvas>
 
     <div class="controlStack">
@@ -24,6 +24,17 @@
     <!-- Visuals Panel -->
     <div id="visualsPanel" class="panel" aria-hidden="true">
       <div class="panelTitle">Visuals</div>
+
+      <div class="sliderRow">
+        <div class="sliderLabelRow">
+          <span>Background</span>
+          <span class="sliderValue" id="bgLabel">Starfield</span>
+        </div>
+        <select id="bgSelect">
+          <option value="starfield">Starfield</option>
+          <option value="particles">Animus</option>
+        </select>
+      </div>
 
       <div class="sliderRow">
         <div class="sliderLabelRow">
@@ -119,6 +130,7 @@
     <script src="./js/state.js"></script>
     <script src="./js/storage.js"></script>
     <script src="./js/starfield.js"></script>
+    <script src="./js/particles-bg.js"></script>
 
     <!-- Tarot image deck -->
     <script src="./js/tarotDeck.js"></script>

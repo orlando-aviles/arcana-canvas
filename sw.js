@@ -1,6 +1,6 @@
 // tarot/sw.js
 
-const CACHE_NAME = 'tarot-cache-v1';
+const CACHE_NAME = 'tarot-cache-v4';
 
 const CORE_FILES = [
   './',
@@ -12,13 +12,29 @@ const CORE_FILES = [
   './js/storage.js',
   './js/tarot.js',
   './js/tarotDeck.js',
-  './js/ui.js'
+  './js/ui.js',
+  './js/particles-bg.js',
 ];
 
-// Install: cache core files
+// Install: cache core files and skip waiting so new SW activates immediately
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_FILES))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(CORE_FILES))
+      .then(() => self.skipWaiting())
+  );
+});
+
+// Activate: delete all old caches, then claim clients immediately
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
@@ -29,7 +45,6 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
 
       return fetch(event.request).then(response => {
-        // Clone immediately
         const responseClone = response.clone();
 
         // Cache images as they are fetched

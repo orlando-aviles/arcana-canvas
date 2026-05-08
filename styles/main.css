@@ -34,6 +34,17 @@ body {
   background: #05050a;
 }
 
+/* Animus canvas */
+#animus {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  display: none; /* shown only when bg=particles */
+  pointer-events: none;
+}
+
 /* Tarot drawing canvas */
 #tarotCanvas {
   position: fixed;
