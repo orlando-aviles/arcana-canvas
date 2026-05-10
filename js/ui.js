@@ -52,11 +52,11 @@ cardSizeSlider.addEventListener("input", () => {
 });
 hueASlider.addEventListener("input", () => {
   FX.hueA = Number(hueASlider.value) || 0;
-  applyAuras(); syncVisualUI(); saveSettings();
+  applyAuras(); syncVisualUI(); Runes.invalidateCache(); saveSettings();
 });
 hueBSlider.addEventListener("input", () => {
   FX.hueB = Number(hueBSlider.value) || 0;
-  applyAuras(); syncVisualUI(); saveSettings();
+  applyAuras(); syncVisualUI(); Runes.invalidateCache(); saveSettings();
 });
 
 function randomizeAuras() {
@@ -67,6 +67,7 @@ function randomizeAuras() {
   Starfield.morphTo(a, b, 1000);
   FX.hueA = a; FX.hueB = b;
   applyAuras(); syncVisualUI();
+  Runes.invalidateCache();
 }
 randomizeBtn.addEventListener("click", () => { randomizeAuras(); saveSettings(); });
 
@@ -103,9 +104,12 @@ const bgSelect = document.getElementById("bgSelect");
 
 window.applyBg = function applyBg() {
   ParticlesBg.stop();
+  Snowfall.stop();
   Starfield.setVisible(false);
   if (App.bg === "particles") {
     ParticlesBg.start();
+  } else if (App.bg === "snowfall") {
+    Snowfall.start();
   } else {
     Starfield.setVisible(true);
   }

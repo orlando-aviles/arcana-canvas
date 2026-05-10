@@ -1,16 +1,16 @@
 // js/state.js
 window.FX = {
   intensity: 0.8,
-  hueA: 220,
-  hueB: 120,
+  hueA: 245,
+  hueB: 285,
 };
 
 window.App = {
   // "text" | "playing" | "riderwaite" | "luminousarc" | "gilded"
-  activeDeck: "text",
+  activeDeck: "luminousarc",
   cardScale: 1.0,
   // "starfield" | "particles"
-  bg: "starfield",
+  bg: "particles",
   reversals: false,
 };
 
@@ -47,8 +47,11 @@ window.applyAuras = function applyAuras() {
   Starfield.setHues(FX.hueA, FX.hueB);
   document.documentElement.style.setProperty(
     "--cardStroke",
-    `hsla(${FX.hueA} 92% 70% / 0.26)`,
+    `hsla(${FX.hueA} 92% 70% / 0.50)`,
   );
+  // Menu button border + bar color track the aura
+  const auraColor = `hsla(${FX.hueA} 85% 72% / 0.72)`;
+  document.documentElement.style.setProperty("--auraColor", auraColor);
 };
 
 /*********************************************************

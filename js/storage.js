@@ -1,7 +1,7 @@
-const STORAGE_KEY_SETTINGS = "tarot_settings_v3";
+const STORAGE_KEY_SETTINGS = "tarot_settings_v4";
 
-const VALID_DECKS = ["text","playing","riderwaite","luminousarc","gilded"];
-const VALID_BGS   = ["starfield","particles"];
+const VALID_DECKS = ["text","playing","riderwaite","luminousarc","gilded","runes"];
+const VALID_BGS   = ["starfield","particles","snowfall"];
 
 function saveSettings() {
   const settings = {

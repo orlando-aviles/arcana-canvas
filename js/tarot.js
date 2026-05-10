@@ -101,8 +101,16 @@ tarotCanvas.addEventListener("click", (event) => {
 
   if (deck === "gilded") {
     const g = GildedMinima.randomCard();
-    const card = { type: "gilded", x, y, rank: g.rank, suitIdx: g.suitIdx, rot };
+    const card = { type: "gilded", x, y, rank: g.rank, suitIdx: g.suitIdx, isMajor: g.isMajor, majorIdx: g.majorIdx, rot };
     draws.push(card); drawGildedCard(card); return;
+  }
+
+  if (deck === "runes") {
+    const r = Runes.randomCard();
+    const rev = rollReversal();
+    const runeRot = (Math.random() * 10 - 5) * (Math.PI / 180) + (rev ? Math.PI : 0);
+    const card = { type: "rune", x, y, runeIdx: r.runeIdx, rot: runeRot };
+    draws.push(card); drawRuneCard(card); return;
   }
 });
 
@@ -295,6 +303,14 @@ function drawGildedCard(card) {
   GildedMinima.draw(tarotCtx, card, card.x, card.y, w, h, card.rot, s);
 }
 
+function drawRuneCard(card) {
+  const s = App.cardScale;
+  // Stone is oval: wider than tall slightly
+  const w = 82 * s; const h = 100 * s;
+  Runes.draw(tarotCtx, card, card.x, card.y, w, h, card.rot, s);
+}
+
+
 function clearCanvas() {
   tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
   draws = [];
@@ -308,6 +324,7 @@ function redrawAll() {
     else if (d.type === "tarot")   drawTarotCard(d);
     else if (d.type === "luminous") drawLuminousCard(d);
     else if (d.type === "gilded")  drawGildedCard(d);
+    else if (d.type === "rune")    drawRuneCard(d);
   }
 }
 

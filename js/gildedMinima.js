@@ -577,7 +577,7 @@ window.GildedMinima = (() => {
       return { isMajor: true, majorIdx: roll, type: "gilded" };
     }
     const minorIdx = roll - MAJORS.length;
-    const suitIdx  = Math.floor(minorIdx / MINOR_RANKS.length);
+    const suitIdx  = Math.floor(minorIdx / MINOR_RANKS.length) % SUITS.length;
     const rankIdx  = minorIdx % MINOR_RANKS.length;
     return {
       isMajor: false,

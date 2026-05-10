@@ -272,3 +272,19 @@ select option {
   transform: translateX(16px);
   background: rgba(255, 180, 180, 0.92);
 }
+
+/* ── Aura-colored menu button ───────────────────────────── */
+:root { --auraColor: hsla(245 85% 72% / 0.72); }
+
+.menuBtn {
+  border-color: var(--auraColor);
+  box-shadow: 0 0 12px var(--auraColor), 0 8px 24px rgba(0,0,0,0.5);
+  transition: background 120ms ease, transform 120ms ease,
+              border-color 400ms ease, box-shadow 400ms ease;
+}
+
+.menuBtn .bar {
+  background: var(--auraColor);
+  transition: transform 200ms ease, opacity 200ms ease,
+              background 400ms ease;
+}
