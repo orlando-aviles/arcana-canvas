@@ -1,6 +1,6 @@
 // js/tarotDeck.js
 window.Tarot = (() => {
-  // Major arcana naming rule you gave:
+  // Major arcana naming rule:
   // Most majors use TheX.png
   // Exceptions: Temperance, Judgement, WheelOfFortune, Justice (no "The")
 
@@ -15,133 +15,114 @@ window.Tarot = (() => {
     "TheChariot",
     "Strength",
     "TheHermit",
-    "WheelOfFortune", // exception (no The)
-    "Justice", // exception
+    "WheelOfFortune",
+    "Justice",
     "TheHangedMan",
     "Death",
-    "Temperance", // exception
+    "Temperance",
     "TheDevil",
     "TheTower",
     "TheStar",
     "TheMoon",
     "TheSun",
-    "Judgement", // exception
+    "Judgement",
     "TheWorld",
   ];
 
   const wands = [
-    "AceOfWands",
-    "TwoOfWands",
-    "ThreeOfWands",
-    "FourOfWands",
-    "FiveOfWands",
-    "SixOfWands",
-    "SevenOfWands",
-    "EightOfWands",
-    "NineOfWands",
-    "TenOfWands",
-    "PageOfWands",
-    "KnightOfWands",
-    "QueenOfWands",
-    "KingOfWands",
+    "AceOfWands","TwoOfWands","ThreeOfWands","FourOfWands",
+    "FiveOfWands","SixOfWands","SevenOfWands","EightOfWands",
+    "NineOfWands","TenOfWands","PageOfWands","KnightOfWands",
+    "QueenOfWands","KingOfWands",
   ];
 
   const cups = [
-    "AceOfCups",
-    "TwoOfCups",
-    "ThreeOfCups",
-    "FourOfCups",
-    "FiveOfCups",
-    "SixOfCups",
-    "SevenOfCups",
-    "EightOfCups",
-    "NineOfCups",
-    "TenOfCups",
-    "PageOfCups",
-    "KnightOfCups",
-    "QueenOfCups",
-    "KingOfCups",
+    "AceOfCups","TwoOfCups","ThreeOfCups","FourOfCups",
+    "FiveOfCups","SixOfCups","SevenOfCups","EightOfCups",
+    "NineOfCups","TenOfCups","PageOfCups","KnightOfCups",
+    "QueenOfCups","KingOfCups",
   ];
 
   const swords = [
-    "AceOfSwords",
-    "TwoOfSwords",
-    "ThreeOfSwords",
-    "FourOfSwords",
-    "FiveOfSwords",
-    "SixOfSwords",
-    "SevenOfSwords",
-    "EightOfSwords",
-    "NineOfSwords",
-    "TenOfSwords",
-    "PageOfSwords",
-    "KnightOfSwords",
-    "QueenOfSwords",
-    "KingOfSwords",
+    "AceOfSwords","TwoOfSwords","ThreeOfSwords","FourOfSwords",
+    "FiveOfSwords","SixOfSwords","SevenOfSwords","EightOfSwords",
+    "NineOfSwords","TenOfSwords","PageOfSwords","KnightOfSwords",
+    "QueenOfSwords","KingOfSwords",
   ];
 
   const pentacles = [
-    "AceOfPentacles",
-    "TwoOfPentacles",
-    "ThreeOfPentacles",
-    "FourOfPentacles",
-    "FiveOfPentacles",
-    "SixOfPentacles",
-    "SevenOfPentacles",
-    "EightOfPentacles",
-    "NineOfPentacles",
-    "TenOfPentacles",
-    "PageOfPentacles",
-    "KnightOfPentacles",
-    "QueenOfPentacles",
-    "KingOfPentacles",
+    "AceOfPentacles","TwoOfPentacles","ThreeOfPentacles","FourOfPentacles",
+    "FiveOfPentacles","SixOfPentacles","SevenOfPentacles","EightOfPentacles",
+    "NineOfPentacles","TenOfPentacles","PageOfPentacles","KnightOfPentacles",
+    "QueenOfPentacles","KingOfPentacles",
   ];
 
   const cardNames = [...majors, ...wands, ...cups, ...swords, ...pentacles];
 
-  const images = new Map();
-  let loaded = false;
+  // Two image caches, one per deck
+  const imagesByDeck = {
+    riderwaite: new Map(),
+    luminousarc: new Map(),
+  };
 
-  function getPath(name) {
-    return `./TarotCards/${name}.png`;
+  const loadedByDeck = {
+    riderwaite: false,
+    luminousarc: false,
+  };
+
+  const deckPaths = {
+    riderwaite: "./RiderWaite/",
+    luminousarc: "./LuminousArc/",
+  };
+
+  function getPath(deckKey, name) {
+    return `${deckPaths[deckKey]}${name}.png`;
   }
 
-  function preload() {
-    if (loaded) return Promise.resolve(true);
+  function preload(deckKey) {
+    if (!deckKey) deckKey = "riderwaite";
+    if (loadedByDeck[deckKey]) return Promise.resolve(true);
 
     const promises = cardNames.map((name) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
-          images.set(name, img);
+          imagesByDeck[deckKey].set(name, img);
           resolve(true);
         };
         img.onerror = () => {
-          console.warn("Missing tarot image:", getPath(name));
+          console.warn("Missing tarot image:", getPath(deckKey, name));
           resolve(false);
         };
-        img.src = getPath(name);
+        img.src = getPath(deckKey, name);
       });
     });
 
     return Promise.all(promises).then(() => {
-      loaded = true;
+      loadedByDeck[deckKey] = true;
       return true;
     });
   }
 
-  function randomCard() {
+  function preloadAll() {
+    return Promise.all([preload("riderwaite"), preload("luminousarc")]);
+  }
+
+  function randomCard(deckKey) {
+    if (!deckKey) deckKey = "riderwaite";
     const name = cardNames[Math.floor(Math.random() * cardNames.length)];
-    return { name, img: images.get(name) || null };
+    return { name, img: imagesByDeck[deckKey].get(name) || null };
   }
 
-  function getImage(name) {
-    return images.get(name) || null;
+  function getImage(name, deckKey) {
+    if (!deckKey) deckKey = "riderwaite";
+    return imagesByDeck[deckKey].get(name) || null;
   }
 
-  function isReady() {
-    return loaded;
+  function isReady(deckKey) {
+    if (!deckKey) deckKey = "riderwaite";
+    return loadedByDeck[deckKey];
   }
 
-  return { preload, randomCard, getImage, isReady };
+  return { preload, preloadAll, randomCard, getImage, isReady, cardNames };
 })();

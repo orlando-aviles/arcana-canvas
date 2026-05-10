@@ -1,17 +1,12 @@
-const STORAGE_KEY_SETTINGS = "tarot_settings_v1";
+const STORAGE_KEY_SETTINGS = "tarot_settings_v3";
+
+const VALID_DECKS = ["text","playing","riderwaite","luminousarc","gilded"];
+const VALID_BGS   = ["starfield","particles"];
 
 function saveSettings() {
   const settings = {
-    fx: {
-      intensity: FX.intensity,
-      hueA: FX.hueA,
-      hueB: FX.hueB,
-    },
-    app: {
-      activeDeck: App.activeDeck,
-      cardScale: App.cardScale,
-      bg: App.bg,
-    },
+    fx: { intensity: FX.intensity, hueA: FX.hueA, hueB: FX.hueB },
+    app: { activeDeck: App.activeDeck, cardScale: App.cardScale, bg: App.bg, reversals: App.reversals },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
 }
@@ -20,35 +15,20 @@ function loadSettings() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_SETTINGS);
     if (!raw) return false;
-
     const data = JSON.parse(raw);
     if (!data || typeof data !== "object") return false;
 
     if (data.fx) {
-      if (typeof data.fx.intensity === "number")
-        FX.intensity = clamp(data.fx.intensity, 0, 1);
-      if (typeof data.fx.hueA === "number")
-        FX.hueA = ((data.fx.hueA % 360) + 360) % 360;
-      if (typeof data.fx.hueB === "number")
-        FX.hueB = ((data.fx.hueB % 360) + 360) % 360;
+      if (typeof data.fx.intensity === "number") FX.intensity = clamp(data.fx.intensity, 0, 1);
+      if (typeof data.fx.hueA === "number") FX.hueA = ((data.fx.hueA % 360) + 360) % 360;
+      if (typeof data.fx.hueB === "number") FX.hueB = ((data.fx.hueB % 360) + 360) % 360;
     }
-
     if (data.app) {
-      if (
-        data.app.activeDeck === "text" ||
-        data.app.activeDeck === "playing" ||
-        data.app.activeDeck === "tarot"
-      ) {
-        App.activeDeck = data.app.activeDeck;
-      }
-      if (typeof data.app.cardScale === "number")
-        App.cardScale = clamp(data.app.cardScale, 0.6, 1.6);
-      if (data.app.bg === "starfield" || data.app.bg === "particles")
-        App.bg = data.app.bg;
+      if (VALID_DECKS.includes(data.app.activeDeck)) App.activeDeck = data.app.activeDeck;
+      if (typeof data.app.cardScale === "number") App.cardScale = clamp(data.app.cardScale, 0.6, 1.6);
+      if (VALID_BGS.includes(data.app.bg)) App.bg = data.app.bg;
+      if (typeof data.app.reversals === "boolean") App.reversals = data.app.reversals;
     }
-
     return true;
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }

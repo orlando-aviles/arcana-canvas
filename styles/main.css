@@ -1,18 +1,14 @@
 :root {
-  --btnInk: rgba(255, 255, 255, 0.92);
-  --stroke: rgba(255, 255, 255, 0.18);
-  --glass: rgba(255, 255, 255, 0.1);
-  --glassHover: rgba(255, 255, 255, 0.14);
-
-  /* solid label bg (prevents overlap blur stacking) */
-  --cardBg: rgba(0, 0, 0, 0.92);
-  --cardStroke: rgba(255, 255, 255, 0.18);
-  --cardText: rgba(255, 255, 255, 0.96);
+  --btnInk:       rgba(255, 255, 255, 0.92);
+  --stroke:       rgba(255, 255, 255, 0.18);
+  --glass:        rgba(255, 255, 255, 0.08);
+  --glassHover:   rgba(255, 255, 255, 0.13);
+  --cardBg:       rgba(0, 0, 0, 0.92);
+  --cardStroke:   rgba(255, 255, 255, 0.18);
+  --cardText:     rgba(255, 255, 255, 0.96);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -22,212 +18,257 @@ body {
   background: #05050a;
 }
 
-/* Star + nebula canvas */
+/* ── Background canvases ─────────────────────────────── */
 #space {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  width: 100vw;
-  height: 100vh;
-  display: block;
-  pointer-events: none;
+  position: fixed; inset: 0; z-index: 0;
+  width: 100vw; height: 100vh;
+  display: block; pointer-events: none;
   background: #05050a;
 }
 
-/* Animus canvas */
-#animus {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  width: 100vw;
-  height: 100vh;
-  display: none; /* shown only when bg=particles */
-  pointer-events: none;
+#aurora {
+  position: fixed; inset: 0; z-index: 1;
+  width: 100vw; height: 100vh;
+  display: none; pointer-events: none;
 }
 
-/* Tarot drawing canvas */
+#animus {
+  position: fixed; inset: 0; z-index: 2;
+  width: 100vw; height: 100vh;
+  display: none; pointer-events: none;
+}
+
 #tarotCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  width: 100vw;
-  height: 100vh;
+  position: fixed; inset: 0; z-index: 3;
+  width: 100vw; height: 100vh;
   display: block;
 }
 
-button {
-  padding: 10px 14px;
-  font-size: 14px;
+/* ── Hamburger button ─────────────────────────────────── */
+.menuBtn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 40;
+
+  width: 44px;
+  height: 44px;
+  padding: 0;
   border-radius: 12px;
 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.menuBtn:hover  { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+.menuBtn:active { transform: scale(0.96); }
+
+.menuBtn .bar {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.88);
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+/* ── Generic button base ─────────────────────────────── */
+button {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 10px;
   color: var(--btnInk);
   border: 1px solid var(--stroke);
   background: var(--glass);
   backdrop-filter: blur(10px);
-
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-
-  transition:
-    transform 120ms ease,
-    background 120ms ease,
-    border-color 120ms ease;
+  transition: transform 120ms ease, background 120ms ease;
 }
+button:hover  { background: var(--glassHover); transform: translateY(-1px); }
+button:active { transform: scale(0.97); }
 
-button:hover {
-  background: var(--glassHover);
-  border-color: rgba(255, 255, 255, 0.26);
-  transform: translateY(-1px);
-}
-
-button:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* bottom-right stacked controls */
-.controlStack {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  z-index: 20;
-
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 10px;
-}
-
-/* desktop: buttons bigger so they don’t drown */
-@media (min-width: 900px) {
-  .controlStack button {
-    padding: 14px 18px;
-    font-size: 15px;
-    border-radius: 14px;
-  }
-}
-
-/* Panels */
+/* ── Menu panel ─────────────────────────────────────── */
 .panel {
-  position: absolute;
-  right: 12px;
-  bottom: 62px;
-  z-index: 30;
+  position: fixed;
+  right: 16px;
+  bottom: 72px;
+  z-index: 39;
 
-  width: 285px;
-  padding: 10px;
+  width: 272px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 12px 10px 14px;
 
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(4, 3, 14, 0.72);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.65);
 
   display: none;
 }
+.panel.open { display: block; }
 
-.panel.open {
-  display: block;
-}
+/* Scrollbar (webkit) */
+.panel::-webkit-scrollbar { width: 4px; }
+.panel::-webkit-scrollbar-track { background: transparent; }
+.panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 4px; }
 
-.panelTitle {
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Arial,
-    sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.85);
-  margin: 2px 0 10px;
+/* ── Panel typography ───────────────────────────────── */
+.sectionTitle {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 4px 2px 8px;
 }
 
 .divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.08);
   margin: 10px 0 12px;
   border-radius: 999px;
 }
 
+/* ── Rows ───────────────────────────────────────────── */
 .sliderRow {
-  margin-top: 10px;
+  margin-top: 8px;
   padding: 8px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.04);
 }
 
 .sliderLabelRow {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Arial,
-    sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   font-size: 12px;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255,255,255,0.78);
   margin-bottom: 8px;
 }
-
-.sliderValue {
-  color: rgba(255, 255, 255, 0.65);
-}
+.sliderValue { color: rgba(255,255,255,0.5); }
 
 input[type="range"] {
   width: 100%;
-  accent-color: rgba(255, 255, 255, 0.85);
+  accent-color: rgba(255,255,255,0.8);
 }
 
 .huePreview {
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  margin-top: 10px;
-  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-top: 8px;
   background: linear-gradient(
     90deg,
-    hsl(0 85% 55%),
-    hsl(60 85% 55%),
-    hsl(120 85% 55%),
-    hsl(180 85% 55%),
-    hsl(240 85% 55%),
-    hsl(300 85% 55%),
-    hsl(360 85% 55%)
+    hsl(0 85% 55%), hsl(60 85% 55%), hsl(120 85% 55%),
+    hsl(180 85% 55%), hsl(240 85% 55%), hsl(300 85% 55%), hsl(360 85% 55%)
   );
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 .fullWidthBtn {
   width: 100%;
-  border-radius: 12px;
-  font-weight: 900;
+  border-radius: 10px;
+  font-weight: 600;
   letter-spacing: 0.2px;
 }
 
 select {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(0, 0, 0, 0.25);
-  color: rgba(255, 255, 255, 0.92);
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.9);
   outline: none;
-  font-weight: 800;
-  letter-spacing: 0.2px;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  cursor: pointer;
 }
-
 select option {
   background: #05050a;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255,255,255,0.9);
+}
+
+/* ── Reversals toggle ───────────────────────────────── */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggleLabel {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 12px;
+  color: rgba(255,255,255,0.78);
+  user-select: none;
+}
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleTrack {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.16);
+  transition: background 200ms ease, border-color 200ms ease;
+  position: relative;
+  display: block;
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  transition: transform 200ms ease, background 200ms ease;
+  display: block;
+}
+
+.toggle input:checked + .toggleTrack {
+  background: rgba(180, 80, 80, 0.55);
+  border-color: rgba(220, 100, 100, 0.4);
+}
+
+.toggle input:checked + .toggleTrack .toggleThumb {
+  transform: translateX(16px);
+  background: rgba(255, 180, 180, 0.92);
 }

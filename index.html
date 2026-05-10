@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tarot</title>
-
     <link rel="stylesheet" href="./styles/main.css" />
     <link rel="icon" href="data:," />
     <link rel="manifest" href="./manifest.json">
@@ -15,26 +14,54 @@
     <canvas id="animus"></canvas>
     <canvas id="tarotCanvas"></canvas>
 
-    <div class="controlStack">
-      <button id="visualsBtn" type="button">🎛️ Visuals</button>
-      <button id="decksBtn" type="button">🃏 Decks</button>
-      <button id="clearBtn" type="button">Clear</button>
-    </div>
+    <!-- Single hamburger button -->
+    <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
 
-    <!-- Visuals Panel -->
-    <div id="visualsPanel" class="panel" aria-hidden="true">
-      <div class="panelTitle">Visuals</div>
+    <!-- Unified menu panel -->
+    <div id="menuPanel" class="panel" aria-hidden="true">
 
+      <!-- DECKS -->
+      <div class="sectionTitle">Deck</div>
       <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Background</span>
-          <span class="sliderValue" id="bgLabel">Starfield</span>
-        </div>
+        <select id="deckSelect">
+          <option value="text">Text</option>
+          <option value="playing">Playing Cards</option>
+          <option value="riderwaite">Rider Waite</option>
+          <option value="luminousarc">Luminous Arc</option>
+          <option value="gilded">Gilded Minima</option>
+        </select>
+      </div>
+
+      <!-- REVERSALS -->
+      <div class="sliderRow toggleRow">
+        <span class="toggleLabel">Reversals</span>
+        <label class="toggle">
+          <input type="checkbox" id="reversalsToggle" />
+          <span class="toggleTrack">
+            <span class="toggleThumb"></span>
+          </span>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- BACKGROUND -->
+      <div class="sectionTitle">Background</div>
+      <div class="sliderRow">
         <select id="bgSelect">
           <option value="starfield">Starfield</option>
           <option value="particles">Animus</option>
         </select>
       </div>
+
+      <div class="divider"></div>
+
+      <!-- VISUALS -->
+      <div class="sectionTitle">Visuals</div>
 
       <div class="sliderRow">
         <div class="sliderLabelRow">
@@ -49,18 +76,8 @@
           <span>Card Size</span>
           <span class="sliderValue" id="cardSizeValue">100%</span>
         </div>
-        <input
-          id="cardSizeSlider"
-          type="range"
-          min="60"
-          max="160"
-          value="100"
-        />
+        <input id="cardSizeSlider" type="range" min="60" max="160" value="100" />
       </div>
-
-      <div class="divider"></div>
-
-      <div class="panelTitle">Nebula Auras</div>
 
       <div class="sliderRow">
         <div class="sliderLabelRow">
@@ -81,49 +98,15 @@
       </div>
 
       <div class="sliderRow">
-        <button id="randomizeBtn" type="button" class="fullWidthBtn">
-          🎲 Randomize Auras
-        </button>
+        <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
       </div>
-    </div>
 
-    <!-- Decks Panel -->
-    <div id="decksPanel" class="panel" aria-hidden="true">
-      <div class="panelTitle">Decks</div>
+      <div class="divider"></div>
 
       <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Active Deck</span>
-          <span class="sliderValue" id="deckLabel">Text</span>
-        </div>
-
-        <select id="deckSelect">
-          <option value="text">Text (Tarot Names)</option>
-          <option value="playing">Playing Cards</option>
-          <option value="tarot">Tarot Cards</option>
-        </select>
+        <button id="clearBtn" type="button" class="fullWidthBtn">✕ Clear Canvas</button>
       </div>
 
-      <div class="sliderRow">
-        <div class="panelTitle" style="margin: 0 0 6px">Tip</div>
-        <div
-          style="
-            font-family:
-              ui-sans-serif,
-              system-ui,
-              -apple-system,
-              Segoe UI,
-              Roboto,
-              Arial,
-              sans-serif;
-            font-size: 12px;
-            line-height: 1.35;
-            color: rgba(255, 255, 255, 0.72);
-          "
-        >
-          Click anywhere to draw from the selected deck.
-        </div>
-      </div>
     </div>
 
     <!-- Scripts (order matters!) -->
@@ -131,17 +114,10 @@
     <script src="./js/storage.js"></script>
     <script src="./js/starfield.js"></script>
     <script src="./js/particles-bg.js"></script>
-
-    <!-- Tarot image deck -->
     <script src="./js/tarotDeck.js"></script>
-
-    <!-- Tarot canvas logic -->
+    <script src="./js/gildedMinima.js"></script>
     <script src="./js/tarot.js"></script>
-
-    <!-- UI controls -->
     <script src="./js/ui.js"></script>
-
-    <!-- init + glue -->
     <script src="./js/main.js" type="module"></script>
   </body>
 </html>
