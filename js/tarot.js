@@ -87,11 +87,16 @@ tarotCanvas.addEventListener("click", (event) => {
     draws.push(card); drawPlayingCard(card); return;
   }
 
-  if (deck === "riderwaite" || deck === "luminousarc") {
-    const deckKey = deck === "riderwaite" ? "riderwaite" : "luminousarc";
-    const t = Tarot.randomCard(deckKey);
-    const card = { type: "tarot", x, y, name: t.name, deckKey, rot };
+  if (deck === "riderwaite") {
+    const t = Tarot.randomCard("riderwaite");
+    const card = { type: "tarot", x, y, name: t.name, deckKey: "riderwaite", rot };
     draws.push(card); drawTarotCard(card); return;
+  }
+
+  if (deck === "luminousarc") {
+    const t = Tarot.randomCard("luminousarc");
+    const card = { type: "luminous", x, y, name: t.name, deckKey: "luminousarc", rot };
+    draws.push(card); drawLuminousCard(card); return;
   }
 
   if (deck === "gilded") {
@@ -227,6 +232,63 @@ function drawTarotCard(card) {
   tarotCtx.restore();
 }
 
+function drawLuminousCard(card) {
+  const s = App.cardScale;
+  // Larger card — edge-to-edge image, no white base
+  const w = 108 * s; const h = 176 * s; const r = 14 * s;
+  const img = Tarot.getImage(card.name, "luminousarc");
+
+  tarotCtx.save();
+  tarotCtx.translate(card.x, card.y);
+  tarotCtx.rotate(card.rot || 0);
+
+  const x = -w/2; const y = -h/2;
+
+  // Drop shadow — deeper to match larger card
+  tarotCtx.shadowColor = "rgba(0,0,0,0.72)";
+  tarotCtx.shadowBlur  = 28 * s;
+  tarotCtx.shadowOffsetY = 14 * s;
+
+  if (img) {
+    // Clip to rounded rect and draw image edge-to-edge
+    tarotCtx.save();
+    roundRect(tarotCtx, x, y, w, h, r);
+    tarotCtx.clip();
+    tarotCtx.drawImage(img, x, y, w, h);
+    tarotCtx.restore();
+  } else {
+    // Fallback: dark fill with name
+    tarotCtx.fillStyle = "#0f0c24";
+    roundRect(tarotCtx, x, y, w, h, r); tarotCtx.fill();
+    tarotCtx.fillStyle = "#d4af37";
+    tarotCtx.font = `700 ${Math.max(9, Math.round(11*s))}px Georgia, serif`;
+    tarotCtx.textAlign = "center"; tarotCtx.textBaseline = "middle";
+    tarotCtx.fillText(card.name, 0, 0);
+  }
+
+  tarotCtx.shadowBlur = 0; tarotCtx.shadowOffsetY = 0;
+
+  // Bright thin gilded glow — no white, pure hue-reactive stroke
+  const guildColor = getCssVar("--cardStroke");
+  tarotCtx.save();
+  tarotCtx.shadowColor = guildColor;
+  tarotCtx.shadowBlur  = 18 * s;
+  tarotCtx.strokeStyle = guildColor;
+  tarotCtx.lineWidth   = 1.5 * s;
+  tarotCtx.globalAlpha = 0.92;
+  roundRect(tarotCtx, x, y, w, h, r);
+  tarotCtx.stroke();
+  // Second pass — tighter, brighter inner edge of the glow
+  tarotCtx.shadowBlur  = 8 * s;
+  tarotCtx.globalAlpha = 0.60;
+  tarotCtx.lineWidth   = 1 * s;
+  roundRect(tarotCtx, x + 1*s, y + 1*s, w - 2*s, h - 2*s, Math.max(2, r - 1*s));
+  tarotCtx.stroke();
+  tarotCtx.restore();
+
+  tarotCtx.restore();
+}
+
 function drawGildedCard(card) {
   const s = App.cardScale;
   const w = 86 * s; const h = 140 * s;
@@ -244,6 +306,7 @@ function redrawAll() {
     if      (d.type === "text")    drawTextCard(d);
     else if (d.type === "playing") drawPlayingCard(d);
     else if (d.type === "tarot")   drawTarotCard(d);
+    else if (d.type === "luminous") drawLuminousCard(d);
     else if (d.type === "gilded")  drawGildedCard(d);
   }
 }
