@@ -1,6 +1,6 @@
-// tarot/sw.js
+// sw.js
 
-const CACHE_NAME = 'tarot-cache-v4';
+const CACHE_NAME = 'tarot-cache-v5';
 
 const CORE_FILES = [
   './',
@@ -16,46 +16,51 @@ const CORE_FILES = [
   './js/particles-bg.js',
 ];
 
-// Install: cache core files and skip waiting so new SW activates immediately
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_FILES))
-      .then(() => self.skipWaiting())
-  );
-});
+// Bypass service worker entirely during local development
+const IS_DEV = self.location.hostname === 'localhost' ||
+               self.location.hostname === '127.0.0.1';
 
-// Activate: delete all old caches, then claim clients immediately
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    ).then(() => self.clients.claim())
-  );
-});
+if (IS_DEV) {
+  self.addEventListener('install', () => self.skipWaiting());
+  self.addEventListener('activate', () => self.clients.claim());
+  self.addEventListener('fetch', event => {
+    event.respondWith(fetch(event.request));
+  });
+} else {
+  // Production: cache core files on install
+  self.addEventListener('install', event => {
+    event.waitUntil(
+      caches.open(CACHE_NAME)
+        .then(cache => cache.addAll(CORE_FILES))
+        .then(() => self.skipWaiting())
+    );
+  });
 
-// Fetch: cache-first strategy + image caching
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
+  // Activate: clear old caches
+  self.addEventListener('activate', event => {
+    event.waitUntil(
+      caches.keys().then(keys =>
+        Promise.all(
+          keys
+            .filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
+        )
+      ).then(() => self.clients.claim())
+    );
+  });
 
-      return fetch(event.request).then(response => {
-        const responseClone = response.clone();
-
-        // Cache images as they are fetched
-        if (event.request.destination === 'image') {
+  // Fetch: network-first, fall back to cache
+  self.addEventListener('fetch', event => {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseClone);
           });
-        }
-
-        return response;
-      });
-    })
-  );
-});
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+  });
+}
