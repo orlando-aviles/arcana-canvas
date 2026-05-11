@@ -14,24 +14,49 @@
     <canvas id="animus"></canvas>
     <canvas id="tarotCanvas"></canvas>
 
+    <!-- Zoom mode crosshair overlay -->
+    <div id="zoomOverlay" class="zoomOverlay" aria-hidden="true">
+      <svg id="zoomReticle" class="zoomReticle" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="currentColor">
+        <!-- Corner brackets -->
+        <!-- Top-left -->
+        <path d="M8,28 L8,8 L28,8" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Top-right -->
+        <path d="M92,8 L112,8 L112,28" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Bottom-left -->
+        <path d="M8,92 L8,112 L28,112" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Bottom-right -->
+        <path d="M92,112 L112,112 L112,92" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Centre crosshair lines (gap at square) -->
+        <line x1="60" y1="38" x2="60" y2="52" stroke-width="2" stroke-linecap="round"/>
+        <line x1="60" y1="68" x2="60" y2="82" stroke-width="2" stroke-linecap="round"/>
+        <line x1="38" y1="60" x2="52" y2="60" stroke-width="2" stroke-linecap="round"/>
+        <line x1="68" y1="60" x2="82" y2="60" stroke-width="2" stroke-linecap="round"/>
+        <!-- Centre square -->
+        <rect x="52" y="52" width="16" height="16" fill="none" stroke-width="2"/>
+        <!-- Centre dot -->
+        <circle cx="60" cy="60" r="2" />
+      </svg>
+      <div class="zoomLabel">View Mode</div>
+    </div>
+
     <!-- Description overlay (tap/hold) -->
     <div id="descOverlay" class="descOverlay" aria-live="polite">
       <div id="descTitle" class="descTitle"></div>
       <div id="descBody"  class="descBody"></div>
     </div>
 
-    <!-- Single hamburger button -->
+    <!-- Hamburger button -->
     <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">
       <span class="bar"></span>
       <span class="bar"></span>
       <span class="bar"></span>
     </button>
 
-    <!-- Unified menu panel -->
+    <!-- Menu panel — reorganized into 4 sections -->
     <div id="menuPanel" class="panel" aria-hidden="true">
 
-      <!-- DECKS -->
-      <div class="sectionTitle">Deck</div>
+      <!-- DRAW -->
+      <div class="sectionTitle">Draw</div>
       <div class="sliderRow">
         <select id="deckSelect">
           <option value="text">Text</option>
@@ -42,22 +67,18 @@
           <option value="runes">Runes</option>
         </select>
       </div>
-
-      <!-- REVERSALS -->
       <div class="sliderRow toggleRow">
         <span class="toggleLabel">Reversals</span>
         <label class="toggle">
           <input type="checkbox" id="reversalsToggle" />
-          <span class="toggleTrack">
-            <span class="toggleThumb"></span>
-          </span>
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </label>
       </div>
 
       <div class="divider"></div>
 
-      <!-- BACKGROUND -->
-      <div class="sectionTitle">Background</div>
+      <!-- CANVAS -->
+      <div class="sectionTitle">Canvas</div>
       <div class="sliderRow">
         <select id="bgSelect">
           <option value="starfield">Starfield</option>
@@ -65,20 +86,6 @@
           <option value="snowfall">Snowfall</option>
         </select>
       </div>
-
-      <div class="divider"></div>
-
-      <!-- VISUALS -->
-      <div class="sectionTitle">Visuals</div>
-
-      <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Intensity</span>
-          <span class="sliderValue" id="intensityValue">80%</span>
-        </div>
-        <input id="intensitySlider" type="range" min="0" max="100" value="80" />
-      </div>
-
       <div class="sliderRow">
         <div class="sliderLabelRow">
           <span>Card Size</span>
@@ -87,37 +94,47 @@
         <input id="cardSizeSlider" type="range" min="60" max="160" value="100" />
       </div>
 
+      <div class="divider"></div>
+
+      <!-- ATMOSPHERE -->
+      <div class="sectionTitle">Atmosphere</div>
+      <div class="sliderRow">
+        <div class="sliderLabelRow">
+          <span>Intensity</span>
+          <span class="sliderValue" id="intensityValue">80%</span>
+        </div>
+        <input id="intensitySlider" type="range" min="0" max="100" value="80" />
+      </div>
       <div class="sliderRow">
         <div class="sliderLabelRow">
           <span>Hue A</span>
-          <span class="sliderValue" id="hueAValue">220°</span>
+          <span class="sliderValue" id="hueAValue">245°</span>
         </div>
-        <input id="hueASlider" type="range" min="0" max="360" value="220" />
+        <input id="hueASlider" type="range" min="0" max="360" value="245" />
         <div class="huePreview"></div>
       </div>
-
       <div class="sliderRow">
         <div class="sliderLabelRow">
           <span>Hue B</span>
-          <span class="sliderValue" id="hueBValue">120°</span>
+          <span class="sliderValue" id="hueBValue">285°</span>
         </div>
-        <input id="hueBSlider" type="range" min="0" max="360" value="120" />
+        <input id="hueBSlider" type="range" min="0" max="360" value="285" />
         <div class="huePreview"></div>
       </div>
-
       <div class="sliderRow">
         <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
       </div>
 
       <div class="divider"></div>
 
+      <!-- ACTIONS -->
+      <div class="sectionTitle">Actions</div>
       <div class="sliderRow">
         <button id="clearBtn" type="button" class="fullWidthBtn">✕ Clear Canvas</button>
       </div>
 
     </div>
 
-    <!-- Scripts (order matters!) -->
     <script src="./js/state.js"></script>
     <script src="./js/storage.js"></script>
     <script src="./js/starfield.js"></script>

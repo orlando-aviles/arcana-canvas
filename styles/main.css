@@ -332,3 +332,49 @@ select option {
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.78);
 }
+
+/* ── Canvas touch-action fix ────────────────────────────── */
+#tarotCanvas {
+  touch-action: none; /* we own all gestures when not zoomed */
+}
+
+/* ── Zoom overlay ───────────────────────────────────────── */
+.zoomOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none; /* pass-through — browser handles pinch pan */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+.zoomOverlay.active {
+  opacity: 1;
+}
+
+.zoomReticle {
+  width: 96px;
+  height: 96px;
+  color: var(--auraColor);
+  stroke: currentColor;
+  fill: currentColor;
+  filter: drop-shadow(0 0 8px var(--auraColor));
+  opacity: 0.82;
+}
+
+.zoomLabel {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  opacity: 0.72;
+  text-shadow: 0 0 12px var(--auraColor);
+}

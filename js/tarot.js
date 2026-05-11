@@ -5,6 +5,33 @@ const tarotCanvas = document.getElementById("tarotCanvas");
 const tarotCtx    = tarotCanvas.getContext("2d");
 tarotCtx.imageSmoothingEnabled = true;
 
+// ── Zoom mode detection ──────────────────────────────────
+const zoomOverlay = document.getElementById("zoomOverlay");
+const ZOOM_THRESHOLD = 1.08;
+let isZoomed = false;
+
+function checkZoom() {
+  const scale = window.visualViewport ? window.visualViewport.scale : 1;
+  const zoomed = scale > ZOOM_THRESHOLD;
+  if (zoomed !== isZoomed) {
+    isZoomed = zoomed;
+    if (zoomed) {
+      zoomOverlay.classList.add("active");
+      tarotCanvas.style.touchAction = "auto"; // restore native pan when zoomed
+      hideDesc();
+    } else {
+      zoomOverlay.classList.remove("active");
+      tarotCanvas.style.touchAction = "none"; // reclaim gestures when normal
+    }
+  }
+}
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", checkZoom, { passive: true });
+  window.visualViewport.addEventListener("scroll", checkZoom, { passive: true });
+}
+
+
 let draws = []; // each card also stores { w, h } for hit testing
 
 const REVERSAL_CHANCE = 0.40;
@@ -234,6 +261,7 @@ let didHold       = false;
 function cancelHold() { clearTimeout(holdTimer); holdTimer = null; }
 
 tarotCanvas.addEventListener("pointerdown", (e) => {
+  if (isZoomed) return; // zoom mode — let browser handle pan
   if (e.button !== 0 && e.button !== undefined) return; // left/touch only
   hideDesc();
   pointerDown  = true;
@@ -266,7 +294,7 @@ tarotCanvas.addEventListener("pointerdown", (e) => {
 });
 
 tarotCanvas.addEventListener("pointermove", (e) => {
-  if (!pointerDown) return;
+  if (isZoomed || !pointerDown) return;
   const dx = e.clientX - pointerStart.x;
   const dy = e.clientY - pointerStart.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
@@ -290,7 +318,7 @@ tarotCanvas.addEventListener("pointermove", (e) => {
 });
 
 tarotCanvas.addEventListener("pointerup", (e) => {
-  if (!pointerDown) return;
+  if (isZoomed || !pointerDown) return;
   pointerDown = false;
   cancelHold();
 
@@ -327,6 +355,15 @@ tarotCanvas.addEventListener("pointercancel", () => {
   didDrag  = false;
   didHold  = false;
 });
+
+// Prevent browser context menu / long-press callout on canvas
+tarotCanvas.addEventListener("contextmenu", (e) => {
+  if (e.pointerType === "touch") e.preventDefault();
+});
+tarotCanvas.addEventListener("touchstart", (e) => {
+  if (!isZoomed) e.preventDefault();
+}, { passive: false });
+
 
 // ── Spawn new card ───────────────────────────────────────
 function spawnCard(x, y) {
