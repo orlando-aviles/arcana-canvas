@@ -152,15 +152,39 @@ function cardDisplayName(card) {
   return "";
 }
 
-/**** Touch interactions ****/
-const HOLD_MS   = 400;   // ms before tap becomes a hold
-const DRAG_SLOP = 10;    // px movement before tap becomes a drag
+/**** Interaction — pointer events handle mouse + touch + stylus ****/
+// touch-action: none on the canvas means we own all input.
+// Draw mode:  tap = draw, hold = desc, drag-card = move card
+// View mode:  1-finger pan, 2-finger pinch-zoom (we do it ourselves)
 
-let _touch = null; // active touch state
+const HOLD_MS    = 400;
+const DRAG_SLOP  = 10;
+const SCALE_MIN  = 0.4;
+const SCALE_MAX  = 5.0;
 
 const descOverlay = document.getElementById("descOverlay");
 const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
+
+// Viewport transform — pan/zoom in view mode
+const vp = { tx: 0, ty: 0, scale: 1 };
+
+function applyViewport() {
+  // Cards are drawn at screen coords (no internal transform needed).
+  // In view mode we shift the whole canvas element via CSS.
+  tarotCanvas.style.transformOrigin = "0 0";
+  tarotCanvas.style.transform = App.viewMode
+    ? `translate(${vp.tx}px,${vp.ty}px) scale(${vp.scale})`
+    : "";
+}
+
+function resetViewport() {
+  vp.tx = 0; vp.ty = 0; vp.scale = 1;
+  applyViewport();
+}
+
+// Expose so ui.js can reset on mode toggle
+window._resetViewport = resetViewport;
 
 function showDesc(card) {
   const name = cardDisplayName(card);
@@ -169,99 +193,161 @@ function showDesc(card) {
   descBody.textContent  = Meanings.get(name, isReversed);
   descOverlay.classList.add("visible");
 }
-
 function hideDesc() {
   descOverlay.classList.remove("visible");
 }
+descOverlay.addEventListener("pointerdown", hideDesc);
 
-// Tap anywhere on the desc overlay to dismiss it
-descOverlay.addEventListener("click", hideDesc);
+// Active pointer tracking
+const pointers = new Map(); // pointerId → {x, y, startX, startY}
 
-tarotCanvas.addEventListener("touchstart", (e) => {
-  // Only act on single-touch; let multi-touch pass through for browser zoom/pan
-  if (e.touches.length !== 1) {
-    if (_touch) { clearTimeout(_touch.holdTimer); _touch = null; }
+// Draw-mode single-touch state
+let _draw = null;
+
+function onPointerDown(e) {
+  e.preventDefault();
+  tarotCanvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, {
+    x: e.clientX, y: e.clientY,
+    startX: e.clientX, startY: e.clientY,
+  });
+
+  if (App.viewMode) {
+    // View mode: start pan or pinch — handled in move
+    if (pointers.size === 2) {
+      // Record start state for pinch
+      const pts = [...pointers.values()];
+      _pinch = {
+        startDist:  Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y),
+        startScale: vp.scale,
+        startTx:    vp.tx,
+        startTy:    vp.ty,
+        midX: (pts[0].x + pts[1].x) / 2,
+        midY: (pts[0].y + pts[1].y) / 2,
+      };
+    } else {
+      _pinch = null;
+      _panStart = { tx: vp.tx, ty: vp.ty, x: e.clientX, y: e.clientY };
+    }
+    return;
+  }
+
+  // Draw mode — only act on first finger
+  if (pointers.size !== 1) {
+    if (_draw) { clearTimeout(_draw.holdTimer); _draw = null; }
     hideDesc();
     return;
   }
 
-  if (App.viewMode) return; // view mode: let all touches pass through
-
-  const t = e.touches[0];
-  const x = t.clientX;
-  const y = t.clientY;
+  const x = e.clientX, y = e.clientY;
   const cardIdx = cardAt(x, y);
 
   const holdTimer = setTimeout(() => {
-    if (!_touch) return;
-    _touch.isHold = true;
-    if (cardIdx >= 0) {
-      showDesc(draws[cardIdx]);
-    }
+    if (!_draw) return;
+    _draw.isHold = true;
+    if (cardIdx >= 0) showDesc(draws[cardIdx]);
   }, HOLD_MS);
 
-  _touch = {
-    startX: x, startY: y,
-    cardIdx,
-    holdTimer,
-    isDrag: false,
-    isHold: false,
-    // For dragging: offset from card centre to touch point
+  _draw = {
+    startX: x, startY: y, cardIdx, holdTimer,
+    isDrag: false, isHold: false,
     dragOffsetX: cardIdx >= 0 ? x - draws[cardIdx].x : 0,
     dragOffsetY: cardIdx >= 0 ? y - draws[cardIdx].y : 0,
   };
+}
 
-  // Prevent default only when we're on a card (so browser scroll still works on empty space)
-  if (cardIdx >= 0) e.preventDefault();
+let _pinch   = null;
+let _panStart = null;
 
-}, { passive: false });
+function onPointerMove(e) {
+  e.preventDefault();
+  if (!pointers.has(e.pointerId)) return;
+  pointers.get(e.pointerId).x = e.clientX;
+  pointers.get(e.pointerId).y = e.clientY;
 
-tarotCanvas.addEventListener("touchmove", (e) => {
-  if (!_touch || App.viewMode) return;
-  if (e.touches.length !== 1) return;
+  if (App.viewMode) {
+    const pts = [...pointers.values()];
+    if (pts.length === 2 && _pinch) {
+      // Pinch-zoom anchored to midpoint
+      const d   = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+      const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+      const newScale = Math.min(SCALE_MAX, Math.max(SCALE_MIN,
+        _pinch.startScale * (d / _pinch.startDist)));
+      // Anchor the original midpoint in canvas coords
+      const anchorCX = (_pinch.midX - _pinch.startTx) / _pinch.startScale;
+      const anchorCY = (_pinch.midY - _pinch.startTy) / _pinch.startScale;
+      vp.scale = newScale;
+      vp.tx = mid.x - anchorCX * newScale;
+      vp.ty = mid.y - anchorCY * newScale;
+      applyViewport();
+    } else if (pts.length === 1 && _panStart) {
+      vp.tx = _panStart.tx + (e.clientX - _panStart.x);
+      vp.ty = _panStart.ty + (e.clientY - _panStart.y);
+      applyViewport();
+    }
+    return;
+  }
 
-  const t = e.touches[0];
-  const dx = t.clientX - _touch.startX;
-  const dy = t.clientY - _touch.startY;
-  const moved = Math.hypot(dx, dy);
+  // Draw mode
+  if (!_draw || pointers.size !== 1) return;
+  const dx = e.clientX - _draw.startX;
+  const dy = e.clientY - _draw.startY;
 
-  if (!_touch.isDrag && moved > DRAG_SLOP) {
-    clearTimeout(_touch.holdTimer);
-    _touch.isDrag = true;
+  if (!_draw.isDrag && Math.hypot(dx, dy) > DRAG_SLOP) {
+    clearTimeout(_draw.holdTimer);
+    _draw.isDrag = true;
     hideDesc();
   }
 
-  if (_touch.isDrag && _touch.cardIdx >= 0) {
-    e.preventDefault();
-    const card = draws[_touch.cardIdx];
-    card.x = t.clientX - _touch.dragOffsetX;
-    card.y = t.clientY - _touch.dragOffsetY;
+  if (_draw.isDrag && _draw.cardIdx >= 0) {
+    const card = draws[_draw.cardIdx];
+    card.x = e.clientX - _draw.dragOffsetX;
+    card.y = e.clientY - _draw.dragOffsetY;
     redrawAll();
   }
-}, { passive: false });
+}
 
-tarotCanvas.addEventListener("touchend", (e) => {
-  if (!_touch || App.viewMode) return;
+function onPointerUp(e) {
+  e.preventDefault();
+  pointers.delete(e.pointerId);
 
-  clearTimeout(_touch.holdTimer);
+  if (App.viewMode) {
+    // Reset pinch when fingers lift
+    if (pointers.size < 2) _pinch = null;
+    if (pointers.size === 0) _panStart = null;
+    if (pointers.size === 1) {
+      const remaining = [...pointers.values()][0];
+      _panStart = { tx: vp.tx, ty: vp.ty, x: remaining.x, y: remaining.y };
+    }
+    return;
+  }
 
-  const wasHold = _touch.isHold;
-  const wasDrag = _touch.isDrag;
-  _touch = null;
+  if (!_draw) return;
+  clearTimeout(_draw.holdTimer);
+  const wasHold = _draw.isHold;
+  const wasDrag = _draw.isDrag;
+  _draw = null;
 
-  if (wasHold || wasDrag) return; // hold showed desc; drag moved card — nothing more to do
+  if (wasHold || wasDrag) return;
 
-  // It was a clean tap — draw a card
-  const changedTouch = e.changedTouches[0];
-  dispatchDraw(changedTouch.clientX, changedTouch.clientY);
-  e.preventDefault(); // prevent the ghost click that would fire 300ms later
-}, { passive: false });
+  // Clean tap — draw a card
+  dispatchDraw(e.clientX, e.clientY);
+}
 
-// Mouse click still works on desktop
+tarotCanvas.addEventListener("pointerdown",   onPointerDown);
+tarotCanvas.addEventListener("pointermove",   onPointerMove);
+tarotCanvas.addEventListener("pointerup",     onPointerUp);
+tarotCanvas.addEventListener("pointercancel", onPointerUp);
+
+// Mouse click is now redundant (pointerup handles it), but keep
+// for browsers that don't support pointer events (rare)
 tarotCanvas.addEventListener("click", (e) => {
+  if (e.pointerType !== undefined) return; // already handled by pointerup
   if (App.viewMode) return;
   dispatchDraw(e.clientX, e.clientY);
 });
+
+
 
 /**** Draw helpers ****/
 

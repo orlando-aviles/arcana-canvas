@@ -96,6 +96,7 @@ function syncViewModeUI() {
 
 viewModeToggle.addEventListener("change", () => {
   App.viewMode = viewModeToggle.checked;
+  if (!App.viewMode && window._resetViewport) window._resetViewport();
   syncViewModeUI();
   closeMenu();
 });
