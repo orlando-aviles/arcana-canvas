@@ -45,9 +45,6 @@
       <div id="descBody"  class="descBody"></div>
     </div>
 
-    <!-- Zoom reset pill — visible only when viewport is zoomed/panned -->
-    <button id="zoomReset" type="button" aria-label="Reset zoom">RESET VIEW</button>
-
     <!-- Hamburger button -->
     <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">
       <span class="bar"></span>
@@ -74,6 +71,13 @@
         <span class="toggleLabel">Reversals</span>
         <label class="toggle">
           <input type="checkbox" id="reversalsToggle" />
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </label>
+      </div>
+      <div class="sliderRow toggleRow">
+        <span class="toggleLabel">View Mode</span>
+        <label class="toggle">
+          <input type="checkbox" id="viewModeToggle" />
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </label>
       </div>
@@ -146,8 +150,8 @@
     <script src="./js/gildedMinima.js"></script>
     <script src="./js/runes.js"></script>
     <script src="./js/snowfall.js"></script>
+    <script src="./js/meanings.js"></script>
     <script src="./js/tarot.js"></script>
-    <script src="./js/gestures.js"></script>
     <script src="./js/ui.js"></script>
     <script src="./js/main.js" type="module"></script>
   </body>

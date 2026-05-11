@@ -84,6 +84,23 @@ deckSelect.addEventListener("change", () => {
 });
 
 /*********************************************************
+ * VIEW MODE
+ *********************************************************/
+const viewModeToggle = document.getElementById("viewModeToggle");
+const zoomOverlay    = document.getElementById("zoomOverlay");
+
+function syncViewModeUI() {
+  viewModeToggle.checked = !!App.viewMode;
+  zoomOverlay.classList.toggle("visible", !!App.viewMode);
+}
+
+viewModeToggle.addEventListener("change", () => {
+  App.viewMode = viewModeToggle.checked;
+  syncViewModeUI();
+  closeMenu();
+});
+
+/*********************************************************
  * REVERSALS TOGGLE
  *********************************************************/
 const reversalsToggle = document.getElementById("reversalsToggle");

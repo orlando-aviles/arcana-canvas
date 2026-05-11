@@ -114,14 +114,153 @@ function dispatchDraw(x, y) {
   }
 }
 
-// Mouse click — coordinates are already in canvas space (no viewport transform)
-tarotCanvas.addEventListener("click", (e) => {
-  dispatchDraw(e.clientX, e.clientY);
-});
+/**** Hit testing — find topmost card at a point ****/
+function cardAt(x, y) {
+  const s = App.cardScale;
+  // Walk backwards so topmost (last drawn) card wins
+  for (let i = draws.length - 1; i >= 0; i--) {
+    const c = draws[i];
+    let hw, hh; // half-width, half-height of bounding box
+    if      (c.type === "text")    { hw = 80 * s;  hh = 14 * s; }
+    else if (c.type === "playing") { hw = 46 * s;  hh = 62 * s; }
+    else if (c.type === "tarot")   { hw = 46 * s;  hh = 74 * s; }
+    else if (c.type === "luminous"){ hw = 58 * s;  hh = 90 * s; }
+    else if (c.type === "gilded")  { hw = 46 * s;  hh = 74 * s; }
+    else if (c.type === "rune")    { hw = 44 * s;  hh = 54 * s; }
+    else continue;
 
-// Touch draw — fired by gestures.js with viewport-adjusted coordinates
-tarotCanvas.addEventListener("tarot:draw", (e) => {
-  dispatchDraw(e.detail.x, e.detail.y);
+    // Rotate the test point into the card's local space
+    const rot = c.rot || 0;
+    const dx = x - c.x;
+    const dy = y - c.y;
+    const lx =  dx * Math.cos(rot) + dy * Math.sin(rot);
+    const ly = -dx * Math.sin(rot) + dy * Math.cos(rot);
+    if (Math.abs(lx) <= hw && Math.abs(ly) <= hh) return i;
+  }
+  return -1;
+}
+
+/**** Card name for description overlay ****/
+function cardDisplayName(card) {
+  if (card.type === "text")    return card.name;
+  if (card.type === "playing") return `${card.rank}${card.suit}`;
+  if (card.type === "tarot" || card.type === "luminous") return card.name;
+  if (card.type === "gilded")  return card.isMajor
+    ? GildedMinima.majorName(card.majorIdx)
+    : GildedMinima.minorName(card.rank, card.suitIdx);
+  if (card.type === "rune")    return Runes.name(card.runeIdx);
+  return "";
+}
+
+/**** Touch interactions ****/
+const HOLD_MS   = 400;   // ms before tap becomes a hold
+const DRAG_SLOP = 10;    // px movement before tap becomes a drag
+
+let _touch = null; // active touch state
+
+const descOverlay = document.getElementById("descOverlay");
+const descTitle   = document.getElementById("descTitle");
+const descBody    = document.getElementById("descBody");
+
+function showDesc(card) {
+  const name = cardDisplayName(card);
+  const isReversed = name.endsWith(" (R)");
+  descTitle.textContent = name;
+  descBody.textContent  = Meanings.get(name, isReversed);
+  descOverlay.classList.add("visible");
+}
+
+function hideDesc() {
+  descOverlay.classList.remove("visible");
+}
+
+// Tap anywhere on the desc overlay to dismiss it
+descOverlay.addEventListener("click", hideDesc);
+
+tarotCanvas.addEventListener("touchstart", (e) => {
+  // Only act on single-touch; let multi-touch pass through for browser zoom/pan
+  if (e.touches.length !== 1) {
+    if (_touch) { clearTimeout(_touch.holdTimer); _touch = null; }
+    hideDesc();
+    return;
+  }
+
+  if (App.viewMode) return; // view mode: let all touches pass through
+
+  const t = e.touches[0];
+  const x = t.clientX;
+  const y = t.clientY;
+  const cardIdx = cardAt(x, y);
+
+  const holdTimer = setTimeout(() => {
+    if (!_touch) return;
+    _touch.isHold = true;
+    if (cardIdx >= 0) {
+      showDesc(draws[cardIdx]);
+    }
+  }, HOLD_MS);
+
+  _touch = {
+    startX: x, startY: y,
+    cardIdx,
+    holdTimer,
+    isDrag: false,
+    isHold: false,
+    // For dragging: offset from card centre to touch point
+    dragOffsetX: cardIdx >= 0 ? x - draws[cardIdx].x : 0,
+    dragOffsetY: cardIdx >= 0 ? y - draws[cardIdx].y : 0,
+  };
+
+  // Prevent default only when we're on a card (so browser scroll still works on empty space)
+  if (cardIdx >= 0) e.preventDefault();
+
+}, { passive: false });
+
+tarotCanvas.addEventListener("touchmove", (e) => {
+  if (!_touch || App.viewMode) return;
+  if (e.touches.length !== 1) return;
+
+  const t = e.touches[0];
+  const dx = t.clientX - _touch.startX;
+  const dy = t.clientY - _touch.startY;
+  const moved = Math.hypot(dx, dy);
+
+  if (!_touch.isDrag && moved > DRAG_SLOP) {
+    clearTimeout(_touch.holdTimer);
+    _touch.isDrag = true;
+    hideDesc();
+  }
+
+  if (_touch.isDrag && _touch.cardIdx >= 0) {
+    e.preventDefault();
+    const card = draws[_touch.cardIdx];
+    card.x = t.clientX - _touch.dragOffsetX;
+    card.y = t.clientY - _touch.dragOffsetY;
+    redrawAll();
+  }
+}, { passive: false });
+
+tarotCanvas.addEventListener("touchend", (e) => {
+  if (!_touch || App.viewMode) return;
+
+  clearTimeout(_touch.holdTimer);
+
+  const wasHold = _touch.isHold;
+  const wasDrag = _touch.isDrag;
+  _touch = null;
+
+  if (wasHold || wasDrag) return; // hold showed desc; drag moved card — nothing more to do
+
+  // It was a clean tap — draw a card
+  const changedTouch = e.changedTouches[0];
+  dispatchDraw(changedTouch.clientX, changedTouch.clientY);
+  e.preventDefault(); // prevent the ghost click that would fire 300ms later
+}, { passive: false });
+
+// Mouse click still works on desktop
+tarotCanvas.addEventListener("click", (e) => {
+  if (App.viewMode) return;
+  dispatchDraw(e.clientX, e.clientY);
 });
 
 /**** Draw helpers ****/

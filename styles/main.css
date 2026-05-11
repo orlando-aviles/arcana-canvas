@@ -283,13 +283,8 @@ select option {
               background 400ms ease;
 }
 
-/* ── Viewport zoom/pan ──────────────────────────────────── */
-#tarotCanvas {
-  transform-origin: 0 0;
-  will-change: transform;
-}
 
-/* Zoom overlay — shown during pinch */
+/* ── View mode overlay (reticle shown when draw is disabled) ── */
 .zoomOverlay {
   position: fixed;
   inset: 0;
@@ -320,29 +315,41 @@ select option {
   text-shadow: 0 0 8px var(--auraColor);
 }
 
-/* Reset-zoom pill — appears when zoomed */
-#zoomReset {
+/* ── Card description overlay (tap-hold) ─────────────────── */
+.descOverlay {
   position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(64px);
-  background: rgba(11,14,26,0.82);
-  border: 1px solid var(--auraColor);
-  color: var(--auraColor);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  padding: 7px 18px;
-  border-radius: 20px;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 12px var(--auraColor);
-  transition: transform 250ms ease, opacity 250ms ease;
-  opacity: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(11, 14, 26, 0.92);
+  border-top: 1px solid var(--auraColor);
+  backdrop-filter: blur(12px);
+  padding: 18px 24px 28px;
+  z-index: 30;
   pointer-events: none;
-  z-index: 20;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
 }
-#zoomReset.visible {
-  transform: translateX(-50%) translateY(0);
+.descOverlay.visible {
   opacity: 1;
+  transform: translateY(0);
   pointer-events: auto;
+}
+
+.descTitle {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--auraColor);
+  text-shadow: 0 0 10px var(--auraColor);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.descBody {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(220, 210, 255, 0.85);
 }

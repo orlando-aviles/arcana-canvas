@@ -8,6 +8,7 @@ Tarot.preloadAll();
 syncVisualUI();
 syncDeckUI();
 syncReversalsUI();
+syncViewModeUI();
 syncBgUI();
 
 setIntensity(FX.intensity);

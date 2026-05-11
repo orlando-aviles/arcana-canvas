@@ -12,6 +12,7 @@ window.App = {
   // "starfield" | "particles"
   bg: "particles",
   reversals: false,
+  viewMode: false,
 };
 
 window.clamp = function clamp(v, a, b) {
