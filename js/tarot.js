@@ -205,6 +205,10 @@ const pointers = new Map(); // pointerId → {x, y, startX, startY}
 let _draw = null;
 
 function onPointerDown(e) {
+  // Don't intercept taps on UI elements above the canvas
+  const uiHit = document.elementFromPoint(e.clientX, e.clientY);
+  if (uiHit && uiHit !== tarotCanvas) return;
+
   e.preventDefault();
   tarotCanvas.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, {
