@@ -26,12 +26,6 @@ body {
   background: #05050a;
 }
 
-#aurora {
-  position: fixed; inset: 0; z-index: 1;
-  width: 100vw; height: 100vh;
-  display: none; pointer-events: none;
-}
-
 #animus {
   position: fixed; inset: 0; z-index: 2;
   width: 100vw; height: 100vh;

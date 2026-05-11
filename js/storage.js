@@ -1,4 +1,4 @@
-const STORAGE_KEY_SETTINGS = "tarot_settings_v4";
+const STORAGE_KEY_SETTINGS = "arcana_settings_v5";
 
 const VALID_DECKS = ["text","playing","riderwaite","luminousarc","gilded","runes"];
 const VALID_BGS   = ["starfield","particles","snowfall"];
