@@ -1,19 +1,27 @@
 // tarot/sw.js
 
-const CACHE_NAME = 'tarot-cache-v4';
+const CACHE_NAME = 'arcana-cache-v5';
 
 const CORE_FILES = [
   './',
   './index.html',
+  './manifest.json',
   './styles/main.css',
   './js/main.js',
   './js/starfield.js',
   './js/state.js',
   './js/storage.js',
+  './js/meanings.js',
   './js/tarot.js',
   './js/tarotDeck.js',
   './js/ui.js',
   './js/particles-bg.js',
+  './js/gildedMinima.js',
+  './js/runes.js',
+  './js/snowfall.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-512-maskable.png',
 ];
 
 // Install: cache core files and skip waiting so new SW activates immediately

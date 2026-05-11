@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tarot</title>
+    <title>Arcana Canvas</title>
     <link rel="stylesheet" href="./styles/main.css" />
     <link rel="icon" href="data:," />
     <link rel="manifest" href="./manifest.json">
@@ -71,6 +71,13 @@
         <span class="toggleLabel">Reversals</span>
         <label class="toggle">
           <input type="checkbox" id="reversalsToggle" />
+          <span class="toggleTrack"><span class="toggleThumb"></span></span>
+        </label>
+      </div>
+      <div class="sliderRow toggleRow">
+        <span class="toggleLabel">View Mode</span>
+        <label class="toggle">
+          <input type="checkbox" id="viewModeToggle" />
           <span class="toggleTrack"><span class="toggleThumb"></span></span>
         </label>
       </div>
@@ -143,6 +150,7 @@
     <script src="./js/gildedMinima.js"></script>
     <script src="./js/runes.js"></script>
     <script src="./js/snowfall.js"></script>
+    <script src="./js/meanings.js"></script>
     <script src="./js/tarot.js"></script>
     <script src="./js/ui.js"></script>
     <script src="./js/main.js" type="module"></script>

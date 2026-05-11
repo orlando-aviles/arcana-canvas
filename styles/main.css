@@ -26,12 +26,6 @@ body {
   background: #05050a;
 }
 
-#aurora {
-  position: fixed; inset: 0; z-index: 1;
-  width: 100vw; height: 100vh;
-  display: none; pointer-events: none;
-}
-
 #animus {
   position: fixed; inset: 0; z-index: 2;
   width: 100vw; height: 100vh;
@@ -42,6 +36,8 @@ body {
   position: fixed; inset: 0; z-index: 3;
   width: 100vw; height: 100vh;
   display: block;
+  touch-action: none; /* we handle all touch ourselves */
+}
 }
 
 /* ── Hamburger button ─────────────────────────────────── */
@@ -289,92 +285,73 @@ select option {
               background 400ms ease;
 }
 
-/* ── Description overlay ────────────────────────────────── */
-.descOverlay {
-  position: fixed;
-  z-index: 50;
-  max-width: 240px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--auraColor);
-  background: rgba(4, 3, 18, 0.88);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 0 18px var(--auraColor), 0 12px 32px rgba(0,0,0,0.7);
-  pointer-events: auto;
-  cursor: pointer;
 
-  opacity: 0;
-  transform: translateY(6px) scale(0.97);
-  transition: opacity 200ms ease, transform 200ms ease;
-  /* hidden by default — not display:none so we can measure offsetWidth */
-  visibility: hidden;
-}
-
-.descOverlay.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  visibility: visible;
-}
-
-.descTitle {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--auraColor);
-  letter-spacing: 0.3px;
-  margin-bottom: 5px;
-  filter: brightness(1.4);
-}
-
-.descBody {
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  font-size: 12px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-/* ── Canvas touch-action fix ────────────────────────────── */
-#tarotCanvas {
-  touch-action: none; /* we own all gestures when not zoomed */
-}
-
-/* ── Zoom overlay ───────────────────────────────────────── */
+/* ── View mode overlay (reticle shown when draw is disabled) ── */
 .zoomOverlay {
   position: fixed;
   inset: 0;
-  z-index: 35;
-  pointer-events: none; /* pass-through — browser handles pinch pan */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-
+  pointer-events: none;
   opacity: 0;
-  transition: opacity 250ms ease;
+  transition: opacity 200ms ease;
+  z-index: 10;
+  color: var(--auraColor);
 }
-
-.zoomOverlay.active {
-  opacity: 1;
-}
+.zoomOverlay.visible { opacity: 1; }
 
 .zoomReticle {
-  width: 96px;
-  height: 96px;
-  color: var(--auraColor);
-  stroke: currentColor;
-  fill: currentColor;
+  width: 100px;
+  height: 100px;
   filter: drop-shadow(0 0 8px var(--auraColor));
-  opacity: 0.82;
 }
 
 .zoomLabel {
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  margin-top: 10px;
   font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--auraColor);
-  opacity: 0.72;
-  text-shadow: 0 0 12px var(--auraColor);
+  text-shadow: 0 0 8px var(--auraColor);
+}
+
+/* ── Card description overlay (tap-hold) ─────────────────── */
+.descOverlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(11, 14, 26, 0.92);
+  border-top: 1px solid var(--auraColor);
+  backdrop-filter: blur(12px);
+  padding: 18px 24px 28px;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 220ms ease, transform 220ms ease;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+}
+.descOverlay.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.descTitle {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--auraColor);
+  text-shadow: 0 0 10px var(--auraColor);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.descBody {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(220, 210, 255, 0.85);
 }
