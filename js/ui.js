@@ -8,9 +8,9 @@ function openMenu()  { menuPanel.classList.add("open"); menuPanel.setAttribute("
 function closeMenu() { menuPanel.classList.remove("open"); menuPanel.setAttribute("aria-hidden","true"); }
 function toggleMenu(){ menuPanel.classList.contains("open") ? closeMenu() : openMenu(); }
 
-menuBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleMenu(); });
-document.addEventListener("click", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
-menuPanel.addEventListener("click", (e) => e.stopPropagation());
+menuBtn.addEventListener("pointerup", (e) => { e.stopPropagation(); toggleMenu(); });
+document.addEventListener("pointerup", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
+menuPanel.addEventListener("pointerup", (e) => e.stopPropagation());
 
 /*********************************************************
  * CLEAR

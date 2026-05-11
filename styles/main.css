@@ -59,14 +59,16 @@ body {
   gap: 5px;
 
   background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--auraColor);
   backdrop-filter: blur(12px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 12px var(--auraColor), 0 8px 24px rgba(0,0,0,0.5);
 
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background 120ms ease, transform 120ms ease;
+  touch-action: manipulation;
+  transition: background 120ms ease, transform 120ms ease,
+              border-color 400ms ease, box-shadow 400ms ease;
 }
 
 .menuBtn:hover  { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
@@ -77,8 +79,9 @@ body {
   width: 20px;
   height: 2px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.88);
-  transition: transform 200ms ease, opacity 200ms ease;
+  background: var(--auraColor);
+  transition: transform 200ms ease, opacity 200ms ease,
+              background 400ms ease;
 }
 
 /* ── Generic button base ─────────────────────────────── */
@@ -268,23 +271,6 @@ select option {
   transform: translateX(16px);
   background: rgba(255, 180, 180, 0.92);
 }
-
-/* ── Aura-colored menu button ───────────────────────────── */
-:root { --auraColor: hsla(245 85% 72% / 0.72); }
-
-.menuBtn {
-  border-color: var(--auraColor);
-  box-shadow: 0 0 12px var(--auraColor), 0 8px 24px rgba(0,0,0,0.5);
-  transition: background 120ms ease, transform 120ms ease,
-              border-color 400ms ease, box-shadow 400ms ease;
-}
-
-.menuBtn .bar {
-  background: var(--auraColor);
-  transition: transform 200ms ease, opacity 200ms ease,
-              background 400ms ease;
-}
-
 
 /* ── View mode overlay (reticle shown when draw is disabled) ── */
 .zoomOverlay {
