@@ -6,6 +6,7 @@
   --cardBg:       rgba(0, 0, 0, 0.92);
   --cardStroke:   rgba(255, 255, 255, 0.18);
   --cardText:     rgba(255, 255, 255, 0.96);
+  --auraColor:    hsla(245, 85%, 72%, 0.72);
 }
 
 * { box-sizing: border-box; }
@@ -38,7 +39,24 @@ body {
   display: block;
   touch-action: none; /* we handle all touch ourselves */
 }
+
+/* ── Generic button base ─────────────────────────────── */
+button {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 10px;
+  color: var(--btnInk);
+  border: 1px solid var(--stroke);
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 120ms ease, background 120ms ease;
 }
+button:hover  { background: var(--glassHover); transform: translateY(-1px); }
+button:active { transform: scale(0.97); }
 
 /* ── Hamburger button ─────────────────────────────────── */
 .menuBtn {
@@ -83,24 +101,6 @@ body {
   transition: transform 200ms ease, opacity 200ms ease,
               background 400ms ease;
 }
-
-/* ── Generic button base ─────────────────────────────── */
-button {
-  padding: 10px 14px;
-  font-size: 13px;
-  border-radius: 10px;
-  color: var(--btnInk);
-  border: 1px solid var(--stroke);
-  background: var(--glass);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  cursor: pointer;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: transform 120ms ease, background 120ms ease;
-}
-button:hover  { background: var(--glassHover); transform: translateY(-1px); }
-button:active { transform: scale(0.97); }
 
 /* ── Menu panel ─────────────────────────────────────── */
 .panel {
