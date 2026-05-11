@@ -64,10 +64,8 @@ function resizeTarotCanvas() {
 window.addEventListener("resize", resizeTarotCanvas, { passive: true });
 resizeTarotCanvas();
 
-/**** Click handler ****/
-tarotCanvas.addEventListener("click", (event) => {
-  const x    = event.clientX;
-  const y    = event.clientY;
+/**** Draw dispatcher — called by click (mouse) and gestures.js (touch) ****/
+function dispatchDraw(x, y) {
   const deck = App.activeDeck;
   const rev  = rollReversal();
   // Small random tilt (-5° to +5°), reversed cards get +180°
@@ -75,8 +73,10 @@ tarotCanvas.addEventListener("click", (event) => {
   const rot = baseTilt + (rev ? Math.PI : 0);
 
   if (deck === "text") {
-    shuffleArray(tarotNames);
-    const name = rev ? tarotNames[0] + " (R)" : tarotNames[0];
+    // Pick from a shuffled *copy* so the source array isn't mutated
+    const pool = tarotNames.slice();
+    shuffleArray(pool);
+    const name = rev ? pool[0] + " (R)" : pool[0];
     const card = { type: "text", x, y, name };
     draws.push(card); drawTextCard(card); return;
   }
@@ -106,12 +106,22 @@ tarotCanvas.addEventListener("click", (event) => {
   }
 
   if (deck === "runes") {
+    const runeRev = rollReversal();
+    const runeRot = (Math.random() * 10 - 5) * (Math.PI / 180) + (runeRev ? Math.PI : 0);
     const r = Runes.randomCard();
-    const rev = rollReversal();
-    const runeRot = (Math.random() * 10 - 5) * (Math.PI / 180) + (rev ? Math.PI : 0);
     const card = { type: "rune", x, y, runeIdx: r.runeIdx, rot: runeRot };
     draws.push(card); drawRuneCard(card); return;
   }
+}
+
+// Mouse click — coordinates are already in canvas space (no viewport transform)
+tarotCanvas.addEventListener("click", (e) => {
+  dispatchDraw(e.clientX, e.clientY);
+});
+
+// Touch draw — fired by gestures.js with viewport-adjusted coordinates
+tarotCanvas.addEventListener("tarot:draw", (e) => {
+  dispatchDraw(e.detail.x, e.detail.y);
 });
 
 /**** Draw helpers ****/

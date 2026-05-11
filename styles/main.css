@@ -282,3 +282,67 @@ select option {
   transition: transform 200ms ease, opacity 200ms ease,
               background 400ms ease;
 }
+
+/* ── Viewport zoom/pan ──────────────────────────────────── */
+#tarotCanvas {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Zoom overlay — shown during pinch */
+.zoomOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  z-index: 10;
+  color: var(--auraColor);
+}
+.zoomOverlay.visible { opacity: 1; }
+
+.zoomReticle {
+  width: 100px;
+  height: 100px;
+  filter: drop-shadow(0 0 8px var(--auraColor));
+}
+
+.zoomLabel {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  text-shadow: 0 0 8px var(--auraColor);
+}
+
+/* Reset-zoom pill — appears when zoomed */
+#zoomReset {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(64px);
+  background: rgba(11,14,26,0.82);
+  border: 1px solid var(--auraColor);
+  color: var(--auraColor);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  padding: 7px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 12px var(--auraColor);
+  transition: transform 250ms ease, opacity 250ms ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+#zoomReset.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}

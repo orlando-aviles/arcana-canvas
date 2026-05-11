@@ -12,6 +12,7 @@ const CORE_FILES = [
   './js/state.js',
   './js/storage.js',
   './js/tarot.js',
+  './js/gestures.js',
   './js/tarotDeck.js',
   './js/ui.js',
   './js/particles-bg.js',

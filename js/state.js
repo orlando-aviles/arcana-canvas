@@ -56,9 +56,22 @@ window.applyAuras = function applyAuras() {
 
 /*********************************************************
  * SERVICE WORKER
+ * Skipped on localhost/127.0.0.1 so the dev server stays
+ * clean. Add ?sw=force to the URL to test the SW locally.
  *********************************************************/
-if ('serviceWorker' in navigator) {
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  const isLocal = ['localhost', '127.0.0.1', ''].includes(location.hostname);
+  const force   = new URLSearchParams(location.search).has('sw');
+  if (isLocal && !force) {
+    // Unregister any previously cached SW so it stops intercepting
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+    console.info('[SW] Skipped on localhost. Add ?sw to force.');
+    return;
+  }
   navigator.serviceWorker.register('./sw.js')
-    .then(() => console.log('Tarot service worker registered'))
-    .catch(err => console.error('SW registration failed:', err));
-}
+    .then(() => console.log('[SW] Registered'))
+    .catch(err => console.error('[SW] Registration failed:', err));
+}());
