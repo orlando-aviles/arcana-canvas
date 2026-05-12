@@ -1,53 +1,69 @@
 /*********************************************************
- * CARD INDEX
- * Full-screen panel, opened from the menu.
- * List view: sections with card rows (thumbnail + name)
- * Detail view: image, name, element/astro/number row,
- *              upright + reversed meanings, numNote
- * Deck selector: Luminous Arc / Rider-Waite (image decks only)
- * Runes show a drawn glyph since there's no image deck for them.
+ * CARD INDEX  v2
+ *
+ * Two modes:
+ *   full   — all cards, opened from menu
+ *   spread — filtered to current canvas draws, opened
+ *             from the description overlay
+ *
+ * Features:
+ *   - List → detail navigation
+ *   - Swipe left/right in detail to move through nav list
+ *   - Tap image → lightbox (full-screen, tap to dismiss)
+ *   - Deck toggle (Luminous Arc / Rider-Waite)
+ *   - No pinch-zoom inside overlay (touch-action: pan-y)
+ *   - Back in spread mode → closes index entirely (returns
+ *     to canvas), not to index list
  *********************************************************/
 window.CardIndex = (() => {
 
-  // ── State ───────────────────────────────────────────────
-  let activeDeck   = "LuminousArc"; // or "RiderWaite"
-  let currentCard  = null;
-  let searchQuery  = "";
-  let isOpen       = false;
+  // ── State ─────────────────────────────────────────────
+  let activeDeck  = "LuminousArc";
+  let mode        = "full";      // "full" | "spread"
+  let navList     = [];          // ordered list for swipe nav
+  let navIdx      = 0;           // current position in navList
+  let currentCard = null;
+  let searchQuery = "";
+  let isOpen      = false;
 
-  // ── Element glyphs ──────────────────────────────────────
+  // ── Glyphs ────────────────────────────────────────────
   const ELEMENT_GLYPH = { Fire:"🔥", Water:"💧", Air:"💨", Earth:"🌿" };
-  const ASTRO_GLYPH   = {
-    Aries:"♈", Taurus:"♉", Gemini:"♊", Cancer:"♋", Leo:"♌", Virgo:"♍",
-    Libra:"♎", Scorpio:"♏", Sagittarius:"♐", Capricorn:"♑", Aquarius:"♒", Pisces:"♓",
-    Sun:"☀️", Moon:"🌙", Mercury:"☿", Venus:"♀", Mars:"♂", Jupiter:"♃",
-    Saturn:"♄", Uranus:"♅", Neptune:"♆", Pluto:"♇",
+  const ASTRO_GLYPH = {
+    Aries:"♈",Taurus:"♉",Gemini:"♊",Cancer:"♋",Leo:"♌",Virgo:"♍",
+    Libra:"♎",Scorpio:"♏",Sagittarius:"♐",Capricorn:"♑",Aquarius:"♒",Pisces:"♓",
+    Sun:"☀️",Moon:"🌙",Mercury:"☿",Venus:"♀",Mars:"♂",Jupiter:"♃",
+    Saturn:"♄",Uranus:"♅",Neptune:"♆",Pluto:"♇",
   };
-
+  const RUNE_GLYPHS = {
+    Fehu:"ᚠ",Uruz:"ᚢ",Thurisaz:"ᚦ",Ansuz:"ᚨ",Raidho:"ᚱ",Kenaz:"ᚲ",
+    Gebo:"ᚷ",Wunjo:"ᚹ",Hagalaz:"ᚺ",Nauthiz:"ᚾ",Isa:"ᛁ",Jera:"ᛃ",
+    Eihwaz:"ᛇ",Perthro:"ᛈ",Algiz:"ᛉ",Sowilo:"ᛊ",Tiwaz:"ᛏ",Berkano:"ᛒ",
+    Ehwaz:"ᛖ",Mannaz:"ᛗ",Laguz:"ᛚ",Ingwaz:"ᛜ",Dagaz:"ᛞ",Othala:"ᛟ",
+  };
+  function runeGlyph(name) { return RUNE_GLYPHS[name] || "?"; }
   function astroGlyph(astro) {
-    // May be compound e.g. "Aries / Leo / Sagittarius"
     return astro.split(" / ").map(a => ASTRO_GLYPH[a.trim()] || a).join(" ");
   }
 
-  // ── Build DOM ───────────────────────────────────────────
+  // ── Build DOM ─────────────────────────────────────────
   const overlay = document.createElement("div");
   overlay.id = "cardIndexOverlay";
-  overlay.setAttribute("aria-modal", "true");
-  overlay.setAttribute("role", "dialog");
-  overlay.setAttribute("aria-label", "Card Index");
+  overlay.setAttribute("aria-modal","true");
+  overlay.setAttribute("role","dialog");
+  overlay.setAttribute("aria-label","Card Index");
 
   overlay.innerHTML = `
     <div class="ci-header">
-      <button class="ci-back" id="ciBack" aria-label="Back to list">←</button>
+      <button class="ci-back" id="ciBack" aria-label="Back">←</button>
       <span class="ci-title" id="ciTitle">Card Index</span>
-      <button class="ci-close" id="ciClose" aria-label="Close index">✕</button>
+      <button class="ci-close" id="ciClose" aria-label="Close">✕</button>
     </div>
 
     <div class="ci-list-view" id="ciListView">
       <div class="ci-search-row">
         <input class="ci-search" id="ciSearch" type="search"
                placeholder="Search cards…" autocomplete="off" />
-        <div class="ci-deck-toggle" id="ciDeckToggle">
+        <div class="ci-deck-toggle">
           <button class="ci-deck-btn active" data-deck="LuminousArc">Luminous</button>
           <button class="ci-deck-btn" data-deck="RiderWaite">Rider-Waite</button>
         </div>
@@ -56,91 +72,140 @@ window.CardIndex = (() => {
     </div>
 
     <div class="ci-detail-view" id="ciDetailView">
-      <div class="ci-deck-toggle ci-detail-deck" id="ciDetailDeck">
+      <div class="ci-deck-toggle ci-detail-deck">
         <button class="ci-deck-btn active" data-deck="LuminousArc">Luminous</button>
         <button class="ci-deck-btn" data-deck="RiderWaite">Rider-Waite</button>
       </div>
-      <div class="ci-card-img-wrap">
+      <div class="ci-swipe-hint" id="ciSwipeHint"></div>
+      <div class="ci-card-img-wrap" id="ciImgWrap">
         <img class="ci-card-img" id="ciCardImg" src="" alt="" />
         <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
       </div>
       <div class="ci-card-info" id="ciCardInfo"></div>
+      <div class="ci-nav-dots" id="ciNavDots"></div>
+    </div>
+
+    <div class="ci-lightbox" id="ciLightbox">
+      <img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  // ── Refs ────────────────────────────────────────────────
-  const ciBack        = overlay.querySelector("#ciBack");
-  const ciClose       = overlay.querySelector("#ciClose");
-  const ciTitle       = overlay.querySelector("#ciTitle");
-  const ciListView    = overlay.querySelector("#ciListView");
-  const ciDetailView  = overlay.querySelector("#ciDetailView");
-  const ciList        = overlay.querySelector("#ciList");
-  const ciSearch      = overlay.querySelector("#ciSearch");
-  const ciCardImg     = overlay.querySelector("#ciCardImg");
+  // ── Refs ──────────────────────────────────────────────
+  const ciBack       = overlay.querySelector("#ciBack");
+  const ciClose      = overlay.querySelector("#ciClose");
+  const ciTitle      = overlay.querySelector("#ciTitle");
+  const ciListView   = overlay.querySelector("#ciListView");
+  const ciDetailView = overlay.querySelector("#ciDetailView");
+  const ciList       = overlay.querySelector("#ciList");
+  const ciSearch     = overlay.querySelector("#ciSearch");
+  const ciCardImg    = overlay.querySelector("#ciCardImg");
+  const ciImgWrap    = overlay.querySelector("#ciImgWrap");
   const ciCardImgPlaceholder = overlay.querySelector("#ciCardImgPlaceholder");
-  const ciCardInfo    = overlay.querySelector("#ciCardInfo");
+  const ciCardInfo   = overlay.querySelector("#ciCardInfo");
+  const ciSwipeHint  = overlay.querySelector("#ciSwipeHint");
+  const ciNavDots    = overlay.querySelector("#ciNavDots");
+  const ciLightbox   = overlay.querySelector("#ciLightbox");
+  const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
 
-  // ── Render list ─────────────────────────────────────────
+  // ── Nav list builders ─────────────────────────────────
+  function buildFullNavList() {
+    const q = searchQuery.toLowerCase();
+    return CardData.getAll().filter(c =>
+      !q || c.name.toLowerCase().includes(q)
+    );
+  }
+
+  // Build nav list from canvas draws (deduped, preserving draw order)
+  function buildSpreadNavList() {
+    if (!window.draws) return [];
+    const seen = new Set();
+    const list = [];
+    draws.forEach(d => {
+      const name = cardDisplayNameFromDraw(d);
+      const clean = name.replace(/ \(R\)$/, "");
+      if (!seen.has(clean)) {
+        seen.add(clean);
+        const card = CardData.get(clean);
+        if (card) list.push({ ...card, reversed: name.endsWith(" (R)") });
+      }
+    });
+    return list;
+  }
+
+  function cardDisplayNameFromDraw(d) {
+    if (typeof cardDisplayName === "function") return cardDisplayName(d);
+    return d.name || "";
+  }
+
+  // ── List view ─────────────────────────────────────────
   function renderList() {
-    const q      = searchQuery.toLowerCase();
-    const cards  = CardData.getAll();
+    const cards  = navList;
     const groups = {};
+    const sectionOrder = ["Major Arcana","Wands","Cups","Swords","Pentacles","Runes"];
 
     cards.forEach(card => {
-      if (q && !card.name.toLowerCase().includes(q)) return;
-      if (!groups[card.section]) groups[card.section] = [];
-      groups[card.section].push(card);
+      const sec = card.section || "Other";
+      if (!groups[sec]) groups[sec] = [];
+      groups[sec].push(card);
     });
 
-    const sectionOrder = [
-      "Major Arcana","Wands","Cups","Swords","Pentacles","Runes"
-    ];
-
     let html = "";
-    sectionOrder.forEach(sec => {
-      if (!groups[sec]) return;
-      html += `<div class="ci-section-header">${sec}</div>`;
-      groups[sec].forEach(card => {
-        const imgSrc = card.imageName
-          ? `./${activeDeck}/${card.imageName}.png`
-          : "";
+    if (mode === "spread") {
+      // Flat list for spread mode — no section headers
+      cards.forEach((card, i) => {
+        const imgSrc = card.imageName ? `./${activeDeck}/${card.imageName}.png` : "";
+        const revBadge = card.reversed ? `<span class="ci-rev-badge">R</span>` : "";
         html += `
-          <div class="ci-row" data-name="${card.name}">
+          <div class="ci-row" data-idx="${i}">
             <div class="ci-thumb-wrap">
               ${imgSrc
                 ? `<img class="ci-thumb" src="${imgSrc}" alt="" loading="lazy" />`
-                : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`
-              }
+                : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
             </div>
             <div class="ci-row-info">
-              <span class="ci-row-name">${card.name}</span>
-              <span class="ci-row-meta">${ELEMENT_GLYPH[card.element] || ""} ${card.element} · ${card.astro}</span>
+              <span class="ci-row-name">${card.name} ${revBadge}</span>
+              <span class="ci-row-meta">${ELEMENT_GLYPH[card.element]||""} ${card.element} · ${card.astro}</span>
             </div>
           </div>`;
       });
-    });
+    } else {
+      sectionOrder.forEach(sec => {
+        if (!groups[sec]) return;
+        html += `<div class="ci-section-header">${sec}</div>`;
+        groups[sec].forEach(card => {
+          const imgSrc = card.imageName ? `./${activeDeck}/${card.imageName}.png` : "";
+          const idx = navList.indexOf(card);
+          html += `
+            <div class="ci-row" data-idx="${idx}">
+              <div class="ci-thumb-wrap">
+                ${imgSrc
+                  ? `<img class="ci-thumb" src="${imgSrc}" alt="" loading="lazy" />`
+                  : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
+              </div>
+              <div class="ci-row-info">
+                <span class="ci-row-name">${card.name}</span>
+                <span class="ci-row-meta">${ELEMENT_GLYPH[card.element]||""} ${card.element} · ${card.astro}</span>
+              </div>
+            </div>`;
+        });
+      });
+    }
 
-    ciList.innerHTML = html || `<div class="ci-empty">No cards match "${searchQuery}"</div>`;
-
+    ciList.innerHTML = html || `<div class="ci-empty">No cards in spread yet.</div>`;
     ciList.querySelectorAll(".ci-row").forEach(row => {
-      row.addEventListener("click", () => showDetail(row.dataset.name));
+      row.addEventListener("click", () => {
+        navIdx = parseInt(row.dataset.idx);
+        showDetailAtIdx(navIdx);
+      });
     });
   }
 
-  // ── Rune glyphs (drawn as text) ─────────────────────────
-  const RUNE_GLYPHS = {
-    Fehu:"ᚠ",Uruz:"ᚢ",Thurisaz:"ᚦ",Ansuz:"ᚨ",Raidho:"ᚱ",Kenaz:"ᚲ",
-    Gebo:"ᚷ",Wunjo:"ᚹ",Hagalaz:"ᚺ",Nauthiz:"ᚾ",Isa:"ᛁ",Jera:"ᛃ",
-    Eihwaz:"ᛇ",Perthro:"ᛈ",Algiz:"ᛉ",Sowilo:"ᛊ",Tiwaz:"ᛏ",Berkano:"ᛒ",
-    Ehwaz:"ᛖ",Mannaz:"ᛗ",Laguz:"ᛚ",Ingwaz:"ᛜ",Dagaz:"ᛞ",Othala:"ᛟ",
-  };
-  function runeGlyph(name) { return RUNE_GLYPHS[name] || "?"; }
-
-  // ── Render detail ────────────────────────────────────────
-  function showDetail(name) {
-    const card = CardData.get(name);
+  // ── Detail view ───────────────────────────────────────
+  function showDetailAtIdx(idx) {
+    navIdx = Math.max(0, Math.min(navList.length - 1, idx));
+    const card = navList[navIdx];
     if (!card) return;
     currentCard = card;
 
@@ -151,6 +216,9 @@ window.CardIndex = (() => {
 
     renderDetailImage(card);
     renderDetailInfo(card);
+    renderNavDots();
+    updateSwipeHint();
+    ciDetailView.scrollTop = 0;
   }
 
   function renderDetailImage(card) {
@@ -167,26 +235,107 @@ window.CardIndex = (() => {
   }
 
   function renderDetailInfo(card) {
+    const isReversed = !!card.reversed;
+    const uprightClass  = isReversed ? "" : "ci-meaning-active";
+    const reversedClass = isReversed ? "ci-meaning-active" : "";
+
     ciCardInfo.innerHTML = `
-      <div class="ci-detail-name">${card.name}</div>
+      <div class="ci-detail-name">
+        ${card.name}${isReversed ? ' <span class="ci-rev-badge">Reversed</span>' : ""}
+      </div>
       <div class="ci-detail-meta-row">
-        <span class="ci-meta-pill">${ELEMENT_GLYPH[card.element] || ""} ${card.element}</span>
+        <span class="ci-meta-pill">${ELEMENT_GLYPH[card.element]||""} ${card.element}</span>
         <span class="ci-meta-pill">${astroGlyph(card.astro)} ${card.astro}</span>
         <span class="ci-meta-pill"># ${card.number}</span>
       </div>
       ${card.numNote ? `<div class="ci-numerology">${card.number} — ${card.numNote}</div>` : ""}
-      <div class="ci-meaning-block">
+      <div class="ci-meaning-block ${uprightClass}">
         <div class="ci-meaning-label">Upright</div>
         <div class="ci-meaning-text">${card.upright}</div>
       </div>
-      <div class="ci-meaning-block ci-reversed">
+      <div class="ci-meaning-block ci-reversed-block ${reversedClass}">
         <div class="ci-meaning-label">Reversed</div>
         <div class="ci-meaning-text">${card.reversed}</div>
       </div>
     `;
   }
 
-  // ── Deck toggle ─────────────────────────────────────────
+  function renderNavDots() {
+    if (navList.length <= 1) { ciNavDots.innerHTML = ""; return; }
+    // Show at most 7 dots; current is highlighted
+    const total = navList.length;
+    let html = "";
+    if (total <= 9) {
+      for (let i = 0; i < total; i++) {
+        html += `<span class="ci-dot${i === navIdx ? " ci-dot-active" : ""}" data-idx="${i}"></span>`;
+      }
+    } else {
+      html = `<span class="ci-dot-count">${navIdx + 1} / ${total}</span>`;
+    }
+    ciNavDots.innerHTML = html;
+    ciNavDots.querySelectorAll(".ci-dot").forEach(dot => {
+      dot.addEventListener("click", () => showDetailAtIdx(parseInt(dot.dataset.idx)));
+    });
+  }
+
+  function updateSwipeHint() {
+    if (navList.length <= 1) { ciSwipeHint.textContent = ""; return; }
+    const parts = [];
+    if (navIdx > 0) parts.push("← " + navList[navIdx - 1].name);
+    if (navIdx < navList.length - 1) parts.push(navList[navIdx + 1].name + " →");
+    ciSwipeHint.textContent = parts.join("   ");
+  }
+
+  // ── Swipe navigation ──────────────────────────────────
+  let swipeStartX = 0, swipeStartY = 0, swipeActive = false;
+
+  ciDetailView.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+    swipeActive = true;
+  }, { passive: true });
+
+  ciDetailView.addEventListener("touchend", (e) => {
+    if (!swipeActive || e.changedTouches.length !== 1) return;
+    swipeActive = false;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0 && navIdx < navList.length - 1) showDetailAtIdx(navIdx + 1);
+      if (dx > 0 && navIdx > 0) showDetailAtIdx(navIdx - 1);
+    }
+  }, { passive: true });
+
+  // Keyboard arrow nav
+  document.addEventListener("keydown", (e) => {
+    if (!isOpen || !ciDetailView.classList.contains("ci-active")) return;
+    if (e.key === "ArrowRight") showDetailAtIdx(navIdx + 1);
+    if (e.key === "ArrowLeft")  showDetailAtIdx(navIdx - 1);
+    if (e.key === "Escape") {
+      if (ciLightbox.classList.contains("ci-lb-open")) closeLightbox();
+      else if (currentCard) goBack();
+      else close();
+    }
+  });
+
+  // ── Lightbox ──────────────────────────────────────────
+  function openLightbox(src) {
+    ciLightboxImg.src = src;
+    ciLightbox.classList.add("ci-lb-open");
+  }
+  function closeLightbox() {
+    ciLightbox.classList.remove("ci-lb-open");
+  }
+  ciLightbox.addEventListener("click", closeLightbox);
+
+  ciImgWrap.addEventListener("click", () => {
+    if (currentCard?.imageName) {
+      openLightbox(`./${activeDeck}/${currentCard.imageName}.png`);
+    }
+  });
+
+  // ── Deck toggle ───────────────────────────────────────
   function setDeck(deck) {
     activeDeck = deck;
     overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
@@ -195,58 +344,78 @@ window.CardIndex = (() => {
     if (currentCard) renderDetailImage(currentCard);
     if (!ciDetailView.classList.contains("ci-active")) renderList();
   }
-
   overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
     btn.addEventListener("click", () => setDeck(btn.dataset.deck));
   });
 
-  // ── Search ───────────────────────────────────────────────
+  // ── Search ────────────────────────────────────────────
   ciSearch.addEventListener("input", () => {
     searchQuery = ciSearch.value;
+    navList = buildFullNavList();
     renderList();
   });
 
-  // ── Navigation ───────────────────────────────────────────
-  function showList() {
+  // ── Navigation ────────────────────────────────────────
+  function goBack() {
+    if (mode === "spread") {
+      // In spread mode, back = close entirely (return to canvas)
+      close();
+    } else {
+      currentCard = null;
+      navIdx = 0;
+      ciTitle.textContent = "Card Index";
+      ciBack.style.display = "none";
+      ciDetailView.classList.remove("ci-active");
+      ciListView.classList.add("ci-active");
+    }
+  }
+
+  ciBack.addEventListener("click", goBack);
+  ciClose.addEventListener("click", close);
+
+  // ── Open / close ──────────────────────────────────────
+  // open() — full index from menu
+  function open() {
+    mode = "full";
+    searchQuery = "";
+    ciSearch.value = "";
+    navList = buildFullNavList();
+    isOpen = true;
+    overlay.classList.add("ci-open");
     currentCard = null;
+    navIdx = 0;
     ciTitle.textContent = "Card Index";
     ciBack.style.display = "none";
     ciDetailView.classList.remove("ci-active");
     ciListView.classList.add("ci-active");
+    renderList();
+    document.body.style.overflow = "hidden";
   }
 
-  ciBack.addEventListener("click", showList);
-  ciClose.addEventListener("click", close);
+  // openSpread(cardName) — spread view from description overlay
+  function openSpread(cardName) {
+    mode = "spread";
+    navList = buildSpreadNavList();
+    if (navList.length === 0) return; // nothing on canvas
 
-  // Close on backdrop tap (outside the panel)
-  overlay.addEventListener("click", (e) => {
-    if (e.target === overlay) close();
-  });
+    // Start at the tapped card
+    const startIdx = navList.findIndex(c => c.name === cardName.replace(/ \(R\)$/, ""));
+    navIdx = startIdx >= 0 ? startIdx : 0;
 
-  // ── Open / close ─────────────────────────────────────────
-  function open() {
     isOpen = true;
     overlay.classList.add("ci-open");
-    showList();
-    renderList();
+    ciTitle.textContent = "Your Spread";
+    ciListView.classList.remove("ci-active");
+    showDetailAtIdx(navIdx);
     document.body.style.overflow = "hidden";
   }
 
   function close() {
     isOpen = false;
     overlay.classList.remove("ci-open");
+    closeLightbox();
     document.body.style.overflow = "";
-    if (window.closeMenu) closeMenu();
   }
 
-  // ── Keyboard ─────────────────────────────────────────────
-  document.addEventListener("keydown", (e) => {
-    if (!isOpen) return;
-    if (e.key === "Escape") {
-      if (currentCard) showList();
-      else close();
-    }
-  });
-
-  return { open, close };
+  return { open, openSpread, close };
 })();

@@ -657,3 +657,122 @@ select option {
   .ci-detail-meta-row { justify-content: flex-start; }
   .ci-numerology { text-align: left; }
 }
+
+/* ── Desc overlay: View Spread button ────────────────── */
+.descSpreadBtn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 14px;
+  background: rgba(100,80,200,0.18);
+  border: 1px solid var(--auraColor);
+  border-radius: 10px;
+  color: var(--auraColor);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--auraColor);
+  transition: background 150ms ease;
+}
+.descSpreadBtn:active { background: rgba(100,80,200,0.35); }
+
+/* ── Card index: no pinch-zoom ───────────────────────── */
+#cardIndexOverlay {
+  touch-action: pan-y;
+}
+
+/* ── Swipe hint ───────────────────────────────────────── */
+.ci-swipe-hint {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.05em;
+  padding: 6px 16px 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+/* ── Nav dots ─────────────────────────────────────────── */
+.ci-nav-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px 4px;
+  flex-shrink: 0;
+}
+.ci-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+.ci-dot-active {
+  background: var(--auraColor);
+  transform: scale(1.4);
+  box-shadow: 0 0 6px var(--auraColor);
+}
+.ci-dot-count {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.06em;
+}
+
+/* ── Reversed badge ───────────────────────────────────── */
+.ci-rev-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(200,100,100,0.9);
+  border: 1px solid rgba(200,100,100,0.4);
+  border-radius: 4px;
+  padding: 1px 5px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+/* ── Active meaning highlight ─────────────────────────── */
+.ci-meaning-active {
+  background: rgba(100,80,200,0.1);
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+  border-left: 2px solid var(--auraColor);
+}
+.ci-reversed-block.ci-meaning-active {
+  border-left-color: rgba(200,100,100,0.7);
+}
+
+/* ── Lightbox ─────────────────────────────────────────── */
+.ci-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+  touch-action: none;
+}
+.ci-lightbox.ci-lb-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ci-lightbox-img {
+  max-width: 88vw;
+  max-height: 88vh;
+  border-radius: 16px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
+  object-fit: contain;
+}
+
+/* ── Image wrap cursor hint ───────────────────────────── */
+.ci-card-img-wrap { cursor: zoom-in; }

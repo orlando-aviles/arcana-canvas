@@ -166,15 +166,26 @@ const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
 
 function showDesc(card) {
-  descTitle.textContent = cardDisplayName(card);
-  const isReversed = cardDisplayName(card).endsWith(" (R)");
-  descBody.textContent  = Meanings.get(cardDisplayName(card), isReversed);
+  const name = cardDisplayName(card);
+  const isReversed = name.endsWith(" (R)");
+  const cleanName  = name.replace(/ \(R\)$/, "");
+  descTitle.textContent = name;
+  descBody.textContent  = CardData.getMeaning(cleanName, isReversed);
+  descOverlay.dataset.cardName = cleanName;
   descOverlay.classList.add("visible");
 }
 function hideDesc() {
   descOverlay.classList.remove("visible");
 }
 descOverlay.addEventListener("click", hideDesc);
+
+// View Spread button — opens index filtered to current spread
+document.getElementById("descSpreadBtn").addEventListener("click", (e) => {
+  e.stopPropagation(); // don't trigger hideDesc
+  const cardName = descOverlay.dataset.cardName || "";
+  hideDesc();
+  CardIndex.openSpread(cardName);
+});
 
 // ── Touch (mobile) ────────────────────────────────────────
 let _touch = null;
