@@ -205,7 +205,7 @@ const pointers = new Map(); // pointerId → {x, y, startX, startY}
 let _draw = null;
 
 function onPointerDown(e) {
-  // Don't intercept taps on UI elements above the canvas
+  // If the touch landed on a UI element other than the canvas, ignore it
   const uiHit = document.elementFromPoint(e.clientX, e.clientY);
   if (uiHit && uiHit !== tarotCanvas) return;
 
@@ -264,33 +264,11 @@ let _pinch   = null;
 let _panStart = null;
 
 function onPointerMove(e) {
+  if (App.viewMode) return; // browser handles pan/zoom natively in view mode
   e.preventDefault();
   if (!pointers.has(e.pointerId)) return;
   pointers.get(e.pointerId).x = e.clientX;
   pointers.get(e.pointerId).y = e.clientY;
-
-  if (App.viewMode) {
-    const pts = [...pointers.values()];
-    if (pts.length === 2 && _pinch) {
-      // Pinch-zoom anchored to midpoint
-      const d   = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
-      const mid = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
-      const newScale = Math.min(SCALE_MAX, Math.max(SCALE_MIN,
-        _pinch.startScale * (d / _pinch.startDist)));
-      // Anchor the original midpoint in canvas coords
-      const anchorCX = (_pinch.midX - _pinch.startTx) / _pinch.startScale;
-      const anchorCY = (_pinch.midY - _pinch.startTy) / _pinch.startScale;
-      vp.scale = newScale;
-      vp.tx = mid.x - anchorCX * newScale;
-      vp.ty = mid.y - anchorCY * newScale;
-      applyViewport();
-    } else if (pts.length === 1 && _panStart) {
-      vp.tx = _panStart.tx + (e.clientX - _panStart.x);
-      vp.ty = _panStart.ty + (e.clientY - _panStart.y);
-      applyViewport();
-    }
-    return;
-  }
 
   // Draw mode
   if (!_draw || pointers.size !== 1) return;
@@ -312,19 +290,9 @@ function onPointerMove(e) {
 }
 
 function onPointerUp(e) {
+  if (App.viewMode) return;
   e.preventDefault();
   pointers.delete(e.pointerId);
-
-  if (App.viewMode) {
-    // Reset pinch when fingers lift
-    if (pointers.size < 2) _pinch = null;
-    if (pointers.size === 0) _panStart = null;
-    if (pointers.size === 1) {
-      const remaining = [...pointers.values()][0];
-      _panStart = { tx: vp.tx, ty: vp.ty, x: remaining.x, y: remaining.y };
-    }
-    return;
-  }
 
   if (!_draw) return;
   clearTimeout(_draw.holdTimer);

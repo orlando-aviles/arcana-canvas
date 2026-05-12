@@ -7,10 +7,15 @@ const menuPanel = document.getElementById("menuPanel");
 function openMenu()  { menuPanel.classList.add("open"); menuPanel.setAttribute("aria-hidden","false"); }
 function closeMenu() { menuPanel.classList.remove("open"); menuPanel.setAttribute("aria-hidden","true"); }
 function toggleMenu(){ menuPanel.classList.contains("open") ? closeMenu() : openMenu(); }
+window.toggleMenu = toggleMenu;
+window.closeMenu  = closeMenu;
 
-menuBtn.addEventListener("pointerup", (e) => { e.stopPropagation(); toggleMenu(); });
-document.addEventListener("pointerup", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
-menuPanel.addEventListener("pointerup", (e) => e.stopPropagation());
+// Menu button — stopPropagation prevents the pointerdown reaching the canvas
+menuBtn.addEventListener("pointerdown", (e) => { e.stopPropagation(); e.preventDefault(); toggleMenu(); });
+// Panel stops propagation so taps inside don't bleed through
+menuPanel.addEventListener("pointerdown", (e) => e.stopPropagation());
+// Close when tapping outside — pointerdown so it doesn't race with the button's open
+document.addEventListener("pointerdown", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
 
 /*********************************************************
  * CLEAR
@@ -92,6 +97,10 @@ const zoomOverlay    = document.getElementById("zoomOverlay");
 function syncViewModeUI() {
   viewModeToggle.checked = !!App.viewMode;
   zoomOverlay.classList.toggle("visible", !!App.viewMode);
+  // In view mode: hand zoom/pan back to the browser
+  // In draw mode: we own all touch input
+  document.getElementById("tarotCanvas").style.touchAction =
+    App.viewMode ? "pinch-zoom pan-x pan-y" : "none";
 }
 
 viewModeToggle.addEventListener("change", () => {
