@@ -119,16 +119,17 @@ window.CardIndex = (() => {
 
   // Build nav list from canvas draws (deduped, preserving draw order)
   function buildSpreadNavList() {
-    if (!window.draws) return [];
+    const currentDraws = window.getDraws ? window.getDraws() : [];
+    if (!currentDraws.length) return [];
     const seen = new Set();
     const list = [];
-    draws.forEach(d => {
-      const name = cardDisplayNameFromDraw(d);
-      const clean = name.replace(/ \(R\)$/, "");
+    currentDraws.forEach(d => {
+      const filename = cardDisplayNameFromDraw(d);
+      const clean    = filename.replace(/ \(R\)$/, "");
       if (!seen.has(clean)) {
         seen.add(clean);
-        const card = CardData.get(clean);
-        if (card) list.push({ ...card, reversed: name.endsWith(" (R)") });
+        const card = CardData.getByNameOrFile(clean);
+        if (card) list.push({ ...card, reversed: filename.endsWith(" (R)") });
       }
     });
     return list;
@@ -309,17 +310,41 @@ window.CardIndex = (() => {
 
   // Keyboard arrow nav
   document.addEventListener("keydown", (e) => {
-    if (!isOpen || !ciDetailView.classList.contains("ci-active")) return;
-    if (e.key === "ArrowRight") showDetailAtIdx(navIdx + 1);
-    if (e.key === "ArrowLeft")  showDetailAtIdx(navIdx - 1);
+    if (!isOpen) return;
+    const inLightbox = ciLightbox.classList.contains("ci-lb-open");
     if (e.key === "Escape") {
-      if (ciLightbox.classList.contains("ci-lb-open")) closeLightbox();
-      else if (currentCard) goBack();
-      else close();
+      if (inLightbox) { closeLightbox(); return; }
+      if (currentCard) goBack(); else close();
+      return;
+    }
+    if (!ciDetailView.classList.contains("ci-active")) return;
+    if (e.key === "ArrowRight") {
+      if (inLightbox) {
+        const next = navIdx + 1;
+        if (next < navList.length) {
+          navIdx = next; currentCard = navList[navIdx];
+          if (currentCard.imageName) ciLightboxImg.src = `./${activeDeck}/${currentCard.imageName}.png`;
+          else closeLightbox();
+          renderDetailInfo(currentCard); renderNavDots(); updateSwipeHint();
+        }
+      } else showDetailAtIdx(navIdx + 1);
+    }
+    if (e.key === "ArrowLeft") {
+      if (inLightbox) {
+        const prev = navIdx - 1;
+        if (prev >= 0) {
+          navIdx = prev; currentCard = navList[navIdx];
+          if (currentCard.imageName) ciLightboxImg.src = `./${activeDeck}/${currentCard.imageName}.png`;
+          else closeLightbox();
+          renderDetailInfo(currentCard); renderNavDots(); updateSwipeHint();
+        }
+      } else showDetailAtIdx(navIdx - 1);
     }
   });
 
   // ── Lightbox ──────────────────────────────────────────
+  let lbSwipeStartX = 0, lbSwipeActive = false;
+
   function openLightbox(src) {
     ciLightboxImg.src = src;
     ciLightbox.classList.add("ci-lb-open");
@@ -327,6 +352,43 @@ window.CardIndex = (() => {
   function closeLightbox() {
     ciLightbox.classList.remove("ci-lb-open");
   }
+
+  ciLightbox.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    lbSwipeStartX = e.touches[0].clientX;
+    lbSwipeActive = true;
+  }, { passive: true });
+
+  ciLightbox.addEventListener("touchend", (e) => {
+    if (!lbSwipeActive || e.changedTouches.length !== 1) return;
+    lbSwipeActive = false;
+    const dx = e.changedTouches[0].clientX - lbSwipeStartX;
+    if (Math.abs(dx) > 50) {
+      // Swipe to adjacent card and update lightbox image
+      const nextIdx = dx < 0 ? navIdx + 1 : navIdx - 1;
+      if (nextIdx >= 0 && nextIdx < navList.length) {
+        navIdx = nextIdx;
+        const card = navList[navIdx];
+        if (card?.imageName) {
+          ciLightboxImg.src = `./${activeDeck}/${card.imageName}.png`;
+          // Also update detail view in background
+          currentCard = card;
+          renderDetailImage(card);
+          renderDetailInfo(card);
+          renderNavDots();
+          updateSwipeHint();
+        } else {
+          closeLightbox();
+          showDetailAtIdx(navIdx);
+        }
+      }
+    } else {
+      // Short tap = close
+      closeLightbox();
+    }
+  }, { passive: true });
+
+  // Click to close (desktop)
   ciLightbox.addEventListener("click", closeLightbox);
 
   ciImgWrap.addEventListener("click", () => {
@@ -392,14 +454,15 @@ window.CardIndex = (() => {
     document.body.style.overflow = "hidden";
   }
 
-  // openSpread(cardName) — spread view from description overlay
-  function openSpread(cardName) {
+  // openSpread(filenameOrName) — spread view from description overlay
+  function openSpread(filenameOrName) {
     mode = "spread";
     navList = buildSpreadNavList();
-    if (navList.length === 0) return; // nothing on canvas
+    if (navList.length === 0) return;
 
-    // Start at the tapped card
-    const startIdx = navList.findIndex(c => c.name === cardName.replace(/ \(R\)$/, ""));
+    // Resolve filename format (TheFool) → display name (The Fool) for matching
+    const resolved = CardData.fromFilename(filenameOrName) || filenameOrName;
+    const startIdx = navList.findIndex(c => c.name === resolved);
     navIdx = startIdx >= 0 ? startIdx : 0;
 
     isOpen = true;

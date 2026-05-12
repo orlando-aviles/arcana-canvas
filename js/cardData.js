@@ -318,5 +318,34 @@ window.CardData = (() => {
   function getSuitMap() { return SUIT_MAP; }
   function getRankMap() { return RANK_MAP; }
 
-  return { get, getMeaning, getAll, getSuitMap, getRankMap };
+
+  // ── Filename → display name lookup ───────────────────
+  // tarotDeck.js uses camelCase filenames (TheFool, AceOfCups).
+  // This map converts them to the display names used in CardData.
+  const filenameMap = {};
+  ALL.forEach(c => {
+    if (c.imageName) filenameMap[c.imageName] = c.name;
+  });
+
+  function fromFilename(filename) {
+    // Strip reversal suffix first
+    const clean = filename.replace(/ \(R\)$/, "");
+    return filenameMap[clean] || null;
+  }
+
+  // Lookup by either display name OR filename
+  function getByNameOrFile(nameOrFile) {
+    const clean = nameOrFile.replace(/ \(R\)$/, "");
+    return byName[clean] || byName[filenameMap[clean]] || null;
+  }
+
+  function getMeaningByNameOrFile(nameOrFile, reversed) {
+    const card = getByNameOrFile(nameOrFile);
+    if (!card) return reversed
+      ? "A mystery. Its reversed meaning is hidden."
+      : "A mystery. Its meaning is yet to be revealed.";
+    return reversed ? card.reversed : card.upright;
+  }
+
+  return { get, getMeaning, getMeaningByNameOrFile, getByNameOrFile, fromFilename, getAll, getSuitMap, getRankMap };
 })();

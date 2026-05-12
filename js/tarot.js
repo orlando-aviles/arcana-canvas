@@ -6,6 +6,7 @@ const tarotCtx    = tarotCanvas.getContext("2d");
 tarotCtx.imageSmoothingEnabled = true;
 
 let draws = [];
+window.getDraws = () => draws; // cardIndex reads via this getter
 
 const REVERSAL_CHANCE = 0.40;
 
@@ -166,22 +167,26 @@ const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
 
 function showDesc(card) {
-  const name = cardDisplayName(card);
-  const isReversed = name.endsWith(" (R)");
-  const cleanName  = name.replace(/ \(R\)$/, "");
-  descTitle.textContent = name;
-  descBody.textContent  = CardData.getMeaning(cleanName, isReversed);
-  descOverlay.dataset.cardName = cleanName;
+  const filename = cardDisplayName(card); // still returns filename format for tarot/luminous
+  const isReversed = filename.endsWith(" (R)");
+  const cleanFile  = filename.replace(/ \(R\)$/, "");
+  // Resolve to display name for title
+  const displayName = CardData.fromFilename(cleanFile) || cleanFile;
+  descTitle.textContent = displayName + (isReversed ? " (R)" : "");
+  descBody.textContent  = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
+  descOverlay.dataset.cardName = cleanFile; // filename format — openSpread resolves it
   descOverlay.classList.add("visible");
 }
 function hideDesc() {
   descOverlay.classList.remove("visible");
 }
-descOverlay.addEventListener("click", hideDesc);
+descOverlay.addEventListener("click", (e) => {
+  if (e.target === descOverlay || e.target === descTitle || e.target === descBody) hideDesc();
+});
 
-// View Spread button — opens index filtered to current spread
+// View Spread button
 document.getElementById("descSpreadBtn").addEventListener("click", (e) => {
-  e.stopPropagation(); // don't trigger hideDesc
+  e.stopPropagation();
   const cardName = descOverlay.dataset.cardName || "";
   hideDesc();
   CardIndex.openSpread(cardName);
