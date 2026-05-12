@@ -363,3 +363,297 @@ select option {
   line-height: 1.55;
   color: rgba(220, 210, 255, 0.85);
 }
+
+/* ══════════════════════════════════════════════════════
+   CARD INDEX
+   ══════════════════════════════════════════════════════ */
+#cardIndexOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(6, 7, 16, 0.97);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  overflow: hidden;
+}
+#cardIndexOverlay.ci-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Header ───────────────────────────────────────── */
+.ci-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.ci-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--auraColor);
+  text-transform: uppercase;
+  text-shadow: 0 0 12px var(--auraColor);
+}
+.ci-back, .ci-close {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 20px;
+  padding: 4px 8px;
+  cursor: pointer;
+  line-height: 1;
+  min-width: 36px;
+  transition: color 150ms ease;
+}
+.ci-back { display: none; }
+.ci-back:hover, .ci-close:hover { color: var(--auraColor); }
+
+/* ── Views ────────────────────────────────────────── */
+.ci-list-view, .ci-detail-view {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+.ci-list-view.ci-active, .ci-detail-view.ci-active {
+  display: flex;
+}
+
+/* ── Search + deck toggle ─────────────────────────── */
+.ci-search-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+}
+.ci-search {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 9px 14px;
+  color: rgba(255,255,255,0.9);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+.ci-search:focus { border-color: var(--auraColor); }
+.ci-search::placeholder { color: rgba(255,255,255,0.3); }
+
+.ci-deck-toggle {
+  display: flex;
+  gap: 6px;
+}
+.ci-deck-btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.ci-deck-btn.active {
+  background: rgba(100,80,200,0.25);
+  border-color: var(--auraColor);
+  color: var(--auraColor);
+  box-shadow: 0 0 8px var(--auraColor);
+}
+
+/* ── List ─────────────────────────────────────────── */
+.ci-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.ci-section-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  padding: 16px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 4px;
+}
+.ci-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 120ms ease;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 0 -8px;
+}
+.ci-row:active { background: rgba(255,255,255,0.06); }
+.ci-thumb-wrap {
+  width: 40px;
+  height: 62px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ci-thumb { width: 100%; height: 100%; object-fit: cover; }
+.ci-thumb-glyph {
+  font-size: 24px;
+  color: var(--auraColor);
+  line-height: 1;
+}
+.ci-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ci-row-name {
+  font-size: 14px;
+  color: rgba(255,255,255,0.88);
+}
+.ci-row-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  letter-spacing: 0.04em;
+}
+.ci-empty {
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+/* ── Detail view ──────────────────────────────────── */
+.ci-detail-view {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.ci-detail-deck {
+  padding: 10px 16px 0;
+  flex-shrink: 0;
+}
+.ci-card-img-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 16px 24px 8px;
+  flex-shrink: 0;
+}
+.ci-card-img {
+  width: min(220px, 55vw);
+  border-radius: 12px;
+  box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.ci-card-img-placeholder {
+  width: min(220px, 55vw);
+  aspect-ratio: 2/3;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  color: var(--auraColor);
+  text-shadow: 0 0 24px var(--auraColor);
+}
+.ci-card-info {
+  padding: 8px 20px 40px;
+}
+.ci-detail-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.95);
+  text-align: center;
+  margin-bottom: 12px;
+  letter-spacing: 0.04em;
+}
+.ci-detail-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.ci-meta-pill {
+  background: rgba(100,80,200,0.18);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.05em;
+}
+.ci-numerology {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  margin-bottom: 16px;
+  font-style: italic;
+}
+.ci-meaning-block {
+  margin-bottom: 16px;
+}
+.ci-meaning-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  margin-bottom: 6px;
+}
+.ci-reversed .ci-meaning-label {
+  color: rgba(200,100,100,0.85);
+}
+.ci-meaning-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(220,210,255,0.82);
+}
+
+/* ── Desktop: two-column detail ───────────────────── */
+@media (min-width: 640px) {
+  .ci-detail-view {
+    overflow-y: auto;
+  }
+  .ci-card-img-wrap {
+    float: left;
+    width: 260px;
+    padding: 20px 20px 20px 24px;
+    position: sticky;
+    top: 0;
+  }
+  .ci-card-img {
+    width: 100%;
+  }
+  .ci-card-info {
+    margin-left: 260px;
+    padding: 20px 24px 40px 16px;
+  }
+  .ci-detail-deck {
+    margin-left: 260px;
+  }
+  .ci-detail-name { text-align: left; }
+  .ci-detail-meta-row { justify-content: flex-start; }
+  .ci-numerology { text-align: left; }
+}

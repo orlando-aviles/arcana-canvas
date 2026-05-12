@@ -17,6 +17,11 @@ document.addEventListener("click", () => { if (menuPanel.classList.contains("ope
 /*********************************************************
  * CLEAR
  *********************************************************/
+document.getElementById("cardIndexBtn").addEventListener("click", () => {
+  closeMenu();
+  CardIndex.open();
+});
+
 document.getElementById("clearBtn").addEventListener("click", () => {
   clearCanvas();
   closeMenu();

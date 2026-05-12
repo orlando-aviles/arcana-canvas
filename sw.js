@@ -1,6 +1,5 @@
-// tarot/sw.js
-
-const CACHE_NAME = 'arcana-cache-v9';
+const CACHE_NAME  = 'arcana-cache-v11';
+const IMAGE_CACHE = 'arcana-images-v1'; // separate — survives core cache bumps
 
 const CORE_FILES = [
   './',
@@ -13,6 +12,8 @@ const CORE_FILES = [
   './js/state.js',
   './js/storage.js',
   './js/meanings.js',
+  './js/cardData.js',
+  './js/cardIndex.js',
   './js/tarot.js',
   './js/tarotDeck.js',
   './js/ui.js',
@@ -25,46 +26,83 @@ const CORE_FILES = [
   './icons/icon-512-maskable.png',
 ];
 
-// Install: cache core files and skip waiting so new SW activates immediately
+// Install: cache core files, then pre-cache the default deck (LuminousArc)
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(CORE_FILES))
-      .then(() => self.skipWaiting())
+    Promise.all([
+      caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_FILES)),
+      // Pre-cache LuminousArc deck so it works offline on first launch
+      caches.open(IMAGE_CACHE).then(async cache => {
+        const keys = await cache.keys();
+        // Only pre-cache if image cache is empty (first install)
+        if (keys.length > 0) return;
+        const deck = [
+          'AceOfCups','AceOfPentacles','AceOfSwords','AceOfWands',
+          'Death','EightOfCups','EightOfPentacles','EightOfSwords','EightOfWands',
+          'FiveOfCups','FiveOfPentacles','FiveOfSwords','FiveOfWands',
+          'FourOfCups','FourOfPentacles','FourOfSwords','FourOfWands',
+          'Judgement','Justice',
+          'KingOfCups','KingOfPentacles','KingOfSwords','KingOfWands',
+          'KnightOfCups','KnightOfPentacles','KnightOfSwords','KnightOfWands',
+          'NineOfCups','NineOfPentacles','NineOfSwords','NineOfWands',
+          'PageOfCups','PageOfPentacles','PageOfSwords','PageOfWands',
+          'QueenOfCups','QueenOfPentacles','QueenOfSwords','QueenOfWands',
+          'SevenOfCups','SevenOfPentacles','SevenOfSwords','SevenOfWands',
+          'SixOfCups','SixOfPentacles','SixOfSwords','SixOfWands',
+          'Strength','Temperance','TheFool','TheChariot','TheDevil',
+          'TheEmperor','TheEmpress','TheHangedMan','TheHermit',
+          'TheHierophant','TheHighPriestess','TheLovers','TheMagician',
+          'TheMoon','TheStar','TheSun','TheTower','TheWheel','TheWorld',
+          'ThreeOfCups','ThreeOfPentacles','ThreeOfSwords','ThreeOfWands',
+          'TwoOfCups','TwoOfPentacles','TwoOfSwords','TwoOfWands',
+        ];
+        // Fetch in small batches to avoid overwhelming the network
+        const batchSize = 8;
+        for (let i = 0; i < deck.length; i += batchSize) {
+          const batch = deck.slice(i, i + batchSize).map(name =>
+            fetch(`./LuminousArc/${name}.png`)
+              .then(r => r.ok ? cache.put(`./LuminousArc/${name}.png`, r) : null)
+              .catch(() => null) // silently skip failures
+          );
+          await Promise.all(batch);
+        }
+      }),
+    ]).then(() => self.skipWaiting())
   );
 });
 
-// Activate: delete all old caches, then claim clients immediately
+// Activate: delete old CORE caches only, keep IMAGE_CACHE across versions
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME)
+          .filter(key => key !== CACHE_NAME && key !== IMAGE_CACHE)
           .map(key => caches.delete(key))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch: cache-first strategy + image caching
+// Fetch: check image cache first, then core cache, then network
 self.addEventListener('fetch', event => {
+  const url = event.request.url;
+  const isImage = event.request.destination === 'image' ||
+                  /\.(png|jpg|webp)$/i.test(url);
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-
-      return fetch(event.request).then(response => {
-        const responseClone = response.clone();
-
-        // Cache images as they are fetched
-        if (event.request.destination === 'image') {
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
-        }
-
-        return response;
-      });
-    })
+    isImage
+      ? caches.open(IMAGE_CACHE).then(imgCache =>
+          imgCache.match(event.request).then(cached => {
+            if (cached) return cached;
+            return fetch(event.request).then(response => {
+              if (response.ok) imgCache.put(event.request, response.clone());
+              return response;
+            }).catch(() => caches.match(event.request)); // fallback to any cache
+          })
+        )
+      : caches.match(event.request).then(cached =>
+          cached || fetch(event.request)
+        )
   );
 });
