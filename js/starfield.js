@@ -187,6 +187,28 @@ window.Starfield = (() => {
         ctx.fillStyle   = s.tint;
         ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
         ctx.fill();
+
+        // Cross-sparkle on bright large stars
+        if (s.r > 1.6 && a > 0.45) {
+          const armLen = s.r * 4.5;
+          const sparkA = a * 0.28;
+          ctx.globalAlpha = sparkA;
+          ctx.strokeStyle = s.tint;
+          ctx.lineWidth   = 0.8;
+          ctx.lineCap     = "round";
+          ctx.beginPath();
+          ctx.moveTo(s.x - armLen, s.y); ctx.lineTo(s.x + armLen, s.y);
+          ctx.moveTo(s.x, s.y - armLen); ctx.lineTo(s.x, s.y + armLen);
+          ctx.stroke();
+          // Diagonal arms, shorter and fainter
+          const dLen = armLen * 0.55;
+          ctx.globalAlpha = sparkA * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(s.x - dLen, s.y - dLen); ctx.lineTo(s.x + dLen, s.y + dLen);
+          ctx.moveTo(s.x + dLen, s.y - dLen); ctx.lineTo(s.x - dLen, s.y + dLen);
+          ctx.stroke();
+        }
+
         ctx.globalAlpha = 1;
       }
       updateStreaks(dt);

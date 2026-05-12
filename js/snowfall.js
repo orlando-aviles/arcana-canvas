@@ -1,8 +1,9 @@
 /*********************************************************
  * SNOWFALL BACKGROUND
- * Gentle downward-drifting flakes with horizontal sway.
- * Soft white, varied sizes, slight blur on large flakes.
- * Sits on the #animus canvas (same layer as Animus).
+ * Gentle downward-drifting flakes.
+ * Wind direction swings like a pendulum — slow, organic,
+ * random starting phase so it never feels choreographed.
+ * No pointer influence. Sits on the #animus canvas.
  *********************************************************/
 window.Snowfall = (() => {
   const canvas = document.getElementById("animus");
@@ -13,30 +14,38 @@ window.Snowfall = (() => {
   let rafId  = null;
   let last   = performance.now();
 
+  // Pendulum wind: slow sine, random start phase
+  const wind = {
+    period:    18000 + Math.random() * 10000,
+    phase:     Math.random() * Math.PI * 2,
+    amplitude: 18,
+  };
+
+  function windAt(now) {
+    return Math.sin((now / wind.period) * Math.PI * 2 + wind.phase) * wind.amplitude;
+  }
+
   function rand(a, b) { return a + Math.random() * (b - a); }
 
-  // Three tiers of flake — tiny/quick, mid, rare large slow
-  function makeFlake() {
+  function makeFlake(scatterY) {
     const tier = Math.random();
     return {
-      x:      rand(0, W),
-      y:      rand(-H, 0),               // start above screen
-      r:      tier < 0.60 ? rand(0.8, 1.6)
-            : tier < 0.88 ? rand(1.6, 3.2)
-                          : rand(3.2, 5.5),
-      vy:     tier < 0.60 ? rand(28, 55)  // px/s
-            : tier < 0.88 ? rand(18, 35)
-                          : rand(10, 22),
-      // horizontal sway: sine oscillation
-      swayAmp:   rand(12, 40),            // px peak-to-peak
-      swaySpeed: rand(0.3, 0.9),          // Hz
+      x:         rand(0, W),
+      y:         scatterY ? rand(0, H) : rand(-H * 0.1, -4),
+      r:         tier < 0.60 ? rand(0.8, 1.6)
+               : tier < 0.88 ? rand(1.6, 3.0)
+                              : rand(3.0, 5.0),
+      vy:        tier < 0.60 ? rand(20, 40)
+               : tier < 0.88 ? rand(13, 26)
+                              : rand(7,  16),
+      swayAmp:   rand(6, 18),
+      swaySpeed: rand(0.18, 0.55),
       swayPhase: rand(0, Math.PI * 2),
-      // opacity
-      alpha:  tier < 0.60 ? rand(0.35, 0.65)
-            : tier < 0.88 ? rand(0.50, 0.78)
-                          : rand(0.65, 0.88),
-      // large flakes get a soft drop-shadow for depth
-      glow:   tier >= 0.88,
+      alpha:     tier < 0.60 ? rand(0.30, 0.60)
+               : tier < 0.88 ? rand(0.45, 0.72)
+                              : rand(0.60, 0.85),
+      glow:      tier >= 0.88,
+      windSens:  rand(0.6, 1.0) * (tier < 0.60 ? 0.5 : tier < 0.88 ? 0.8 : 1.0),
     };
   }
 
@@ -44,11 +53,7 @@ window.Snowfall = (() => {
     flakes = [];
     const density = FX.intensity <= 0 ? 0 : 0.25 + FX.intensity * 0.75;
     const count   = Math.round(180 * density);
-    for (let i = 0; i < count; i++) {
-      const f = makeFlake();
-      f.y = rand(0, H); // scatter across screen on first build
-      flakes.push(f);
-    }
+    for (let i = 0; i < count; i++) flakes.push(makeFlake(true));
   }
 
   function resize() {
@@ -65,58 +70,38 @@ window.Snowfall = (() => {
     if (!rafId) return;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-
     ctx.clearRect(0, 0, W, H);
-
     const mult = FX.intensity;
     if (mult <= 0) { rafId = requestAnimationFrame(tick); return; }
-
+    const wx = windAt(now);
     for (const f of flakes) {
-      // fall
       f.y += f.vy * dt;
-      // horizontal sway
-      const sway = Math.sin(now / 1000 * f.swaySpeed * Math.PI * 2 + f.swayPhase) * f.swayAmp;
-      const drawX = f.x + sway;
-
-      // wrap bottom → top
-      if (f.y > H + 10) {
-        f.y = -f.r * 2;
-        f.x = rand(0, W);
-        f.swayPhase = rand(0, Math.PI * 2);
-      }
-
+      const sway  = Math.sin(now / 1000 * f.swaySpeed * Math.PI * 2 + f.swayPhase) * f.swayAmp;
+      const drawX = f.x + (wx * f.windSens * dt * 60) + sway;
+      if (f.y > H + 10) { f.y = -f.r * 2; f.x = rand(0, W); f.swayPhase = rand(0, Math.PI * 2); }
+      if      (drawX < -20)    f.x += W + 40;
+      else if (drawX > W + 20) f.x -= W + 40;
       ctx.save();
       ctx.globalAlpha = f.alpha * mult;
-
       if (f.glow) {
-        // large flake: radial glow + crisp centre
         const g = ctx.createRadialGradient(drawX, f.y, 0, drawX, f.y, f.r * 2.4);
         g.addColorStop(0,   "rgba(255,255,255,0.90)");
         g.addColorStop(0.4, "rgba(255,255,255,0.50)");
         g.addColorStop(1,   "rgba(255,255,255,0.00)");
         ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(drawX, f.y, f.r * 2.4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(drawX, f.y, f.r * 2.4, 0, Math.PI * 2); ctx.fill();
       }
-
-      // core flake circle
       ctx.fillStyle = "rgba(255,255,255,0.92)";
-      ctx.beginPath();
-      ctx.arc(drawX, f.y, f.r, 0, Math.PI * 2);
-      ctx.fill();
-
+      ctx.beginPath(); ctx.arc(drawX, f.y, f.r, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
-
     rafId = requestAnimationFrame(tick);
   }
 
   function start() {
     if (rafId) return;
     canvas.style.display = "block";
-    resize();
-    rebuild();
+    resize(); rebuild();
     last = performance.now();
     rafId = requestAnimationFrame(tick);
   }
@@ -127,10 +112,7 @@ window.Snowfall = (() => {
     canvas.style.display = "none";
   }
 
-  window.addEventListener("resize", () => {
-    if (!rafId) return;
-    resize(); rebuild();
-  }, { passive: true });
+  window.addEventListener("resize", () => { if (!rafId) return; resize(); rebuild(); }, { passive: true });
 
   return { start, stop };
 })();

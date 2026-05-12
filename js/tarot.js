@@ -234,7 +234,8 @@ tarotCanvas.addEventListener("touchend", (e) => {
   const wasDrag = _touch.isDrag;
   const wasHold = _touch.isHold;
   _touch = null;
-  if (wasDrag || wasHold) e.preventDefault(); // suppress the ghost click
+  if (wasDrag || wasHold) e.preventDefault(); // suppress ghost click after hold/drag
+  // Clean taps on cards fall through — click event fires and draws a card
 });
 
 // click handles tap-to-draw on desktop and mobile (fires after clean tap)
