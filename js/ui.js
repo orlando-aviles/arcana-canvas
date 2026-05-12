@@ -10,12 +10,9 @@ function toggleMenu(){ menuPanel.classList.contains("open") ? closeMenu() : open
 window.toggleMenu = toggleMenu;
 window.closeMenu  = closeMenu;
 
-// Menu button — stopPropagation prevents the pointerdown reaching the canvas
-menuBtn.addEventListener("pointerdown", (e) => { e.stopPropagation(); e.preventDefault(); toggleMenu(); });
-// Panel stops propagation so taps inside don't bleed through
-menuPanel.addEventListener("pointerdown", (e) => e.stopPropagation());
-// Close when tapping outside — pointerdown so it doesn't race with the button's open
-document.addEventListener("pointerdown", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
+menuBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleMenu(); });
+menuPanel.addEventListener("click", (e) => e.stopPropagation());
+document.addEventListener("click", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
 
 /*********************************************************
  * CLEAR
@@ -88,27 +85,6 @@ deckSelect.addEventListener("change", () => {
   syncDeckUI(); saveSettings();
 });
 
-/*********************************************************
- * VIEW MODE
- *********************************************************/
-const viewModeToggle = document.getElementById("viewModeToggle");
-const zoomOverlay    = document.getElementById("zoomOverlay");
-
-function syncViewModeUI() {
-  viewModeToggle.checked = !!App.viewMode;
-  zoomOverlay.classList.toggle("visible", !!App.viewMode);
-  // In view mode: hand zoom/pan back to the browser
-  // In draw mode: we own all touch input
-  document.getElementById("tarotCanvas").style.touchAction =
-    App.viewMode ? "pinch-zoom pan-x pan-y" : "none";
-}
-
-viewModeToggle.addEventListener("change", () => {
-  App.viewMode = viewModeToggle.checked;
-  if (!App.viewMode && window._resetViewport) window._resetViewport();
-  syncViewModeUI();
-  closeMenu();
-});
 
 /*********************************************************
  * REVERSALS TOGGLE

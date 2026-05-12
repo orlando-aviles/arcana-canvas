@@ -37,7 +37,6 @@ body {
   position: fixed; inset: 0; z-index: 3;
   width: 100vw; height: 100vh;
   display: block;
-  touch-action: none; /* we handle all touch ourselves */
 }
 
 /* ── Generic button base ─────────────────────────────── */
