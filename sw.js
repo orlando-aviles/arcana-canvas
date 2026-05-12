@@ -1,6 +1,6 @@
 // tarot/sw.js
 
-const CACHE_NAME = 'arcana-cache-v5';
+const CACHE_NAME = 'arcana-cache-v6';
 
 const CORE_FILES = [
   './',
