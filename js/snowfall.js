@@ -16,9 +16,9 @@ window.Snowfall = (() => {
 
   // Pendulum wind: slow sine, random start phase
   const wind = {
-    period:    18000 + Math.random() * 10000,
+    period:    6000 + Math.random() * 2000,
     phase:     Math.random() * Math.PI * 2,
-    amplitude: 18,
+    amplitude: 60,
   };
 
   function windAt(now) {

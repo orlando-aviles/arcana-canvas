@@ -153,10 +153,10 @@ function cardDisplayName(card) {
 }
 
 /**** Interaction ****/
-// Strategy: work WITH the browser.
-// - click handles tap-to-draw on both desktop and mobile
-// - touch events only preventDefault when a card is hit (hold/drag)
-// - empty canvas touches pass through untouched → browser zoom/pan works
+// Unified system — no click event used anywhere.
+// Mouse: mousedown tracks state, mouseup draws or ends drag.
+// Touch: touchstart intercepts card hits for hold/drag,
+//        clean touchend draws. Multi-touch passes through for zoom/pan.
 
 const HOLD_MS   = 400;
 const DRAG_SLOP = 10;
@@ -176,30 +176,29 @@ function hideDesc() {
 }
 descOverlay.addEventListener("click", hideDesc);
 
+// ── Touch (mobile) ────────────────────────────────────────
 let _touch = null;
 
 tarotCanvas.addEventListener("touchstart", (e) => {
-  if (e.touches.length !== 1) return; // let multi-touch through for browser zoom
+  if (e.touches.length !== 1) return; // multi-touch = browser zoom/pan
   const t = e.touches[0];
   const cardIdx = cardAt(t.clientX, t.clientY);
 
-  if (cardIdx < 0) return; // no card hit — let browser handle (zoom/pan/tap)
-
-  // Card hit — intercept for hold and drag
+  // Always intercept — we handle draw, hold, and drag from here
   e.preventDefault();
 
   const holdTimer = setTimeout(() => {
     if (_touch) {
       _touch.isHold = true;
-      showDesc(draws[cardIdx]);
+      if (cardIdx >= 0) showDesc(draws[cardIdx]);
     }
   }, HOLD_MS);
 
   _touch = {
     cardIdx,
     startX: t.clientX, startY: t.clientY,
-    dragOffsetX: t.clientX - draws[cardIdx].x,
-    dragOffsetY: t.clientY - draws[cardIdx].y,
+    dragOffsetX: cardIdx >= 0 ? t.clientX - draws[cardIdx].x : 0,
+    dragOffsetY: cardIdx >= 0 ? t.clientY - draws[cardIdx].y : 0,
     holdTimer,
     isDrag: false,
     isHold: false,
@@ -219,7 +218,7 @@ tarotCanvas.addEventListener("touchmove", (e) => {
     hideDesc();
   }
 
-  if (_touch.isDrag) {
+  if (_touch.isDrag && _touch.cardIdx >= 0) {
     e.preventDefault();
     const card = draws[_touch.cardIdx];
     card.x = t.clientX - _touch.dragOffsetX;
@@ -233,14 +232,79 @@ tarotCanvas.addEventListener("touchend", (e) => {
   clearTimeout(_touch.holdTimer);
   const wasDrag = _touch.isDrag;
   const wasHold = _touch.isHold;
+  const cardIdx = _touch.cardIdx;
+  const x = e.changedTouches[0].clientX;
+  const y = e.changedTouches[0].clientY;
   _touch = null;
-  if (wasDrag || wasHold) e.preventDefault(); // suppress ghost click after hold/drag
-  // Clean taps on cards fall through — click event fires and draws a card
+
+  e.preventDefault(); // always suppress ghost click
+
+  if (wasHold || wasDrag) return;
+
+  // Clean tap — draw a card
+  dispatchDraw(x, y);
+}, { passive: false });
+
+// ── Mouse (desktop) ───────────────────────────────────────
+let _mouse = null;
+
+tarotCanvas.addEventListener("mousedown", (e) => {
+  if (e.button !== 0) return;
+  const cardIdx = cardAt(e.clientX, e.clientY);
+
+  const holdTimer = setTimeout(() => {
+    if (_mouse) {
+      _mouse.isHold = true;
+      if (cardIdx >= 0) showDesc(draws[cardIdx]);
+    }
+  }, HOLD_MS);
+
+  _mouse = {
+    cardIdx,
+    startX: e.clientX, startY: e.clientY,
+    dragOffsetX: cardIdx >= 0 ? e.clientX - draws[cardIdx].x : 0,
+    dragOffsetY: cardIdx >= 0 ? e.clientY - draws[cardIdx].y : 0,
+    holdTimer,
+    isDrag: false,
+    isHold: false,
+  };
 });
 
-// click handles tap-to-draw on desktop and mobile (fires after clean tap)
-tarotCanvas.addEventListener("click", (e) => {
+tarotCanvas.addEventListener("mousemove", (e) => {
+  if (!_mouse) return;
+  const dx = e.clientX - _mouse.startX;
+  const dy = e.clientY - _mouse.startY;
+
+  if (!_mouse.isDrag && Math.hypot(dx, dy) > DRAG_SLOP) {
+    clearTimeout(_mouse.holdTimer);
+    _mouse.isDrag = true;
+    hideDesc();
+  }
+
+  if (_mouse.isDrag && _mouse.cardIdx >= 0) {
+    const card = draws[_mouse.cardIdx];
+    card.x = e.clientX - _mouse.dragOffsetX;
+    card.y = e.clientY - _mouse.dragOffsetY;
+    redrawAll();
+  }
+});
+
+tarotCanvas.addEventListener("mouseup", (e) => {
+  if (!_mouse) return;
+  clearTimeout(_mouse.holdTimer);
+  const wasDrag = _mouse.isDrag;
+  const wasHold = _mouse.isHold;
+  _mouse = null;
+
+  if (wasHold || wasDrag) return;
+
+  // Clean click — draw a card
   dispatchDraw(e.clientX, e.clientY);
+});
+
+// Cancel drag if mouse leaves canvas
+tarotCanvas.addEventListener("mouseleave", () => {
+  if (_mouse) { clearTimeout(_mouse.holdTimer); _mouse = null; }
 });
 
 

@@ -100,8 +100,6 @@ window.Starfield = (() => {
   function drawBg() {
     ctx.fillStyle = "#05050a";
     ctx.fillRect(0, 0, W, H);
-
-
     const R = Math.max(W, H);
 
     const g1 = ctx.createRadialGradient(W*.22, H*.14, 0, W*.22, H*.14, R*.72);
@@ -191,9 +189,9 @@ window.Starfield = (() => {
         ctx.fill();
 
         // Cross-sparkle on bright large stars
-        if (s.r > 0.9 && a > 0.3) {
-          const armLen = s.r * 8;
-          const sparkA = a * 0.6;
+        if (s.r > 1.6 && a > 0.45) {
+          const armLen = s.r * 4.5;
+          const sparkA = a * 0.28;
           ctx.globalAlpha = sparkA;
           ctx.strokeStyle = s.tint;
           ctx.lineWidth   = 0.8;
