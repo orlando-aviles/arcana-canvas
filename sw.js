@@ -5,6 +5,7 @@ const CACHE_NAME = 'arcana-cache-v5';
 const CORE_FILES = [
   './',
   './index.html',
+  './splash.png',
   './manifest.json',
   './styles/main.css',
   './js/main.js',
