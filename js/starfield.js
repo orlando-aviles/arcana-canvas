@@ -37,9 +37,16 @@ window.Starfield = (() => {
     return `hsl(${normalizeHue(roll < 0.87 ? hueA : hueB)} 90% 76%)`;
   }
 
+  // Slow drift for parallax — each star has its own layer speed
+  const driftOffset = { x: 0, y: 0 }; // updated in tick
+  let driftTime = 0;
+
   function makeStar() {
-    // Three populations: tiny/dim, mid, rare bright
     const pop = Math.random();
+    // depth 0=far/slow, 1=near/fast — controls parallax strength
+    const depth = pop < 0.68 ? rand(0.0, 0.25)   // tiny: distant
+                : pop < 0.92 ? rand(0.2, 0.55)    // mid
+                             : rand(0.5, 1.0);     // bright: near
     return {
       x: rand(0, W),
       y: rand(0, H),
@@ -49,9 +56,16 @@ window.Starfield = (() => {
       baseA:  pop < 0.68 ? rand(0.25, 0.55)
             : pop < 0.92 ? rand(0.45, 0.75)
                          : rand(0.65, 0.92),
-      twSpeed: rand(0.4, 1.8),   // radians/sec
-      twAmp:   rand(0.12, 0.38), // fraction of baseA
+      twSpeed: rand(0.4, 1.8),
+      twAmp:   rand(0.12, 0.38),
       twPhase: rand(0, Math.PI * 2),
+      // Sparkle: rare event, not constant — each star has its own timer
+      sparkTimer:    rand(0, 30),   // seconds until next sparkle
+      sparkInterval: rand(8, 40),   // how often it sparkles
+      sparkDuration: rand(0.6, 1.4),// how long the cross lasts
+      sparkActive:   false,
+      sparkAge:      0,
+      depth,
       tint: tint(),
     };
   }
@@ -179,41 +193,108 @@ window.Starfield = (() => {
     drawBg();
 
     if (starsVisible) {
+      // Parallax drift — slow sinusoidal wander, different phase per axis
+      driftTime += dt;
+      driftOffset.x = Math.sin(driftTime * 0.07) * 22 + Math.cos(driftTime * 0.031) * 10;
+      driftOffset.y = Math.cos(driftTime * 0.05) * 14 + Math.sin(driftTime * 0.042) * 8;
+
       const mult = FX.intensity;
+      ctx.save();
+      ctx.lineCap = "round";
+
       for (const s of stars) {
-        // Stars do NOT move — just twinkle in place
-        const tw = s.baseA * (1 - s.twAmp + s.twAmp * Math.sin((now/1000) * s.twSpeed + s.twPhase));
+        // Parallax: near stars move more, far stars barely move
+        const px = s.x + driftOffset.x * s.depth;
+        const py = s.y + driftOffset.y * s.depth;
+
+        // Base twinkle — subtle breath, not flashy
+        const tw = s.baseA * (1 - s.twAmp * 0.4 + s.twAmp * 0.4 * Math.sin((now/1000) * s.twSpeed + s.twPhase));
         const a  = clamp(tw * mult, 0, 1);
         if (a < 0.005) continue;
-        ctx.beginPath();
+
+        // Update sparkle timer
+        s.sparkTimer -= dt;
+        if (s.sparkTimer <= 0 && !s.sparkActive && s.r > 0.8) {
+          s.sparkActive = true;
+          s.sparkAge    = 0;
+          s.sparkTimer  = s.sparkInterval + rand(-4, 4);
+        }
+        if (s.sparkActive) {
+          s.sparkAge += dt;
+          if (s.sparkAge >= s.sparkDuration) {
+            s.sparkActive = false;
+          }
+        }
+
+        // Draw star dot — slightly soft edge for organic feel
         ctx.globalAlpha = a;
         ctx.fillStyle   = s.tint;
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.beginPath();
+        ctx.arc(px, py, s.r, 0, Math.PI * 2);
         ctx.fill();
 
-        // Cross-sparkle on bright large stars
-        if (s.r > 0.9 && a > 0.3) {
-          const armLen = s.r * 8;
-          const sparkA = a * 0.6;
-          ctx.globalAlpha = sparkA;
+        // Diffuse soft glow on mid/bright stars
+        if (s.r > 0.85) {
+          const glowR = s.r * 3.5;
+          const g = ctx.createRadialGradient(px, py, 0, px, py, glowR);
+          g.addColorStop(0,   s.tint.replace("white","rgba(255,255,255,").replace("hsl","hsla").replace(")", `,${a * 0.18})`));
+          g.addColorStop(1,   "rgba(0,0,0,0)");
+          // Simpler: just use globalAlpha for the glow
+          ctx.globalAlpha = a * 0.15;
+          ctx.fillStyle   = s.tint;
+          ctx.beginPath();
+          ctx.arc(px, py, glowR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Organic sparkle cross — only during sparkle event
+        if (s.sparkActive && s.r > 0.8) {
+          // Sparkle lifecycle: ease in, hold, ease out
+          const life = s.sparkAge / s.sparkDuration;
+          const sparkEnv = life < 0.3
+            ? life / 0.3
+            : life > 0.7
+            ? 1 - (life - 0.7) / 0.3
+            : 1;
+          const sparkA   = a * sparkEnv * 0.75;
+          const armLen   = s.r * (5 + sparkEnv * 4);
+          const diagLen  = armLen * 0.45;
+
           ctx.strokeStyle = s.tint;
-          ctx.lineWidth   = 0.8;
-          ctx.lineCap     = "round";
+
+          // Main cross — tapered lines (wide at center, narrow at tip)
+          // Achieved by drawing two paths with different lineWidths
+          ctx.globalAlpha = sparkA;
+          ctx.lineWidth   = 0.6 + s.r * 0.3;
           ctx.beginPath();
-          ctx.moveTo(s.x - armLen, s.y); ctx.lineTo(s.x + armLen, s.y);
-          ctx.moveTo(s.x, s.y - armLen); ctx.lineTo(s.x, s.y + armLen);
+          ctx.moveTo(px - armLen, py); ctx.lineTo(px + armLen, py);
+          ctx.moveTo(px, py - armLen); ctx.lineTo(px, py + armLen);
           ctx.stroke();
-          // Diagonal arms, shorter and fainter
-          const dLen = armLen * 0.55;
-          ctx.globalAlpha = sparkA * 0.5;
+
+          // Fine inner bright core of cross
+          ctx.globalAlpha = sparkA * 0.9;
+          ctx.lineWidth   = 0.3;
           ctx.beginPath();
-          ctx.moveTo(s.x - dLen, s.y - dLen); ctx.lineTo(s.x + dLen, s.y + dLen);
-          ctx.moveTo(s.x + dLen, s.y - dLen); ctx.lineTo(s.x - dLen, s.y + dLen);
+          ctx.moveTo(px - armLen * 0.6, py); ctx.lineTo(px + armLen * 0.6, py);
+          ctx.moveTo(px, py - armLen * 0.6); ctx.lineTo(px, py + armLen * 0.6);
+          ctx.stroke();
+
+          // Diagonal arms — shorter, much fainter, slightly rotated for asymmetry
+          const rot = 0.03; // slight organic tilt
+          ctx.globalAlpha = sparkA * 0.28;
+          ctx.lineWidth   = 0.4;
+          ctx.beginPath();
+          ctx.moveTo(px - diagLen * Math.cos(Math.PI*0.25 + rot), py - diagLen * Math.sin(Math.PI*0.25 + rot));
+          ctx.lineTo(px + diagLen * Math.cos(Math.PI*0.25 + rot), py + diagLen * Math.sin(Math.PI*0.25 + rot));
+          ctx.moveTo(px + diagLen * Math.cos(Math.PI*0.75 + rot), py - diagLen * Math.sin(Math.PI*0.75 + rot));
+          ctx.lineTo(px - diagLen * Math.cos(Math.PI*0.75 + rot), py + diagLen * Math.sin(Math.PI*0.75 + rot));
           ctx.stroke();
         }
 
         ctx.globalAlpha = 1;
       }
+
+      ctx.restore();
       updateStreaks(dt);
       renderStreaks();
     }

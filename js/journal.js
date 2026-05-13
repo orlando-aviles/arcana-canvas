@@ -241,15 +241,46 @@ window.Journal = (() => {
         ${imgSrc
           ? `<img src="${imgSrc}" alt="${displayName}" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
-        <button class="jo-card-remove" data-idx="${i}" title="Remove">✕</button>
+        <div class="jo-card-confirm" data-idx="${i}">
+          <span class="jo-card-confirm-name">${displayName}</span>
+          <button class="jo-card-confirm-btn" data-idx="${i}">Remove</button>
+          <button class="jo-card-cancel-btn">Cancel</button>
+        </div>
       </div>`;
     }).join("");
 
-    // Tap card image → open in index
+    const HOLD_MS = 500;
+    let holdTimer = null;
+
+    function showConfirm(thumb) {
+      // Hide any other open confirms first
+      joCardsStrip.querySelectorAll(".jo-card-confirm.visible")
+        .forEach(el => el.classList.remove("visible"));
+      thumb.querySelector(".jo-card-confirm")?.classList.add("visible");
+    }
+    function hideConfirm(thumb) {
+      thumb.querySelector(".jo-card-confirm")?.classList.remove("visible");
+    }
+
     joCardsStrip.querySelectorAll(".jo-card-thumb").forEach(thumb => {
+      // Hold to show confirm
+      thumb.addEventListener("mousedown", () => {
+        holdTimer = setTimeout(() => showConfirm(thumb), HOLD_MS);
+      });
+      thumb.addEventListener("mouseup",   () => clearTimeout(holdTimer));
+      thumb.addEventListener("mouseleave",() => clearTimeout(holdTimer));
+
+      thumb.addEventListener("touchstart", (e) => {
+        holdTimer = setTimeout(() => { showConfirm(thumb); }, HOLD_MS);
+      }, { passive: true });
+      thumb.addEventListener("touchend",   () => clearTimeout(holdTimer), { passive: true });
+      thumb.addEventListener("touchmove",  () => clearTimeout(holdTimer), { passive: true });
+
+      // Short tap → open in index (only if confirm not showing)
       thumb.addEventListener("click", (e) => {
-        // Don't navigate if remove button was tapped
-        if (e.target.classList.contains("jo-card-remove")) return;
+        if (e.target.closest(".jo-card-confirm")) return;
+        const confirm = thumb.querySelector(".jo-card-confirm");
+        if (confirm?.classList.contains("visible")) { hideConfirm(thumb); return; }
         const filename = thumb.dataset.filename;
         const card = CardData.getByNameOrFile(filename);
         if (card) {
@@ -263,8 +294,8 @@ window.Journal = (() => {
       });
     });
 
-    // Remove button
-    joCardsStrip.querySelectorAll(".jo-card-remove").forEach(btn => {
+    // Confirm remove
+    joCardsStrip.querySelectorAll(".jo-card-confirm-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const idx = parseInt(btn.dataset.idx);
@@ -273,6 +304,14 @@ window.Journal = (() => {
         entry.updatedAt = Date.now();
         saveEntry(currentDay, entry);
         renderCardsStrip(entry.cards);
+      });
+    });
+
+    // Cancel
+    joCardsStrip.querySelectorAll(".jo-card-cancel-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        btn.closest(".jo-card-confirm")?.classList.remove("visible");
       });
     });
   }
