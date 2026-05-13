@@ -82,6 +82,10 @@ window.CardIndex = (() => {
         <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
       </div>
       <div class="ci-card-info" id="ciCardInfo"></div>
+      <div class="ci-journal-actions" id="ciJournalActions">
+        <button class="ci-journal-btn" id="ciSaveToJournal">✎ Save to Today</button>
+        <button class="ci-journal-btn ci-journal-go" id="ciGoToJournal">Go to Journal →</button>
+      </div>
       <div class="ci-nav-dots" id="ciNavDots"></div>
     </div>
 
@@ -108,6 +112,20 @@ window.CardIndex = (() => {
   const ciNavDots    = overlay.querySelector("#ciNavDots");
   const ciLightbox   = overlay.querySelector("#ciLightbox");
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
+  const ciSaveBtn    = overlay.querySelector("#ciSaveToJournal");
+  const ciGoJournal  = overlay.querySelector("#ciGoToJournal");
+
+  // Journal buttons
+  ciSaveBtn.addEventListener("click", () => {
+    if (!currentCard?.imageName) return;
+    if (window.Journal) Journal.saveCardToToday(currentCard.imageName);
+    ciSaveBtn.textContent = "\u2726 Saved!";
+    setTimeout(() => { ciSaveBtn.textContent = "\u270E Save to Today"; }, 1500);
+  });
+  ciGoJournal.addEventListener("click", () => {
+    close();
+    if (window.Journal) Journal.openToday();
+  });
 
   // ── Nav list builders ─────────────────────────────────
   function buildFullNavList() {
@@ -438,6 +456,7 @@ window.CardIndex = (() => {
   // ── Open / close ──────────────────────────────────────
   // open() — full index from menu
   function open() {
+    if (window.Journal) Journal.close();
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";
@@ -480,5 +499,5 @@ window.CardIndex = (() => {
     document.body.style.overflow = "";
   }
 
-  return { open, openSpread, close };
+  return { open, openSpread, close, _showDetailAtIdx: showDetailAtIdx };
 })();

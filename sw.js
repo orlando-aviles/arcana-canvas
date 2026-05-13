@@ -1,4 +1,4 @@
-const CACHE_NAME  = 'arcana-cache-v15';
+const CACHE_NAME  = 'arcana-cache-v16';
 const IMAGE_CACHE = 'arcana-images-v1'; // separate — survives core cache bumps
 
 const CORE_FILES = [
@@ -14,6 +14,7 @@ const CORE_FILES = [
   './js/meanings.js',
   './js/cardData.js',
   './js/cardIndex.js',
+  './js/journal.js',
   './js/tarot.js',
   './js/tarotDeck.js',
   './js/ui.js',

@@ -17,6 +17,11 @@ document.addEventListener("click", () => { if (menuPanel.classList.contains("ope
 /*********************************************************
  * CLEAR
  *********************************************************/
+document.getElementById("journalBtn").addEventListener("click", () => {
+  closeMenu();
+  Journal.open();
+});
+
 document.getElementById("cardIndexBtn").addEventListener("click", () => {
   closeMenu();
   CardIndex.open();
