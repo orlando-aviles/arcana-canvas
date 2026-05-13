@@ -69,7 +69,9 @@ window.Snowfall = (() => {
   function tick(now) {
     if (!rafId) return;
     if (window._appHidden) { rafId = requestAnimationFrame(tick); return; }
-    const dt = Math.min(0.05, (now - last) / 1000);
+    // Clamp dt tightly — interaction events can cause long frames
+    // that make flakes jump. Cap at 33ms (30fps equivalent).
+    const dt = Math.min(0.033, (now - last) / 1000);
     last = now;
     ctx.clearRect(0, 0, W, H);
     const mult = FX.intensity;
@@ -77,11 +79,13 @@ window.Snowfall = (() => {
     const wx = windAt(now);
     for (const f of flakes) {
       f.y += f.vy * dt;
+      // Accumulate x drift into f.x so wrapping stays correct
+      f.x += wx * f.windSens * dt;
       const sway  = Math.sin(now / 1000 * f.swaySpeed * Math.PI * 2 + f.swayPhase) * f.swayAmp;
-      const drawX = f.x + (wx * f.windSens * dt * 60) + sway;
+      const drawX = f.x + sway;
       if (f.y > H + 10) { f.y = -f.r * 2; f.x = rand(0, W); f.swayPhase = rand(0, Math.PI * 2); }
-      if      (drawX < -20)    f.x += W + 40;
-      else if (drawX > W + 20) f.x -= W + 40;
+      if      (f.x < -20)    f.x += W + 40;
+      else if (f.x > W + 20) f.x -= W + 40;
       ctx.save();
       ctx.globalAlpha = f.alpha * mult;
       if (f.glow) {

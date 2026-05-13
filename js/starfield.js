@@ -186,7 +186,7 @@ window.Starfield = (() => {
   function tick(now) {
     if (!running) return;
     if (window._appHidden) { requestAnimationFrame(tick); return; }
-    const dt = Math.min(.05, (now - last) / 1000);
+    const dt = Math.min(.033, (now - last) / 1000);
     last = now;
 
     updateMorph(now);
@@ -226,26 +226,17 @@ window.Starfield = (() => {
           }
         }
 
-        // Draw star dot — slightly soft edge for organic feel
+        // Draw star dot — use shadow blur for soft glow on larger stars
         ctx.globalAlpha = a;
         ctx.fillStyle   = s.tint;
+        if (s.r > 0.85) {
+          ctx.shadowColor = s.tint;
+          ctx.shadowBlur  = s.r * 4;
+        }
         ctx.beginPath();
         ctx.arc(px, py, s.r, 0, Math.PI * 2);
         ctx.fill();
-
-        // Diffuse soft glow on mid/bright stars
-        if (s.r > 0.85) {
-          const glowR = s.r * 3.5;
-          const g = ctx.createRadialGradient(px, py, 0, px, py, glowR);
-          g.addColorStop(0,   s.tint.replace("white","rgba(255,255,255,").replace("hsl","hsla").replace(")", `,${a * 0.18})`));
-          g.addColorStop(1,   "rgba(0,0,0,0)");
-          // Simpler: just use globalAlpha for the glow
-          ctx.globalAlpha = a * 0.15;
-          ctx.fillStyle   = s.tint;
-          ctx.beginPath();
-          ctx.arc(px, py, glowR, 0, Math.PI * 2);
-          ctx.fill();
-        }
+        ctx.shadowBlur = 0;
 
         // Organic sparkle cross — only during sparkle event
         if (s.sparkActive && s.r > 0.8) {
