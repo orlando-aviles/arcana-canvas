@@ -68,92 +68,62 @@ window.Journal = (() => {
   overlay.setAttribute("aria-label", "Journal");
 
   overlay.innerHTML = `
-    <div class="jo-header">
-      <button class="jo-back" id="joBack" aria-label="Back to calendar">←</button>
-      <span class="jo-title" id="joTitle">Journal</span>
-      <button class="jo-close" id="joClose" aria-label="Close">✕</button>
-    </div>
-
-    <div class="jo-cal-view" id="joCalView">
-      <div class="jo-cal-nav">
-        <button class="jo-cal-arrow" id="joCalPrev">‹</button>
-        <span class="jo-cal-month" id="joCalMonth"></span>
-        <button class="jo-cal-arrow" id="joCalNext">›</button>
-      </div>
-      <div class="jo-cal-grid" id="joCalGrid"></div>
-      <div class="jo-cal-legend">
-        <span>Less</span>
-        <span class="jo-shade jo-shade-0"></span>
-        <span class="jo-shade jo-shade-1"></span>
-        <span class="jo-shade jo-shade-2"></span>
-        <span class="jo-shade jo-shade-3"></span>
-        <span class="jo-shade jo-shade-4"></span>
-        <span class="jo-shade jo-shade-5"></span>
-        <span class="jo-shade jo-shade-6"></span>
-        <span>1000✦</span>
-      </div>
-    </div>
-
-    <div class="jo-day-view" id="joDayView">
-      <div class="jo-day-header">
-        <div class="jo-day-date-row">
-          <div class="jo-day-date" id="joDayDate"></div>
-          <button class="jo-cal-jump-btn" id="joCalJumpBtn" title="Jump to date">&#x25A6;</button>
+    <div class="jo-day-view jo-active" id="joDayView">
+      <!-- Mini popup calendar -->
+      <div class="jo-mini-cal" id="joMiniCal">
+        <div class="jo-mini-cal-nav">
+          <button class="jo-cal-arrow" id="joMiniPrev">&#x2039;</button>
+          <span class="jo-mini-cal-month" id="joMiniMonth"></span>
+          <button class="jo-cal-arrow" id="joMiniNext">&#x203a;</button>
         </div>
+        <div class="jo-mini-cal-grid" id="joMiniGrid"></div>
+      </div>
+
+      <div class="jo-day-header">
+        <div class="jo-day-date" id="joDayDate"></div>
         <div class="jo-word-meta">
           <span id="joWordCount">0</span> / ${WORD_TARGET}
           <span class="jo-muted" id="joRemaining"></span>
         </div>
       </div>
-      <!-- Mini popup calendar for date jumping -->
-      <div class="jo-mini-cal" id="joMiniCal">
-        <div class="jo-mini-cal-nav">
-          <button class="jo-cal-arrow" id="joMiniPrev">‹</button>
-          <span class="jo-mini-cal-month" id="joMiniMonth"></span>
-          <button class="jo-cal-arrow" id="joMiniNext">›</button>
-        </div>
-        <div class="jo-mini-cal-grid" id="joMiniGrid"></div>
-      </div>
       <div class="jo-progress-bar"><div class="jo-progress-fill" id="joProgressFill"></div></div>
       <div class="jo-cards-strip" id="joCardsStrip"></div>
-      <textarea class="jo-paper" id="joPaper" placeholder="Write freely…"></textarea>
+      <div class="jo-paper-wrap">
+        <textarea class="jo-paper" id="joPaper" placeholder="Write freely\u2026"></textarea>
+      </div>
     </div>
+
     <div class="jo-bottom-bar">
-      <button class="jo-bottom-btn" id="joToIndex" title="Card Index">&#x2726;</button>
+      <button class="jo-bottom-btn" id="joClose"      title="Close">&#x2715;</button>
+      <button class="jo-bottom-btn" id="joToIndex"    title="Card Index">&#x2726;</button>
+      <button class="jo-bottom-btn" id="joCalJumpBtn" title="Jump to date">&#x25A6;</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
   // ── Refs ──────────────────────────────────────────────
-  const joBack        = overlay.querySelector("#joBack");
   const joClose       = overlay.querySelector("#joClose");
-  const joTitle       = overlay.querySelector("#joTitle");
-  const joCalView     = overlay.querySelector("#joCalView");
   const joDayView     = overlay.querySelector("#joDayView");
-  const joCalGrid     = overlay.querySelector("#joCalGrid");
-  const joCalMonth    = overlay.querySelector("#joCalMonth");
-  const joCalPrev     = overlay.querySelector("#joCalPrev");
-  const joCalNext     = overlay.querySelector("#joCalNext");
   const joDayDate     = overlay.querySelector("#joDayDate");
   const joWordCount   = overlay.querySelector("#joWordCount");
   const joRemaining   = overlay.querySelector("#joRemaining");
   const joProgressFill= overlay.querySelector("#joProgressFill");
   const joCardsStrip  = overlay.querySelector("#joCardsStrip");
   const joPaper       = overlay.querySelector("#joPaper");
-  const joToIndex     = overlay.querySelector("#joToIndex");
-  joToIndex.addEventListener("click", () => {
-    close();
-    if (window.CardIndex) CardIndex.open();
-  });
   const joCalJumpBtn  = overlay.querySelector("#joCalJumpBtn");
   const joMiniCal     = overlay.querySelector("#joMiniCal");
   const joMiniMonth   = overlay.querySelector("#joMiniMonth");
   const joMiniGrid    = overlay.querySelector("#joMiniGrid");
   const joMiniPrev    = overlay.querySelector("#joMiniPrev");
   const joMiniNext    = overlay.querySelector("#joMiniNext");
+  const joToIndex     = overlay.querySelector("#joToIndex");
+  joToIndex.addEventListener("click", () => {
+    close();
+    if (window.CardIndex) CardIndex.open();
+  });
 
-  // ── Mini popup calendar ─────────────────────────────────────────────
+    // ── Mini popup calendar ─────────────────────────────────────────────
   let miniCalYear  = new Date().getFullYear();
   let miniCalMonth = new Date().getMonth();
 
@@ -210,7 +180,7 @@ window.Journal = (() => {
   // Close mini cal on outside tap
   overlay.addEventListener("click", () => closeMiniCal());
 
-  // ── Calendar ──────────────────────────────────────────
+  // ── Calendar helpers ──────────────────────────────────
   const MONTH_NAMES = ["January","February","March","April","May","June",
                        "July","August","September","October","November","December"];
   const DAY_NAMES   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
@@ -225,57 +195,7 @@ window.Journal = (() => {
     return 6;
   }
 
-  function renderCalendar() {
-    joCalMonth.textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
-    const today = todayKey();
 
-    // First day of month, number of days
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
-
-    let html = "";
-    // Day name headers
-    DAY_NAMES.forEach(d => { html += `<div class="jo-cal-day-name">${d}</div>`; });
-
-    // Empty cells before first day
-    for (let i = 0; i < firstDay; i++) {
-      html += `<div class="jo-cal-cell jo-cal-empty"></div>`;
-    }
-
-    // Day cells
-    for (let d = 1; d <= daysInMonth; d++) {
-      const dateKey = `${calYear}-${String(calMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-      const entry   = getEntry(dateKey);
-      const shade   = shadeForWords(entry.wordCount || 0);
-      const hasCards= entry.cards && entry.cards.length > 0;
-      const isToday = dateKey === today;
-      const isFuture= dateKey > today;
-
-      html += `<div class="jo-cal-cell jo-shade-${shade}${isToday ? " jo-today" : ""}${isFuture ? " jo-future" : ""}"
-                    data-date="${dateKey}">
-        <span class="jo-cal-num">${d}</span>
-        ${hasCards ? `<span class="jo-cal-dot"></span>` : ""}
-      </div>`;
-    }
-
-    joCalGrid.innerHTML = html;
-
-    joCalGrid.querySelectorAll(".jo-cal-cell[data-date]").forEach(cell => {
-      if (cell.classList.contains("jo-future")) return;
-      cell.addEventListener("click", () => openDay(cell.dataset.date));
-    });
-  }
-
-  joCalPrev.addEventListener("click", () => {
-    calMonth--;
-    if (calMonth < 0) { calMonth = 11; calYear--; }
-    renderCalendar();
-  });
-  joCalNext.addEventListener("click", () => {
-    calMonth++;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
-    renderCalendar();
-  });
 
   // ── Day view ──────────────────────────────────────────
   function openDay(dateKey) {
@@ -283,9 +203,6 @@ window.Journal = (() => {
     const entry = getEntry(dateKey);
     const isToday = dateKey === todayKey();
 
-    joTitle.textContent = dateKey;
-    joBack.style.display = "flex";
-    joCalView.classList.remove("jo-active");
     joDayView.classList.add("jo-active");
 
     // Format date nicely
@@ -318,6 +235,8 @@ window.Journal = (() => {
       joCardsStrip.innerHTML = `<div class="jo-cards-empty">No cards saved to this entry yet.</div>`;
       return;
     }
+    // Enable horizontal scroll only when more than 5 cards
+    joCardsStrip.classList.toggle("scrollable", cards.length > 5);
     joCardsStrip.innerHTML = cards.map((filename, i) => {
       const card = CardData.getByNameOrFile(filename);
       // Use active deck if available, fall back to LuminousArc
@@ -441,51 +360,23 @@ window.Journal = (() => {
   }
 
   // ── Navigation ────────────────────────────────────────
-  function goBack() {
-    joTitle.textContent = "Journal";
-    joBack.style.display = "none";
-    joDayView.classList.remove("jo-active");
-    joCalView.classList.add("jo-active");
-    // Reset calendar to current month/year when going back
-    calMonth = new Date().getMonth();
-    calYear  = new Date().getFullYear();
-    renderCalendar();
-  }
-
-  joBack.addEventListener("click", goBack);
   joClose.addEventListener("click", close);
 
   document.addEventListener("keydown", (e) => {
     if (!isOpen) return;
-    if (e.key === "Escape") {
-      if (joDayView.classList.contains("jo-active")) goBack();
-      else close();
-    }
+    if (e.key === "Escape") close();
   });
 
   // ── Open / close ──────────────────────────────────────
-  function open(goToToday = false) {
-    // Close index if open
+  function open() {
     if (window.CardIndex) CardIndex.close();
-
     isOpen = true;
     overlay.classList.add("jo-open");
-    joBack.style.display = "none";
     document.body.style.overflow = "hidden";
-
-    if (goToToday) {
-      openDay(todayKey());
-    } else {
-      joTitle.textContent = "Journal";
-      joDayView.classList.remove("jo-active");
-      joCalView.classList.add("jo-active");
-      calMonth = new Date().getMonth();
-      calYear  = new Date().getFullYear();
-      renderCalendar();
-    }
+    openDay(todayKey());
   }
 
-  function openToday() { open(true); }
+  function openToday() { open(); }
 
   function close() {
     isOpen = false;

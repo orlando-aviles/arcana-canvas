@@ -88,10 +88,6 @@ window.CardIndex = (() => {
         <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
       </div>
       <div class="ci-card-info" id="ciCardInfo"></div>
-      <div class="ci-journal-actions" id="ciJournalActions">
-        <button class="ci-journal-btn" id="ciSaveToJournal">✎ Save to Today</button>
-        <button class="ci-journal-btn ci-journal-go" id="ciGoToJournal">Go to Journal →</button>
-      </div>
       <div class="ci-nav-dots" id="ciNavDots"></div>
     </div>
 
@@ -99,7 +95,8 @@ window.CardIndex = (() => {
       <img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />
     </div>
     <div class="ci-bottom-bar">
-      <button class="ci-bottom-btn" id="ciToJournal" title="Journal">&#x270E;</button>
+      <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal">&#x270E;</button>
+      <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" style="display:none">&#x2B;</button>
     </div>
   `;
 
@@ -121,25 +118,21 @@ window.CardIndex = (() => {
   const ciNavDots    = overlay.querySelector("#ciNavDots");
   const ciLightbox   = overlay.querySelector("#ciLightbox");
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
-  const ciSaveBtn    = overlay.querySelector("#ciSaveToJournal");
-  const ciGoJournal  = overlay.querySelector("#ciGoToJournal");
-
-  // Journal buttons
+  // Save card in bottom bar
   // Bottom bar nav
   overlay.querySelector("#ciToJournal").addEventListener("click", () => {
     close();
     if (window.Journal) Journal.open();
   });
 
-  ciSaveBtn.addEventListener("click", () => {
+  // Save button in bottom bar — only visible in detail view
+  const ciSaveCard = overlay.querySelector("#ciSaveCard");
+  ciSaveCard.addEventListener("click", () => {
     if (!currentCard?.imageName) return;
     if (window.Journal) Journal.saveCardToToday(currentCard.imageName);
-    ciSaveBtn.textContent = "\u2726 Saved!";
-    setTimeout(() => { ciSaveBtn.textContent = "\u270E Save to Today"; }, 1500);
-  });
-  ciGoJournal.addEventListener("click", () => {
-    close();
-    if (window.Journal) Journal.openToday();
+    ciSaveCard.textContent = "✦";
+    ciSaveCard.style.color = "var(--auraColor)";
+    setTimeout(() => { ciSaveCard.textContent = "✛"; ciSaveCard.style.color = ""; }, 1500);
   });
 
   // ── Nav list builders ─────────────────────────────────
@@ -246,6 +239,9 @@ window.CardIndex = (() => {
 
   // ── Detail view ───────────────────────────────────────
   function showDetailAtIdx(idx) {
+    // Show save button in detail view
+    const saveBtn = overlay.querySelector("#ciSaveCard");
+    if (saveBtn) saveBtn.style.display = "flex";
     // Sync deck toggle buttons on every detail render
     overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.deck === activeDeck);
@@ -464,8 +460,9 @@ window.CardIndex = (() => {
 
   // ── Navigation ────────────────────────────────────────
   function goBack() {
+    const saveBtn = overlay.querySelector("#ciSaveCard");
+    if (saveBtn) saveBtn.style.display = "none";
     if (mode === "spread") {
-      // In spread mode, back = close entirely (return to canvas)
       close();
     } else {
       currentCard = null;
