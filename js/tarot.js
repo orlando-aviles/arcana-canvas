@@ -217,15 +217,15 @@ const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
 
 function showDesc(card) {
-  const filename    = cardDisplayName(card);
-  const isReversed  = filename.endsWith(" (R)");
-  const cleanFile   = filename.replace(/ \(R\)$/, "");
+  const filename = cardDisplayName(card);
+  // Reversed state lives in card.rot — a rotation near π means reversed
+  const isReversed = App.reversals && !!card.rot && (Math.abs(card.rot % (Math.PI * 2)) > Math.PI / 2);
+  const cleanFile  = filename.replace(/ \(R\)$/, "");
   const displayName = CardData.fromFilename(cleanFile) || cleanFile;
   const orientation = isReversed ? "Reversed" : "Upright";
 
-  descTitle.textContent = displayName;
-  // Overlay shows ONLY the active orientation meaning
-  descBody.innerHTML = `<span class="desc-orientation-label">${orientation}</span>${CardData.getMeaningByNameOrFile(cleanFile, isReversed)}`;
+  descTitle.innerHTML = displayName + ` <span class="desc-orientation-label">${orientation}</span>`;
+  descBody.textContent = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
   descOverlay.dataset.cardName = cleanFile;
   descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");
