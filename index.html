@@ -58,6 +58,49 @@
       <div id="descBody" class="descBody"></div>
     </div>
 
+    <!-- Atmosphere panel -->
+    <div id="atmospherePanel" class="atmo-panel" aria-hidden="true">
+      <div class="atmo-header">
+        <span class="atmo-title">Atmosphere</span>
+        <button class="atmo-close" id="atmosphereClose">✕</button>
+      </div>
+      <div class="atmo-body">
+        <div class="sliderRow">
+          <select id="bgSelect">
+            <option value="starfield">Starfield</option>
+            <option value="particles">Animus</option>
+            <option value="snowfall">Snowfall</option>
+          </select>
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow">
+            <span>Intensity</span>
+            <span class="sliderValue" id="intensityValue">80%</span>
+          </div>
+          <input id="intensitySlider" type="range" min="0" max="100" value="80" />
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow">
+            <span>Hue A</span>
+            <span class="sliderValue" id="hueAValue">245°</span>
+          </div>
+          <input id="hueASlider" type="range" min="0" max="360" value="245" />
+          <div class="huePreview"></div>
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow">
+            <span>Hue B</span>
+            <span class="sliderValue" id="hueBValue">285°</span>
+          </div>
+          <input id="hueBSlider" type="range" min="0" max="360" value="285" />
+          <div class="huePreview"></div>
+        </div>
+        <div class="sliderRow">
+          <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Hamburger button -->
     <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">
       <span class="bar"></span>
@@ -109,43 +152,13 @@
 
       <div class="divider"></div>
 
-      <!-- ATMOSPHERE -->
-      <div class="sectionTitle">Atmosphere</div>
-      <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Intensity</span>
-          <span class="sliderValue" id="intensityValue">80%</span>
-        </div>
-        <input id="intensitySlider" type="range" min="0" max="100" value="80" />
-      </div>
-      <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Hue A</span>
-          <span class="sliderValue" id="hueAValue">245°</span>
-        </div>
-        <input id="hueASlider" type="range" min="0" max="360" value="245" />
-        <div class="huePreview"></div>
-      </div>
-      <div class="sliderRow">
-        <div class="sliderLabelRow">
-          <span>Hue B</span>
-          <span class="sliderValue" id="hueBValue">285°</span>
-        </div>
-        <input id="hueBSlider" type="range" min="0" max="360" value="285" />
-        <div class="huePreview"></div>
-      </div>
-      <div class="sliderRow">
-        <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
-      </div>
-
-      <div class="divider"></div>
-
       <!-- ACTIONS -->
       <div class="sectionTitle">Actions</div>
         <div class="actionBtnRow">
-          <button id="journalBtn"   type="button" class="actionIconBtn" title="Journal">&#x270E;</button>
-          <button id="cardIndexBtn" type="button" class="actionIconBtn" title="Card Index">&#x2726;</button>
-          <button id="clearBtn"     type="button" class="actionIconBtn" title="Clear Canvas">&#x2298;</button>
+          <button id="journalBtn"    type="button" class="actionIconBtn" title="Journal">&#x270E;</button>
+          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index">&#x2726;</button>
+          <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Atmosphere">&#x2600;</button>
+          <button id="clearBtn"      type="button" class="actionIconBtn" title="Clear Canvas">&#x2298;</button>
         </div>
 
     </div>

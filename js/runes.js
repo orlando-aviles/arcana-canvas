@@ -1,12 +1,12 @@
 /*********************************************************
- * RUNES DECK — Elder Futhark + Wyrd (blank)
+ * RUNES DECK — Elder Futhark (24)
  * Each rune is a smooth stone SVG rendered to an
  * offscreen canvas, with the rune glyph etched over it
  * in the active aura color. Floating stone, no card frame.
  *********************************************************/
 window.Runes = (() => {
 
-  // ── Elder Futhark 24 + Wyrd ────────────────────────────
+  // ── Elder Futhark 24 ─────────────────────────────────────
   // Each rune: name, phoneme, meaning, and a draw fn
   // draw(ctx, cx, cy, size, color, accentColor)
   // size = radius of the stone's short axis
@@ -257,18 +257,6 @@ window.Runes = (() => {
         line(ctx, -s*.36, 0,  0,     -s*.52);
         line(ctx, -s*.36, 0, -s*.36,  s*.55);
         line(ctx,  s*.36, 0,  s*.36,  s*.55);
-      }
-    },
-    {
-      name: "Wyrd", phoneme: "—",
-      meaning: "The blank rune — Fate, the unknowable, destiny",
-      draw(ctx, s, c, a) {
-        // blank — just a faint dot at centre
-        ctx.save();
-        ctx.globalAlpha = 0.25;
-        ctx.fillStyle = c;
-        ctx.beginPath(); ctx.arc(0, 0, s*.08, 0, Math.PI*2); ctx.fill();
-        ctx.restore();
       }
     },
   ];

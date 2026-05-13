@@ -37,9 +37,38 @@ window.Starfield = (() => {
     return `hsl(${normalizeHue(roll < 0.87 ? hueA : hueB)} 90% 76%)`;
   }
 
-  // Slow drift for parallax — each star has its own layer speed
-  const driftOffset = { x: 0, y: 0 }; // updated in tick
+  // ── Parallax system ────────────────────────────────────
+  // Gyroscope when available, slow time-based drift as fallback
+  const parallax = { x: 0, y: 0, targetX: 0, targetY: 0 };
+  let gyroAvailable = false;
   let driftTime = 0;
+
+  // Gyroscope
+  function onDeviceOrientation(e) {
+    if (!gyroAvailable) gyroAvailable = true;
+    // gamma = left/right tilt (-90 to 90), beta = front/back (-180 to 180)
+    const gx = Math.max(-30, Math.min(30, e.gamma || 0));
+    const gy = Math.max(-30, Math.min(30, (e.beta || 0) - 45)); // subtract 45° for natural hold angle
+    parallax.targetX = (gx / 30) * 40;   // max 40px shift
+    parallax.targetY = (gy / 30) * 25;
+  }
+
+  if (window.DeviceOrientationEvent) {
+    // iOS 13+ requires permission
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      // Will be requested on first user interaction
+      window._requestGyro = () => {
+        DeviceOrientationEvent.requestPermission()
+          .then(r => { if (r === "granted") window.addEventListener("deviceorientation", onDeviceOrientation); })
+          .catch(() => {});
+      };
+      window.addEventListener("pointerdown", () => {
+        if (!gyroAvailable && window._requestGyro) { window._requestGyro(); window._requestGyro = null; }
+      }, { once: true });
+    } else {
+      window.addEventListener("deviceorientation", onDeviceOrientation, { passive: true });
+    }
+  }
 
   function makeStar() {
     const pop = Math.random();
@@ -193,10 +222,15 @@ window.Starfield = (() => {
     drawBg();
 
     if (starsVisible) {
-      // Parallax drift — slow sinusoidal wander, different phase per axis
+      // Parallax — gyroscope if available, drift fallback
       driftTime += dt;
-      driftOffset.x = Math.sin(driftTime * 0.07) * 22 + Math.cos(driftTime * 0.031) * 10;
-      driftOffset.y = Math.cos(driftTime * 0.05) * 14 + Math.sin(driftTime * 0.042) * 8;
+      if (!gyroAvailable) {
+        parallax.targetX = Math.sin(driftTime * 0.07) * 22 + Math.cos(driftTime * 0.031) * 10;
+        parallax.targetY = Math.cos(driftTime * 0.05) * 14 + Math.sin(driftTime * 0.042) * 8;
+      }
+      // Smooth lerp toward target (gyro or drift)
+      parallax.x += (parallax.targetX - parallax.x) * Math.min(1, dt * 4);
+      parallax.y += (parallax.targetY - parallax.y) * Math.min(1, dt * 4);
 
       const mult = FX.intensity;
       ctx.save();
@@ -204,8 +238,8 @@ window.Starfield = (() => {
 
       for (const s of stars) {
         // Parallax: near stars move more, far stars barely move
-        const px = s.x + driftOffset.x * s.depth;
-        const py = s.y + driftOffset.y * s.depth;
+        const px = s.x + parallax.x * s.depth;
+        const py = s.y + parallax.y * s.depth;
 
         // Base twinkle — subtle breath, not flashy
         const tw = s.baseA * (1 - s.twAmp * 0.4 + s.twAmp * 0.4 * Math.sin((now/1000) * s.twSpeed + s.twPhase));

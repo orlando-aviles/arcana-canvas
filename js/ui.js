@@ -11,6 +11,31 @@ window.toggleMenu = toggleMenu;
 window.closeMenu  = closeMenu;
 
 menuBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleMenu(); });
+
+/*********************************************************
+ * ATMOSPHERE PANEL
+ *********************************************************/
+const atmospherePanel = document.getElementById("atmospherePanel");
+const atmosphereClose = document.getElementById("atmosphereClose");
+const atmosphereBtn   = document.getElementById("atmosphereBtn");
+
+function openAtmosphere()  {
+  closeMenu();
+  atmospherePanel.classList.add("atmo-open");
+  atmospherePanel.setAttribute("aria-hidden","false");
+}
+function closeAtmosphere() {
+  atmospherePanel.classList.remove("atmo-open");
+  atmospherePanel.setAttribute("aria-hidden","true");
+}
+
+atmosphereBtn.addEventListener("click",  () => openAtmosphere());
+atmosphereClose.addEventListener("click",() => closeAtmosphere());
+document.addEventListener("pointerdown", (e) => {
+  if (!atmospherePanel.contains(e.target) && e.target !== atmosphereBtn) {
+    closeAtmosphere();
+  }
+});
 menuPanel.addEventListener("click", (e) => e.stopPropagation());
 document.addEventListener("click", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
 

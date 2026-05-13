@@ -96,7 +96,11 @@ window.Snowfall = (() => {
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(drawX, f.y, f.r * 2.4, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      // Large flakes tinted with aura hue, small ones stay white
+      const hue = (typeof FX !== "undefined") ? FX.hueA : 245;
+      ctx.fillStyle = f.r > 1.6
+        ? `hsla(${hue}, 60%, 80%, 0.88)`
+        : "rgba(255,255,255,0.92)";
       ctx.beginPath(); ctx.arc(drawX, f.y, f.r, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
