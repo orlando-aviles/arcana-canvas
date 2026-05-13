@@ -150,7 +150,7 @@ window.CardIndex = (() => {
         if (card) {
           // Detect reversed from rotation, not name
           const isReversed = !!d.rot && (Math.abs(d.rot % (Math.PI * 2)) > Math.PI / 2);
-          list.push({ ...card, reversed: isReversed });
+          list.push({ ...card, isReversedOrientation: isReversed });
         }
       }
     });
@@ -179,7 +179,7 @@ window.CardIndex = (() => {
       // Flat list for spread mode — no section headers
       cards.forEach((card, i) => {
         const imgSrc = card.imageName ? `./${activeDeck}/${card.imageName}.png` : "";
-        const revBadge = card.reversed ? `<span class="ci-rev-badge">R</span>` : "";
+        const revBadge = card.isReversedOrientation ? `<span class="ci-rev-badge">R</span>` : "";
         html += `
           <div class="ci-row" data-idx="${i}">
             <div class="ci-thumb-wrap">
@@ -259,7 +259,7 @@ window.CardIndex = (() => {
 
   function renderDetailInfo(card) {
     const inSpread    = mode === "spread";
-    const isReversed  = !!card.reversed;
+    const isReversed  = !!card.isReversedOrientation;
     const uprightClass  = inSpread ? (isReversed ? "" : "ci-meaning-active") : "";
     const reversedClass = inSpread ? (isReversed ? "ci-meaning-active" : "") : "";
     const revBadge = (inSpread && isReversed)
