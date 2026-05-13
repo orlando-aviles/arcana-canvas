@@ -65,43 +65,82 @@ function resizeTarotCanvas() {
 window.addEventListener("resize", resizeTarotCanvas, { passive: true });
 resizeTarotCanvas();
 
-/**** Draw dispatcher — called by click (mouse) and gestures.js (touch) ****/
+/**** Shuffled deck queues — no repeats until all cards drawn ****/
+const DeckQueues = (() => {
+  const queues = {};
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function next(key, allCards) {
+    if (!queues[key] || queues[key].length === 0) {
+      queues[key] = shuffle(allCards);
+    }
+    return queues[key].pop();
+  }
+
+  function reset() {
+    Object.keys(queues).forEach(k => delete queues[k]);
+  }
+
+  return { next, reset };
+})();
+
+/**** Draw dispatcher ****/
 function dispatchDraw(x, y) {
   const deck = App.activeDeck;
   const rev  = rollReversal();
-  // Small random tilt (-5° to +5°), reversed cards get +180°
   const baseTilt = (Math.random() * 10 - 5) * (Math.PI / 180);
   const rot = baseTilt + (rev ? Math.PI : 0);
 
   if (deck === "text") {
-    // Pick from a shuffled *copy* so the source array isn't mutated
-    const pool = tarotNames.slice();
-    shuffleArray(pool);
-    const name = rev ? pool[0] + " (R)" : pool[0];
-    const card = { type: "text", x, y, name };
+    const name = DeckQueues.next("text", tarotNames);
+    const card = { type: "text", x, y, name: rev ? name + " (R)" : name };
     draws.push(card); drawTextCard(card); return;
   }
 
   if (deck === "playing") {
-    const c = Playing.randomCard();
+    // Playing cards: 52-card deck
+    const allPlaying = [];
+    ["♠","♥","♦","♣"].forEach(suit => {
+      const ink = (suit === "♥" || suit === "♦") ? "#b0122b" : "#111";
+      ["A","2","3","4","5","6","7","8","9","10","J","Q","K"].forEach(rank => {
+        allPlaying.push({ rank, suit, ink });
+      });
+    });
+    const c = DeckQueues.next("playing", allPlaying);
     const card = { type: "playing", x, y, rank: c.rank, suit: c.suit, ink: c.ink, rot };
     draws.push(card); drawPlayingCard(card); return;
   }
 
   if (deck === "riderwaite") {
-    const t = Tarot.randomCard("riderwaite");
-    const card = { type: "tarot", x, y, name: t.name, deckKey: "riderwaite", rot };
+    const name = DeckQueues.next("riderwaite", Tarot.cardNames);
+    const card = { type: "tarot", x, y, name, deckKey: "riderwaite", rot };
     draws.push(card); drawTarotCard(card); return;
   }
 
   if (deck === "luminousarc") {
-    const t = Tarot.randomCard("luminousarc");
-    const card = { type: "luminous", x, y, name: t.name, deckKey: "luminousarc", rot };
+    const name = DeckQueues.next("luminousarc", Tarot.cardNames);
+    const card = { type: "luminous", x, y, name, deckKey: "luminousarc", rot };
     draws.push(card); drawLuminousCard(card); return;
   }
 
   if (deck === "gilded") {
-    const g = GildedMinima.randomCard();
+    // Build gilded deck index list
+    const gildedAll = [];
+    for (let i = 0; i < 22; i++) gildedAll.push({ isMajor: true, majorIdx: i });
+    GildedMinima.SUITS.forEach((suit, suitIdx) => {
+      GildedMinima.MINOR_RANKS.forEach(rank => {
+        gildedAll.push({ isMajor: false, rank, suitIdx });
+      });
+    });
+    const g = DeckQueues.next("gilded", gildedAll);
     const card = { type: "gilded", x, y, rank: g.rank, suitIdx: g.suitIdx, isMajor: g.isMajor, majorIdx: g.majorIdx, rot };
     draws.push(card); drawGildedCard(card); return;
   }
@@ -109,8 +148,9 @@ function dispatchDraw(x, y) {
   if (deck === "runes") {
     const runeRev = rollReversal();
     const runeRot = (Math.random() * 10 - 5) * (Math.PI / 180) + (runeRev ? Math.PI : 0);
-    const r = Runes.randomCard();
-    const card = { type: "rune", x, y, runeIdx: r.runeIdx, rot: runeRot };
+    const allRunes = Runes.RUNES.map((_, i) => i);
+    const runeIdx  = DeckQueues.next("runes", allRunes);
+    const card = { type: "rune", x, y, runeIdx, rot: runeRot };
     draws.push(card); drawRuneCard(card); return;
   }
 }
@@ -153,6 +193,16 @@ function cardDisplayName(card) {
   return "";
 }
 
+/**** RAF-throttled drag redraw ****/
+let _dragRafId = null;
+function scheduleDragRedraw() {
+  if (_dragRafId) return;
+  _dragRafId = requestAnimationFrame(() => {
+    _dragRafId = null;
+    redrawAll();
+  });
+}
+
 /**** Interaction ****/
 // Unified system — no click event used anywhere.
 // Mouse: mousedown tracks state, mouseup draws or ends drag.
@@ -167,14 +217,17 @@ const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
 
 function showDesc(card) {
-  const filename = cardDisplayName(card); // still returns filename format for tarot/luminous
-  const isReversed = filename.endsWith(" (R)");
-  const cleanFile  = filename.replace(/ \(R\)$/, "");
-  // Resolve to display name for title
+  const filename    = cardDisplayName(card);
+  const isReversed  = filename.endsWith(" (R)");
+  const cleanFile   = filename.replace(/ \(R\)$/, "");
   const displayName = CardData.fromFilename(cleanFile) || cleanFile;
-  descTitle.textContent = displayName + (isReversed ? " (R)" : "");
-  descBody.textContent  = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
-  descOverlay.dataset.cardName = cleanFile; // filename format — openSpread resolves it
+  const orientation = isReversed ? "Reversed" : "Upright";
+
+  descTitle.textContent = displayName;
+  // Overlay shows ONLY the active orientation meaning
+  descBody.innerHTML = `<span class="desc-orientation-label">${orientation}</span>${CardData.getMeaningByNameOrFile(cleanFile, isReversed)}`;
+  descOverlay.dataset.cardName = cleanFile;
+  descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");
 }
 function hideDesc() {
@@ -239,7 +292,7 @@ tarotCanvas.addEventListener("touchmove", (e) => {
     const card = draws[_touch.cardIdx];
     card.x = t.clientX - _touch.dragOffsetX;
     card.y = t.clientY - _touch.dragOffsetY;
-    redrawAll();
+    scheduleDragRedraw();
   }
 }, { passive: false });
 
@@ -301,7 +354,7 @@ tarotCanvas.addEventListener("mousemove", (e) => {
     const card = draws[_mouse.cardIdx];
     card.x = e.clientX - _mouse.dragOffsetX;
     card.y = e.clientY - _mouse.dragOffsetY;
-    redrawAll();
+    scheduleDragRedraw();
   }
 });
 
@@ -524,6 +577,7 @@ function drawRuneCard(card) {
 function clearCanvas() {
   tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
   draws = [];
+  DeckQueues.reset();
 }
 
 function redrawAll() {

@@ -54,6 +54,18 @@ window.applyAuras = function applyAuras() {
   document.documentElement.style.setProperty("--auraColor", auraColor);
 };
 
+
+/*********************************************************
+ * VISIBILITY — pause all animation when app is backgrounded
+ * to save battery. Resumes on visibility restore.
+ *********************************************************/
+document.addEventListener("visibilitychange", () => {
+  const hidden = document.hidden;
+  // Each bg system checks this flag in its RAF loop
+  window._appHidden = hidden;
+}, { passive: true });
+window._appHidden = false;
+
 /*********************************************************
  * SERVICE WORKER
  * Skipped on localhost/127.0.0.1 so the dev server stays

@@ -68,6 +68,7 @@ window.Snowfall = (() => {
 
   function tick(now) {
     if (!rafId) return;
+    if (window._appHidden) { rafId = requestAnimationFrame(tick); return; }
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     ctx.clearRect(0, 0, W, H);

@@ -171,6 +171,7 @@ window.Starfield = (() => {
   // ── Main loop ──────────────────────────────────────────
   function tick(now) {
     if (!running) return;
+    if (window._appHidden) { requestAnimationFrame(tick); return; }
     const dt = Math.min(.05, (now - last) / 1000);
     last = now;
 

@@ -64,7 +64,8 @@ window.ParticlesBg = (() => {
   }
 
   function tick(now) {
-    if (!rafId) return; // stopped
+    if (!rafId) return;
+    if (window._appHidden) { rafId = requestAnimationFrame(tick); return; } // stopped
 
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;

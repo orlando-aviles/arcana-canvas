@@ -1108,3 +1108,19 @@ select option {
   color: var(--auraColor);
 }
 .ci-journal-go:hover { background: rgba(100,80,200,0.2); }
+
+/* ── Description overlay: orientation label ──────── */
+.desc-orientation-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  border: 1px solid var(--auraColor);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-right: 8px;
+  vertical-align: middle;
+  opacity: 0.8;
+}

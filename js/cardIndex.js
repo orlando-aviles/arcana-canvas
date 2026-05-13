@@ -254,29 +254,32 @@ window.CardIndex = (() => {
   }
 
   function renderDetailInfo(card) {
-    const isReversed = !!card.reversed;
-    const uprightClass  = isReversed ? "" : "ci-meaning-active";
-    const reversedClass = isReversed ? "ci-meaning-active" : "";
+    // In spread mode, card.reversed reflects actual orientation drawn.
+    // In full mode, card.reversed is undefined — show both neutrally.
+    const inSpread    = mode === "spread";
+    const isReversed  = !!card.reversed;
+    const uprightClass  = inSpread ? (isReversed ? "" : "ci-meaning-active") : "";
+    const reversedClass = inSpread ? (isReversed ? "ci-meaning-active" : "") : "";
+    const revBadge = inSpread && isReversed
+      ? \` <span class="ci-rev-badge">Reversed</span>\` : "";
 
-    ciCardInfo.innerHTML = `
-      <div class="ci-detail-name">
-        ${card.name}${isReversed ? ' <span class="ci-rev-badge">Reversed</span>' : ""}
-      </div>
+    ciCardInfo.innerHTML = \`
+      <div class="ci-detail-name">\${card.name}\${revBadge}</div>
       <div class="ci-detail-meta-row">
-        <span class="ci-meta-pill">${ELEMENT_GLYPH[card.element]||""} ${card.element}</span>
-        <span class="ci-meta-pill">${astroGlyph(card.astro)} ${card.astro}</span>
-        <span class="ci-meta-pill"># ${card.number}</span>
+        <span class="ci-meta-pill">\${ELEMENT_GLYPH[card.element]||""} \${card.element}</span>
+        <span class="ci-meta-pill">\${astroGlyph(card.astro)} \${card.astro}</span>
+        <span class="ci-meta-pill"># \${card.number}</span>
       </div>
-      ${card.numNote ? `<div class="ci-numerology">${card.number} — ${card.numNote}</div>` : ""}
-      <div class="ci-meaning-block ${uprightClass}">
+      \${card.numNote ? \`<div class="ci-numerology">\${card.number} — \${card.numNote}</div>\` : ""}
+      <div class="ci-meaning-block \${uprightClass}">
         <div class="ci-meaning-label">Upright</div>
-        <div class="ci-meaning-text">${card.upright}</div>
+        <div class="ci-meaning-text">\${card.upright}</div>
       </div>
-      <div class="ci-meaning-block ci-reversed-block ${reversedClass}">
+      <div class="ci-meaning-block ci-reversed-block \${reversedClass}">
         <div class="ci-meaning-label">Reversed</div>
-        <div class="ci-meaning-text">${card.reversed}</div>
+        <div class="ci-meaning-text">\${card.reversed}</div>
       </div>
-    `;
+    \`;
   }
 
   function renderNavDots() {
