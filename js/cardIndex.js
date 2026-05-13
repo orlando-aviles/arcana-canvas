@@ -18,7 +18,13 @@
 window.CardIndex = (() => {
 
   // ── State ─────────────────────────────────────────────
-  let activeDeck  = "LuminousArc";
+  // Default to whatever deck is active on canvas
+  function defaultDeck() {
+    if (!window.App) return "LuminousArc";
+    if (App.activeDeck === "riderwaite") return "RiderWaite";
+    return "LuminousArc";
+  }
+  let activeDeck = defaultDeck();
   let mode        = "full";      // "full" | "spread"
   let navList     = [];          // ordered list for swipe nav
   let navIdx      = 0;           // current position in navList
@@ -92,6 +98,9 @@ window.CardIndex = (() => {
     <div class="ci-lightbox" id="ciLightbox">
       <img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />
     </div>
+    <div class="ci-bottom-bar">
+      <button class="ci-bottom-btn" id="ciToJournal" title="Journal">&#x270E;</button>
+    </div>
   `;
 
   document.body.appendChild(overlay);
@@ -116,6 +125,12 @@ window.CardIndex = (() => {
   const ciGoJournal  = overlay.querySelector("#ciGoToJournal");
 
   // Journal buttons
+  // Bottom bar nav
+  overlay.querySelector("#ciToJournal").addEventListener("click", () => {
+    close();
+    if (window.Journal) Journal.open();
+  });
+
   ciSaveBtn.addEventListener("click", () => {
     if (!currentCard?.imageName) return;
     if (window.Journal) Journal.saveCardToToday(currentCard.imageName);
@@ -178,7 +193,9 @@ window.CardIndex = (() => {
     if (mode === "spread") {
       // Flat list for spread mode — no section headers
       cards.forEach((card, i) => {
-        const imgSrc = card.imageName ? `./${activeDeck}/${card.imageName}.png` : "";
+        const imgSrc = card.imageName
+          ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
+          : "";
         const revBadge = card.isReversedOrientation ? `<span class="ci-rev-badge">R</span>` : "";
         html += `
           <div class="ci-row" data-idx="${i}">
@@ -198,7 +215,9 @@ window.CardIndex = (() => {
         if (!groups[sec]) return;
         html += `<div class="ci-section-header">${sec}</div>`;
         groups[sec].forEach(card => {
-          const imgSrc = card.imageName ? `./${activeDeck}/${card.imageName}.png` : "";
+          const imgSrc = card.imageName
+          ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
+          : "";
           const idx = navList.indexOf(card);
           html += `
             <div class="ci-row" data-idx="${idx}">
@@ -227,6 +246,10 @@ window.CardIndex = (() => {
 
   // ── Detail view ───────────────────────────────────────
   function showDetailAtIdx(idx) {
+    // Sync deck toggle buttons on every detail render
+    overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.deck === activeDeck);
+    });
     navIdx = Math.max(0, Math.min(navList.length - 1, idx));
     const card = navList[navIdx];
     if (!card) return;
@@ -461,6 +484,7 @@ window.CardIndex = (() => {
   // open() — full index from menu
   function open() {
     if (window.Journal) Journal.close();
+    activeDeck = defaultDeck();
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";
@@ -479,6 +503,7 @@ window.CardIndex = (() => {
 
   // openSpread(filenameOrName) — spread view from description overlay
   function openSpread(filenameOrName) {
+    activeDeck = defaultDeck();
     mode = "spread";
     navList = buildSpreadNavList();
     if (navList.length === 0) return;

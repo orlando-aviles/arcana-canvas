@@ -334,13 +334,15 @@ select option {
   background: rgba(11, 14, 26, 0.92);
   border-top: 1px solid var(--auraColor);
   backdrop-filter: blur(12px);
-  padding: 18px 24px 28px;
+  padding: 10px 16px 16px;
   z-index: 30;
   pointer-events: none;
   opacity: 0;
   transform: translateY(12px);
   transition: opacity 220ms ease, transform 220ms ease;
   box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+  max-height: 35vh;
+  overflow-y: auto;
 }
 .descOverlay.visible {
   opacity: 1;
@@ -349,7 +351,7 @@ select option {
 }
 
 .descTitle {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--auraColor);
@@ -358,8 +360,8 @@ select option {
 }
 
 .descBody {
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: 12px;
+  line-height: 1.5;
   color: rgba(220, 210, 255, 0.85);
 }
 
@@ -515,7 +517,13 @@ select option {
   align-items: center;
   justify-content: center;
 }
-.ci-thumb { width: 100%; height: 100%; object-fit: cover; }
+.ci-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
 .ci-thumb-glyph {
   font-size: 24px;
   color: var(--auraColor);
@@ -559,13 +567,18 @@ select option {
 }
 .ci-card-img {
   width: min(220px, 55vw);
+  height: min(330px, 82vw);
+  object-fit: cover;
+  object-position: center top;
   border-radius: 12px;
   box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.12);
+  display: block;
 }
 .ci-card-img-placeholder {
   width: min(220px, 55vw);
-  aspect-ratio: 2/3;
+  height: min(330px, 82vw);
+  aspect-ratio: unset;
   border-radius: 12px;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.1);
@@ -955,13 +968,14 @@ select option {
   box-shadow: 0 0 8px var(--auraColor);
 }
 
-/* ── Calendar shades (0=empty, 5=full) ────────────── */
+/* ── Calendar shades (0=empty → 6=1000 words) ─────── */
 .jo-shade-0 { background: rgba(255,255,255,0.04); }
-.jo-shade-1 { background: hsla(var(--auraH, 245), 70%, 30%, 0.5); }
-.jo-shade-2 { background: hsla(var(--auraH, 245), 72%, 40%, 0.6); }
-.jo-shade-3 { background: hsla(var(--auraH, 245), 75%, 50%, 0.65); }
-.jo-shade-4 { background: hsla(var(--auraH, 245), 80%, 58%, 0.7); }
-.jo-shade-5 { background: var(--auraColor); box-shadow: 0 0 6px var(--auraColor); }
+.jo-shade-1 { background: rgba(var(--auraRGB, 120,90,220), 0.20); }
+.jo-shade-2 { background: rgba(var(--auraRGB, 120,90,220), 0.35); }
+.jo-shade-3 { background: rgba(var(--auraRGB, 120,90,220), 0.52); }
+.jo-shade-4 { background: rgba(var(--auraRGB, 120,90,220), 0.68); }
+.jo-shade-5 { background: rgba(var(--auraRGB, 120,90,220), 0.85); }
+.jo-shade-6 { background: var(--auraColor); box-shadow: 0 0 8px var(--auraColor); }
 
 /* ── Legend ───────────────────────────────────────── */
 .jo-cal-legend {
@@ -1064,9 +1078,9 @@ select option {
 .jo-paper {
   flex: 1;
   width: 100%;
-  min-height: 300px;
-  resize: none;
-  margin: 0 0 0 0;
+  min-height: 200px;
+  resize: vertical;
+  margin: 0;
   padding: 16px 20px 40px;
   background: transparent;
   border: none;
@@ -1077,6 +1091,7 @@ select option {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   outline: none;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 .jo-paper::placeholder { color: rgba(255,255,255,0.2); }
 
@@ -1225,4 +1240,144 @@ select option {
   box-shadow: none;
   color: rgba(255,255,255,0.4);
   cursor: pointer;
+}
+
+/* ── Sticky bottom nav bars (index + journal) ────── */
+.ci-bottom-bar, .jo-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: rgba(6,7,16,0.92);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  z-index: 5;
+  flex-shrink: 0;
+}
+#cardIndexOverlay, #journalOverlay {
+  padding-bottom: 56px;
+}
+.ci-bottom-btn, .jo-bottom-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  color: rgba(255,255,255,0.65);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.ci-bottom-btn:hover, .jo-bottom-btn:hover {
+  color: var(--auraColor);
+  border-color: var(--auraColor);
+}
+
+/* ── Journal: day header row + popup cal button ───── */
+.jo-day-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.jo-cal-jump-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: none;
+  color: rgba(255,255,255,0.45);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+}
+.jo-cal-jump-btn:hover { border-color: var(--auraColor); color: var(--auraColor); }
+
+/* ── Mini popup calendar ──────────────────────────── */
+.jo-mini-cal {
+  position: absolute;
+  top: 110px;
+  left: 16px;
+  right: 16px;
+  background: rgba(10, 11, 22, 0.97);
+  border: 1px solid var(--auraColor);
+  border-radius: 14px;
+  padding: 10px;
+  z-index: 20;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 20px var(--auraColor);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.jo-mini-cal.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.jo-mini-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.jo-mini-cal-month {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+}
+.jo-mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.jo-mini-day-name {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  padding: 2px 0 4px;
+}
+.jo-mini-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  transition: transform 100ms ease;
+  border: 1px solid transparent;
+}
+.jo-mini-cell:hover { transform: scale(1.15); }
+.jo-mini-empty { aspect-ratio: 1; }
+.jo-mini-current { border-color: rgba(255,255,255,0.4) !important; }
+.jo-mini-cell.jo-future { opacity: 0.2; cursor: default; }
+
+/* ── Journal larger card thumbnails ───────────────── */
+.jo-card-thumb {
+  flex-shrink: 0;
+  width: 64px;
+  height: 100px;
+}
+.jo-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
 }

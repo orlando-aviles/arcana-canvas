@@ -1,4 +1,4 @@
-const CACHE_NAME  = 'arcana-cache-v23';
+const CACHE_NAME  = 'arcana-cache-v24';
 const IMAGE_CACHE = 'arcana-images-v1'; // separate — survives core cache bumps
 
 const CORE_FILES = [
@@ -14,6 +14,30 @@ const CORE_FILES = [
   './js/meanings.js',
   './js/cardData.js',
   './js/cardIndex.js',
+  './Runes/algiz.png',
+  './Runes/ansuz.png',
+  './Runes/berkano.png',
+  './Runes/dagaz.png',
+  './Runes/ehwaz.png',
+  './Runes/eihwaz.png',
+  './Runes/fehu.png',
+  './Runes/gebo.png',
+  './Runes/hagalaz.png',
+  './Runes/ingwaz.png',
+  './Runes/isaz.png',
+  './Runes/jera.png',
+  './Runes/kenaz.png',
+  './Runes/laguz.png',
+  './Runes/mannaz.png',
+  './Runes/naudhiz.png',
+  './Runes/othalan.png',
+  './Runes/perthro.png',
+  './Runes/raidho.png',
+  './Runes/sowilo.png',
+  './Runes/thurisaz.png',
+  './Runes/tiwaz.png',
+  './Runes/uruz.png',
+  './Runes/wunjo.png',
   './js/journal.js',
   './js/tarot.js',
   './js/tarotDeck.js',

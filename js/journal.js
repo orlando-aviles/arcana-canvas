@@ -17,7 +17,7 @@ window.Journal = (() => {
 
   const STORAGE_PREFIX = "arcana_journal_";
   const WORD_TARGET    = 1000;
-  const SHADE_STEPS    = [0, 1, 200, 400, 600, 800]; // word thresholds
+  const SHADE_STEPS    = [0, 1, 200, 400, 600, 800, 1000]; // word thresholds
 
   // ── State ─────────────────────────────────────────────
   let isOpen      = false;
@@ -89,21 +89,37 @@ window.Journal = (() => {
         <span class="jo-shade jo-shade-3"></span>
         <span class="jo-shade jo-shade-4"></span>
         <span class="jo-shade jo-shade-5"></span>
-        <span>More</span>
+        <span class="jo-shade jo-shade-6"></span>
+        <span>1000✦</span>
       </div>
     </div>
 
     <div class="jo-day-view" id="joDayView">
       <div class="jo-day-header">
-        <div class="jo-day-date" id="joDayDate"></div>
+        <div class="jo-day-date-row">
+          <div class="jo-day-date" id="joDayDate"></div>
+          <button class="jo-cal-jump-btn" id="joCalJumpBtn" title="Jump to date">&#x25A6;</button>
+        </div>
         <div class="jo-word-meta">
           <span id="joWordCount">0</span> / ${WORD_TARGET}
           <span class="jo-muted" id="joRemaining"></span>
         </div>
       </div>
+      <!-- Mini popup calendar for date jumping -->
+      <div class="jo-mini-cal" id="joMiniCal">
+        <div class="jo-mini-cal-nav">
+          <button class="jo-cal-arrow" id="joMiniPrev">‹</button>
+          <span class="jo-mini-cal-month" id="joMiniMonth"></span>
+          <button class="jo-cal-arrow" id="joMiniNext">›</button>
+        </div>
+        <div class="jo-mini-cal-grid" id="joMiniGrid"></div>
+      </div>
       <div class="jo-progress-bar"><div class="jo-progress-fill" id="joProgressFill"></div></div>
       <div class="jo-cards-strip" id="joCardsStrip"></div>
       <textarea class="jo-paper" id="joPaper" placeholder="Write freely…"></textarea>
+    </div>
+    <div class="jo-bottom-bar">
+      <button class="jo-bottom-btn" id="joToIndex" title="Card Index">&#x2726;</button>
     </div>
   `;
 
@@ -125,6 +141,74 @@ window.Journal = (() => {
   const joProgressFill= overlay.querySelector("#joProgressFill");
   const joCardsStrip  = overlay.querySelector("#joCardsStrip");
   const joPaper       = overlay.querySelector("#joPaper");
+  const joToIndex     = overlay.querySelector("#joToIndex");
+  joToIndex.addEventListener("click", () => {
+    close();
+    if (window.CardIndex) CardIndex.open();
+  });
+  const joCalJumpBtn  = overlay.querySelector("#joCalJumpBtn");
+  const joMiniCal     = overlay.querySelector("#joMiniCal");
+  const joMiniMonth   = overlay.querySelector("#joMiniMonth");
+  const joMiniGrid    = overlay.querySelector("#joMiniGrid");
+  const joMiniPrev    = overlay.querySelector("#joMiniPrev");
+  const joMiniNext    = overlay.querySelector("#joMiniNext");
+
+  // ── Mini popup calendar ─────────────────────────────────────────────
+  let miniCalYear  = new Date().getFullYear();
+  let miniCalMonth = new Date().getMonth();
+
+  function renderMiniCal() {
+    joMiniMonth.textContent = MONTH_NAMES[miniCalMonth] + " " + miniCalYear;
+    const today    = todayKey();
+    const firstDay = new Date(miniCalYear, miniCalMonth, 1).getDay();
+    const days     = new Date(miniCalYear, miniCalMonth + 1, 0).getDate();
+    let html = DAY_NAMES.map(d => `<div class="jo-mini-day-name">${d}</div>`).join("");
+    for (let i = 0; i < firstDay; i++) html += `<div class="jo-mini-empty"></div>`;
+    for (let d = 1; d <= days; d++) {
+      const key = miniCalYear + "-" + String(miniCalMonth+1).padStart(2,"0") + "-" + String(d).padStart(2,"0");
+      const isToday   = key === today;
+      const isCurrent = key === currentDay;
+      const isFuture  = key > today;
+      const entry     = getEntry(key);
+      const shade     = shadeForWords(entry.wordCount || 0);
+      html += `<div class="jo-mini-cell jo-shade-${shade}${isToday?" jo-today":""}${isCurrent?" jo-mini-current":""}${isFuture?" jo-future":""}" data-date="${key}">${d}</div>`;
+    }
+    joMiniGrid.innerHTML = html;
+    joMiniGrid.querySelectorAll(".jo-mini-cell[data-date]").forEach(cell => {
+      if (cell.classList.contains("jo-future")) return;
+      cell.addEventListener("click", () => {
+        closeMiniCal();
+        openDay(cell.dataset.date);
+      });
+    });
+  }
+
+  function openMiniCal() {
+    miniCalYear  = new Date(currentDay).getFullYear();
+    miniCalMonth = new Date(currentDay + "T00:00:00").getMonth();
+    renderMiniCal();
+    joMiniCal.classList.add("visible");
+  }
+  function closeMiniCal() { joMiniCal.classList.remove("visible"); }
+
+  joCalJumpBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    joMiniCal.classList.contains("visible") ? closeMiniCal() : openMiniCal();
+  });
+  joMiniPrev.addEventListener("click", (e) => {
+    e.stopPropagation();
+    miniCalMonth--;
+    if (miniCalMonth < 0) { miniCalMonth = 11; miniCalYear--; }
+    renderMiniCal();
+  });
+  joMiniNext.addEventListener("click", (e) => {
+    e.stopPropagation();
+    miniCalMonth++;
+    if (miniCalMonth > 11) { miniCalMonth = 0; miniCalYear++; }
+    renderMiniCal();
+  });
+  // Close mini cal on outside tap
+  overlay.addEventListener("click", () => closeMiniCal());
 
   // ── Calendar ──────────────────────────────────────────
   const MONTH_NAMES = ["January","February","March","April","May","June",
@@ -132,12 +216,13 @@ window.Journal = (() => {
   const DAY_NAMES   = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
   function shadeForWords(words) {
-    if (words <= 0)   return 0;
-    if (words < 200)  return 1;
-    if (words < 400)  return 2;
-    if (words < 600)  return 3;
-    if (words < 800)  return 4;
-    return 5;
+    if (words <= 0)    return 0;
+    if (words < 200)   return 1;
+    if (words < 400)   return 2;
+    if (words < 600)   return 3;
+    if (words < 800)   return 4;
+    if (words < 1000)  return 5;
+    return 6;
   }
 
   function renderCalendar() {
@@ -235,11 +320,14 @@ window.Journal = (() => {
     }
     joCardsStrip.innerHTML = cards.map((filename, i) => {
       const card = CardData.getByNameOrFile(filename);
-      const imgSrc = card?.imageName ? `./LuminousArc/${card.imageName}.png` : "";
+      // Use active deck if available, fall back to LuminousArc
+      const deckFolder = (card?.section === "Runes") ? "Runes"
+        : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
+      const imgSrc = card?.imageName ? `./${deckFolder}/${card.imageName}.png` : "";
       const displayName = card?.name || filename;
       return `<div class="jo-card-thumb" data-filename="${filename}" data-idx="${i}" title="${displayName}">
         ${imgSrc
-          ? `<img src="${imgSrc}" alt="${displayName}" />`
+          ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
         <div class="jo-card-confirm" data-idx="${i}">
           <span class="jo-card-confirm-name">${displayName}</span>
