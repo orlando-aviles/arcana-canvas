@@ -249,6 +249,12 @@ window.Journal = (() => {
       </div>`;
     }).join("");
 
+    // Prevent browser image context menu (copy/download) on long press
+    joCardsStrip.querySelectorAll("img").forEach(img => {
+      img.addEventListener("contextmenu", e => e.preventDefault());
+      img.draggable = false;
+    });
+
     const HOLD_MS = 500;
     let holdTimer = null;
 

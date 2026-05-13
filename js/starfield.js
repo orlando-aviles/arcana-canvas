@@ -50,14 +50,14 @@ window.Starfield = (() => {
     return {
       x: rand(0, W),
       y: rand(0, H),
-      r:      pop < 0.68 ? rand(0.4, 0.9)
-            : pop < 0.92 ? rand(0.9, 1.6)
-                         : rand(1.6, 2.6),
-      baseA:  pop < 0.68 ? rand(0.25, 0.55)
-            : pop < 0.92 ? rand(0.45, 0.75)
-                         : rand(0.65, 0.92),
+      r:      pop < 0.68 ? rand(0.3, 0.7)
+            : pop < 0.92 ? rand(0.7, 1.2)
+                         : rand(1.2, 2.0),
+      baseA:  pop < 0.68 ? rand(0.45, 0.75)
+            : pop < 0.92 ? rand(0.60, 0.85)
+                         : rand(0.75, 0.95),
       twSpeed: rand(0.4, 1.8),
-      twAmp:   rand(0.12, 0.38),
+      twAmp:   rand(0.06, 0.18),
       twPhase: rand(0, Math.PI * 2),
       // Sparkle: rare event, not constant — each star has its own timer
       sparkTimer:    rand(0, 30),   // seconds until next sparkle
@@ -73,7 +73,7 @@ window.Starfield = (() => {
   function rebuild() {
     stars = [];
     const density = FX.intensity <= 0 ? 0 : 0.3 + FX.intensity * 0.7;
-    const count   = Math.floor(320 * density);
+    const count   = Math.floor(900 * density);
     for (let i = 0; i < count; i++) stars.push(makeStar());
   }
 

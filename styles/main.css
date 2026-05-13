@@ -1161,6 +1161,11 @@ select option {
   position: relative;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.jo-card-thumb img {
+  -webkit-touch-callout: none;
+  pointer-events: none;
 }
 .jo-card-confirm {
   position: absolute;
