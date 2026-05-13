@@ -233,30 +233,46 @@ window.Journal = (() => {
       joCardsStrip.innerHTML = `<div class="jo-cards-empty">No cards saved to this entry yet.</div>`;
       return;
     }
-    joCardsStrip.innerHTML = cards.map(filename => {
+    joCardsStrip.innerHTML = cards.map((filename, i) => {
       const card = CardData.getByNameOrFile(filename);
       const imgSrc = card?.imageName ? `./LuminousArc/${card.imageName}.png` : "";
       const displayName = card?.name || filename;
-      return `<div class="jo-card-thumb" data-filename="${filename}" title="${displayName}">
+      return `<div class="jo-card-thumb" data-filename="${filename}" data-idx="${i}" title="${displayName}">
         ${imgSrc
           ? `<img src="${imgSrc}" alt="${displayName}" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
+        <button class="jo-card-remove" data-idx="${i}" title="Remove">✕</button>
       </div>`;
     }).join("");
 
+    // Tap card image → open in index
     joCardsStrip.querySelectorAll(".jo-card-thumb").forEach(thumb => {
-      thumb.addEventListener("click", () => {
+      thumb.addEventListener("click", (e) => {
+        // Don't navigate if remove button was tapped
+        if (e.target.classList.contains("jo-card-remove")) return;
         const filename = thumb.dataset.filename;
         const card = CardData.getByNameOrFile(filename);
         if (card) {
           close();
           CardIndex.open();
-          // Small delay to let index open before navigating to card
           setTimeout(() => {
             const idx = CardData.getAll().findIndex(c => c.name === card.name);
             if (idx >= 0) CardIndex._showDetailAtIdx(idx);
           }, 50);
         }
+      });
+    });
+
+    // Remove button
+    joCardsStrip.querySelectorAll(".jo-card-remove").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.idx);
+        const entry = getEntry(currentDay);
+        entry.cards.splice(idx, 1);
+        entry.updatedAt = Date.now();
+        saveEntry(currentDay, entry);
+        renderCardsStrip(entry.cards);
       });
     });
   }
