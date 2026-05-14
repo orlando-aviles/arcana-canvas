@@ -59,12 +59,6 @@ window.CardIndex = (() => {
   overlay.setAttribute("aria-label","Card Index");
 
   overlay.innerHTML = `
-    <div class="ci-header">
-      <button class="ci-back" id="ciBack" aria-label="Back">←</button>
-      <span class="ci-title" id="ciTitle">Card Index</span>
-      <button class="ci-close" id="ciClose" aria-label="Close">✕</button>
-    </div>
-
     <div class="ci-list-view" id="ciListView">
       <div class="ci-search-row">
         <input class="ci-search" id="ciSearch" type="search"
@@ -97,16 +91,15 @@ window.CardIndex = (() => {
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" style="display:none">&#x2B;</button>
-      <button class="ci-bottom-btn ci-close-right" id="ciCloseBtn" title="Close">&#x2715;</button>
+      <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" style="display:none">&#x2190;</button>
+      <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close">&#x2715;</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
   // ── Refs ──────────────────────────────────────────────
-  const ciBack       = overlay.querySelector("#ciBack");
-  const ciClose      = overlay.querySelector("#ciClose");
-  const ciTitle      = overlay.querySelector("#ciTitle");
+  // Title shown in swipe hint / header removed — use ciSwipeHint instead
   const ciListView   = overlay.querySelector("#ciListView");
   const ciDetailView = overlay.querySelector("#ciDetailView");
   const ciList       = overlay.querySelector("#ciList");
@@ -122,6 +115,7 @@ window.CardIndex = (() => {
   // Save card in bottom bar
   // Bottom bar nav
   overlay.querySelector("#ciCloseBtn").addEventListener("click", () => close());
+  overlay.querySelector("#ciBackBtn").addEventListener("click", () => goBack());
   overlay.querySelector("#ciToJournal").addEventListener("click", () => {
     close();
     if (window.Journal) Journal.open();
@@ -253,8 +247,9 @@ window.CardIndex = (() => {
     if (!card) return;
     currentCard = card;
 
-    ciTitle.textContent = card.name;
-    ciBack.style.display = "flex";
+    // title in bottom hint
+    const _backBtn = overlay.querySelector("#ciBackBtn");
+    if (_backBtn) _backBtn.style.display = "flex";
     ciListView.classList.remove("ci-active");
     ciDetailView.classList.add("ci-active");
 
@@ -477,15 +472,14 @@ window.CardIndex = (() => {
     } else {
       currentCard = null;
       navIdx = 0;
-      ciTitle.textContent = "Card Index";
-      ciBack.style.display = "none";
+      // no header
+      const _backBtn2 = overlay.querySelector("#ciBackBtn"); if (_backBtn2) _backBtn2.style.display = "none";
       ciDetailView.classList.remove("ci-active");
       ciListView.classList.add("ci-active");
     }
   }
 
-  ciBack.addEventListener("click", goBack);
-  ciClose.addEventListener("click", close);
+
 
   // ── Open / close ──────────────────────────────────────
   // open() — full index from menu
@@ -500,8 +494,8 @@ window.CardIndex = (() => {
     overlay.classList.add("ci-open");
     currentCard = null;
     navIdx = 0;
-    ciTitle.textContent = "Card Index";
-    ciBack.style.display = "none";
+    // no header
+    const _backBtn2 = overlay.querySelector("#ciBackBtn"); if (_backBtn2) _backBtn2.style.display = "none";
     ciDetailView.classList.remove("ci-active");
     ciListView.classList.add("ci-active");
     renderList();
@@ -522,7 +516,7 @@ window.CardIndex = (() => {
 
     isOpen = true;
     overlay.classList.add("ci-open");
-    ciTitle.textContent = "Your Spread";
+    // no header
     ciListView.classList.remove("ci-active");
     showDetailAtIdx(navIdx);
     document.body.style.overflow = "hidden";

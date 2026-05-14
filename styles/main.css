@@ -386,39 +386,6 @@ select option {
   pointer-events: auto;
 }
 
-/* ── Header ───────────────────────────────────────── */
-.ci-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  flex-shrink: 0;
-}
-.ci-title {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--auraColor);
-  text-transform: uppercase;
-  text-shadow: 0 0 12px var(--auraColor);
-}
-.ci-back, .ci-close {
-  background: none;
-  border: none;
-  box-shadow: none;
-  color: rgba(255,255,255,0.6);
-  font-size: 20px;
-  padding: 4px 8px;
-  cursor: pointer;
-  line-height: 1;
-  min-width: 36px;
-  transition: color 150ms ease;
-}
-.ci-back { display: none; }
-.ci-back:hover, .ci-close:hover { color: var(--auraColor); }
-
-/* ── Views ────────────────────────────────────────── */
 .ci-list-view, .ci-detail-view {
   display: none;
   flex-direction: column;
@@ -566,14 +533,15 @@ select option {
   flex-shrink: 0;
 }
 .ci-card-img {
-  width: min(220px, 55vw);
-  height: min(330px, 82vw);
-  object-fit: cover;
-  object-position: center top;
+  width: min(200px, 52vw);
+  height: min(320px, 78vw);
+  object-fit: contain; /* contain so rune images show fully */
+  object-position: center;
   border-radius: 12px;
   box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
+  background: rgba(0,0,0,0.3);
 }
 .ci-card-img-placeholder {
   width: min(220px, 55vw);
@@ -1039,7 +1007,7 @@ select option {
 .jo-card-thumb {
   flex: 0 0 20%; /* exactly 5 across, no shrink/grow */
   min-width: 0;
-  aspect-ratio: 2/3;
+  height: 110px; /* fixed height — no aspect-ratio so images don't cut */
   position: relative;
   overflow: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
@@ -1138,6 +1106,8 @@ select option {
   margin-right: 8px;
   vertical-align: middle;
   opacity: 0.8;
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ── Canvas header ────────────────────────────────── */
@@ -1284,9 +1254,13 @@ select option {
   color: var(--auraColor);
   border-color: var(--auraColor);
 }
-/* Close button always on the right */
-.ci-close-right, .jo-close-right {
+/* Nav buttons on the right — back then close */
+.ci-close-right, .jo-close-right,
+.ci-nav-right { 
   margin-left: auto;
+}
+.ci-nav-right + .ci-nav-right {
+  margin-left: 8px;
 }
 
 /* ── Journal: day header row + popup cal button ───── */

@@ -11,7 +11,11 @@ window.App = {
   cardScale: 1.0,
   // "starfield" | "particles"
   bg: "particles",
-  reversals: false,
+  reversals:   false,
+  auraOn:      true,
+  auraOpacity: 0.72,
+  auraCycle:   false,
+  showHeader:  true,
 };
 
 window.clamp = function clamp(v, a, b) {
@@ -61,6 +65,12 @@ window.applyAuras = function applyAuras() {
   const r = Math.round(hue2rgb(h + 1/3) * 255);
   const g = Math.round(hue2rgb(h) * 255);
   const b = Math.round(hue2rgb(h - 1/3) * 255);
+  const opacity = (window.App && App.auraOn !== false)
+    ? (App.auraOpacity || 0.72) : 0.15;
+  document.documentElement.style.setProperty(
+    "--auraColor",
+    `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
+  );
   document.documentElement.style.setProperty("--auraRGB", `${r},${g},${b}`);
   document.documentElement.style.setProperty(
     "--cardStroke",

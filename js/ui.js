@@ -40,6 +40,70 @@ document.addEventListener("keydown", (e) => {
     closeAtmosphere();
   }
 });
+
+/*********************************************************
+ * AURA SETTINGS
+ *********************************************************/
+const auraToggle       = document.getElementById("auraToggle");
+const auraCycleToggle  = document.getElementById("auraCycleToggle");
+const auraOpacitySlider= document.getElementById("auraOpacitySlider");
+const auraOpacityValue = document.getElementById("auraOpacityValue");
+const headerToggle     = document.getElementById("headerToggle");
+const canvasHeader     = document.getElementById("canvasHeader");
+
+// Aura on/off
+auraToggle.addEventListener("change", () => {
+  App.auraOn = auraToggle.checked;
+  document.documentElement.style.setProperty(
+    "--auraColor",
+    App.auraOn
+      ? `hsla(${FX.hueA}, 85%, 72%, ${App.auraOpacity || 0.72})`
+      : "rgba(120,120,140,0.4)"
+  );
+  saveSettings();
+});
+
+// Opacity
+auraOpacitySlider.addEventListener("input", () => {
+  const v = Number(auraOpacitySlider.value) / 100;
+  App.auraOpacity = v;
+  auraOpacityValue.textContent = auraOpacitySlider.value + "%";
+  applyAuras();
+  saveSettings();
+});
+
+// Auto-cycle — randomly shift hues every 8 seconds
+let _cycleTimer = null;
+function startCycle() {
+  if (_cycleTimer) return;
+  _cycleTimer = setInterval(() => {
+    FX.hueA = Math.floor(Math.random() * 360);
+    FX.hueB = (FX.hueA + 30 + Math.floor(Math.random() * 60)) % 360;
+    applyAuras();
+    // Sync sliders
+    document.getElementById("hueASlider").value = FX.hueA;
+    document.getElementById("hueBSlider").value = FX.hueB;
+    document.getElementById("hueAValue").textContent = FX.hueA + "°";
+    document.getElementById("hueBValue").textContent = FX.hueB + "°";
+    saveSettings();
+  }, 8000);
+}
+function stopCycle() {
+  clearInterval(_cycleTimer);
+  _cycleTimer = null;
+}
+auraCycleToggle.addEventListener("change", () => {
+  App.auraCycle = auraCycleToggle.checked;
+  App.auraCycle ? startCycle() : stopCycle();
+  saveSettings();
+});
+
+// Canvas header toggle
+headerToggle.addEventListener("change", () => {
+  App.showHeader = headerToggle.checked;
+  canvasHeader.style.display = App.showHeader ? "" : "none";
+  saveSettings();
+});
 menuPanel.addEventListener("click", (e) => e.stopPropagation());
 document.addEventListener("click", () => { if (menuPanel.classList.contains("open")) closeMenu(); });
 

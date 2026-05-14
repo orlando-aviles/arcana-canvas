@@ -167,7 +167,7 @@ function cardAt(x, y) {
     else if (c.type === "tarot")   { hw = 46 * s;  hh = 74 * s; }
     else if (c.type === "luminous"){ hw = 58 * s;  hh = 90 * s; }
     else if (c.type === "gilded")  { hw = 46 * s;  hh = 74 * s; }
-    else if (c.type === "rune")    { hw = 44 * s;  hh = 54 * s; }
+    else if (c.type === "rune")    { hw = 28 * s;  hh = 50 * s; }
     else continue;
 
     // Rotate the test point into the card's local space
@@ -569,7 +569,7 @@ function drawGildedCard(card) {
 function drawRuneCard(card) {
   const s = App.cardScale;
   // Stone is oval: wider than tall slightly
-  const w = 82 * s; const h = 100 * s;
+  const w = 56 * s; const h = 100 * s;
   Runes.draw(tarotCtx, card, card.x, card.y, w, h, card.rot, s);
 }
 

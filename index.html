@@ -98,6 +98,38 @@
         <div class="sliderRow">
           <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
         </div>
+
+        <div class="atmo-section-title">Aura</div>
+        <div class="sliderRow toggleRow">
+          <span class="toggleLabel">Aura Color</span>
+          <label class="toggle">
+            <input type="checkbox" id="auraToggle" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow toggleRow">
+          <span class="toggleLabel">Auto-cycle Colors</span>
+          <label class="toggle">
+            <input type="checkbox" id="auraCycleToggle" />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow" id="auraOpacityRow">
+          <div class="sliderLabelRow">
+            <span>Opacity</span>
+            <span class="sliderValue" id="auraOpacityValue">72%</span>
+          </div>
+          <input id="auraOpacitySlider" type="range" min="10" max="100" value="72" />
+        </div>
+
+        <div class="atmo-section-title">Display</div>
+        <div class="sliderRow toggleRow">
+          <span class="toggleLabel">Canvas Header</span>
+          <label class="toggle">
+            <input type="checkbox" id="headerToggle" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
       </div>
       <div class="atmo-bottom-bar">
         <button class="ci-bottom-btn atmo-close" id="atmosphereClose" title="Close">&#x2715;</button>

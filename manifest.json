@@ -4,7 +4,7 @@
   "description": "A living tarot canvas. Tap to draw cards from multiple decks — Rider-Waite, Luminous Arc, Gilded Minima, Runes, and more — onto an atmospheric starfield. Customize auras, reversals, and card size. Your spread persists between sessions.",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0b0e1a",
   "theme_color": "#0b0e1a",
   "categories": ["lifestyle", "entertainment"],
