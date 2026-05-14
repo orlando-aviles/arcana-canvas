@@ -19,20 +19,24 @@ const atmospherePanel = document.getElementById("atmospherePanel");
 const atmosphereClose = document.getElementById("atmosphereClose");
 const atmosphereBtn   = document.getElementById("atmosphereBtn");
 
-function openAtmosphere()  {
+function openAtmosphere() {
   closeMenu();
+  if (window.CardIndex) CardIndex.close();
+  if (window.Journal)   Journal.close();
   atmospherePanel.classList.add("atmo-open");
   atmospherePanel.setAttribute("aria-hidden","false");
+  document.body.style.overflow = "hidden";
 }
 function closeAtmosphere() {
   atmospherePanel.classList.remove("atmo-open");
   atmospherePanel.setAttribute("aria-hidden","true");
+  document.body.style.overflow = "";
 }
 
-atmosphereBtn.addEventListener("click",  () => openAtmosphere());
-atmosphereClose.addEventListener("click",() => closeAtmosphere());
-document.addEventListener("pointerdown", (e) => {
-  if (!atmospherePanel.contains(e.target) && e.target !== atmosphereBtn) {
+atmosphereBtn.addEventListener("click",   () => openAtmosphere());
+atmosphereClose.addEventListener("click", () => closeAtmosphere());
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && atmospherePanel.classList.contains("atmo-open")) {
     closeAtmosphere();
   }
 });

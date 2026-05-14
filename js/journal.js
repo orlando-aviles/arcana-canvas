@@ -94,9 +94,9 @@ window.Journal = (() => {
     </div>
 
     <div class="jo-bottom-bar">
-      <button class="jo-bottom-btn" id="joClose"      title="Close">&#x2715;</button>
       <button class="jo-bottom-btn" id="joToIndex"    title="Card Index">&#x2726;</button>
       <button class="jo-bottom-btn" id="joCalJumpBtn" title="Jump to date">&#x25A6;</button>
+      <button class="jo-bottom-btn jo-close-right" id="joClose" title="Close">&#x2715;</button>
     </div>
   `;
 
@@ -378,8 +378,19 @@ window.Journal = (() => {
 
   function openToday() { open(); }
 
+  // Keep overlay anchored when virtual keyboard opens
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      if (!isOpen) return;
+      overlay.style.height = window.visualViewport.height + "px";
+      overlay.style.top    = window.visualViewport.offsetTop + "px";
+    });
+  }
+
   function close() {
     isOpen = false;
+    overlay.style.height = "";
+    overlay.style.top    = "";
     overlay.classList.remove("jo-open");
     document.body.style.overflow = "";
     clearTimeout(saveTimer);

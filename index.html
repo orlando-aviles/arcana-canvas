@@ -58,13 +58,13 @@
       <div id="descBody" class="descBody"></div>
     </div>
 
-    <!-- Atmosphere panel -->
-    <div id="atmospherePanel" class="atmo-panel" aria-hidden="true">
+    <!-- Settings panel (full-screen) -->
+    <div id="atmospherePanel" class="atmo-panel" aria-hidden="true" aria-modal="true" role="dialog">
       <div class="atmo-header">
-        <span class="atmo-title">Atmosphere</span>
-        <button class="atmo-close" id="atmosphereClose">✕</button>
+        <span class="atmo-title">Settings</span>
       </div>
       <div class="atmo-body">
+        <div class="atmo-section-title">Atmosphere</div>
         <div class="sliderRow">
           <select id="bgSelect">
             <option value="starfield">Starfield</option>
@@ -98,6 +98,9 @@
         <div class="sliderRow">
           <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
         </div>
+      </div>
+      <div class="atmo-bottom-bar">
+        <button class="ci-bottom-btn atmo-close" id="atmosphereClose" title="Close">&#x2715;</button>
       </div>
     </div>
 
@@ -135,13 +138,6 @@
 
       <!-- CANVAS -->
       <div class="sectionTitle">Canvas</div>
-      <div class="sliderRow">
-        <select id="bgSelect">
-          <option value="starfield">Starfield</option>
-          <option value="particles">Animus</option>
-          <option value="snowfall">Snowfall</option>
-        </select>
-      </div>
       <div class="sliderRow">
         <div class="sliderLabelRow">
           <span>Card Size</span>

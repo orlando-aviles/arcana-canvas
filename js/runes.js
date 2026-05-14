@@ -372,23 +372,59 @@ window.Runes = (() => {
     return cache.get(key);
   }
 
+  // ── Preloaded PNG images ────────────────────────────────
+  const imgCache = new Map();
+
+  function getRuneImg(runeIdx) {
+    const name = RUNES[runeIdx]?.name?.toLowerCase();
+    if (!name) return null;
+    if (imgCache.has(name)) return imgCache.get(name);
+    const img = new Image();
+    img.src = `./Runes/${name}.png`;
+    imgCache.set(name, img);
+    return img;
+  }
+
+  // Preload all rune images
+  RUNES.forEach((_, i) => getRuneImg(i));
+
   // ── Public draw ────────────────────────────────────────
   function draw(ctx, card, cx, cy, w, h, rot, s) {
-    const stoneW = w;
-    const stoneH = h;
-    const stone  = getStone(card.runeIdx, stoneW, stoneH);
-
+    const img = getRuneImg(card.runeIdx);
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(rot || 0);
 
-    // Drop shadow
-    ctx.shadowColor    = "rgba(0,0,0,0.72)";
-    ctx.shadowBlur     = 24 * s;
-    ctx.shadowOffsetY  = 12 * s;
+    if (img && img.complete && img.naturalWidth > 0) {
+      // Draw PNG with aura glow treatment (same as tarot cards)
+      ctx.shadowColor   = `hsla(${FX.hueA}, 85%, 65%, 0.65)`;
+      ctx.shadowBlur    = 18 * s;
+      ctx.shadowOffsetY = 0;
 
-    // Draw offscreen stone centred
-    ctx.drawImage(stone, -stoneW/2, -stoneH/2, stoneW, stoneH);
+      // Rounded rect clip for card shape
+      const rx = 8 * s;
+      ctx.beginPath();
+      ctx.moveTo(-w/2 + rx, -h/2);
+      ctx.lineTo( w/2 - rx, -h/2);
+      ctx.arcTo(  w/2, -h/2,  w/2, -h/2 + rx, rx);
+      ctx.lineTo( w/2,  h/2 - rx);
+      ctx.arcTo(  w/2,  h/2, w/2 - rx,  h/2, rx);
+      ctx.lineTo(-w/2 + rx,  h/2);
+      ctx.arcTo( -w/2,  h/2, -w/2,  h/2 - rx, rx);
+      ctx.lineTo(-w/2, -h/2 + rx);
+      ctx.arcTo( -w/2, -h/2, -w/2 + rx, -h/2, rx);
+      ctx.closePath();
+      ctx.clip();
+
+      ctx.drawImage(img, -w/2, -h/2, w, h);
+    } else {
+      // Fallback: draw stone while image loads
+      const stone = getStone(card.runeIdx, w, h);
+      ctx.shadowColor   = "rgba(0,0,0,0.72)";
+      ctx.shadowBlur    = 24 * s;
+      ctx.shadowOffsetY = 12 * s;
+      ctx.drawImage(stone, -w/2, -h/2, w, h);
+    }
 
     ctx.restore();
   }

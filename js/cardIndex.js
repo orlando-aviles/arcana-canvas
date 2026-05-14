@@ -97,6 +97,7 @@ window.CardIndex = (() => {
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" style="display:none">&#x2B;</button>
+      <button class="ci-bottom-btn ci-close-right" id="ciCloseBtn" title="Close">&#x2715;</button>
     </div>
   `;
 
@@ -120,6 +121,7 @@ window.CardIndex = (() => {
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
   // Save card in bottom bar
   // Bottom bar nav
+  overlay.querySelector("#ciCloseBtn").addEventListener("click", () => close());
   overlay.querySelector("#ciToJournal").addEventListener("click", () => {
     close();
     if (window.Journal) Journal.open();
@@ -263,9 +265,17 @@ window.CardIndex = (() => {
     ciDetailView.scrollTop = 0;
   }
 
+  function getImgSrc(card) {
+    if (!card.imageName) return null;
+    return card.section === "Runes"
+      ? `./Runes/${card.imageName}.png`
+      : `./${activeDeck}/${card.imageName}.png`;
+  }
+
   function renderDetailImage(card) {
-    if (card.imageName) {
-      ciCardImg.src = `./${activeDeck}/${card.imageName}.png`;
+    const src = getImgSrc(card);
+    if (src) {
+      ciCardImg.src = src;
       ciCardImg.alt = card.name;
       ciCardImg.style.display = "block";
       ciCardImgPlaceholder.style.display = "none";
@@ -364,7 +374,7 @@ window.CardIndex = (() => {
         const next = navIdx + 1;
         if (next < navList.length) {
           navIdx = next; currentCard = navList[navIdx];
-          if (currentCard.imageName) ciLightboxImg.src = `./${activeDeck}/${currentCard.imageName}.png`;
+          if (currentCard.imageName) ciLightboxImg.src = getImgSrc(currentCard) || "";
           else closeLightbox();
           renderDetailInfo(currentCard); renderNavDots(); updateSwipeHint();
         }
@@ -375,7 +385,7 @@ window.CardIndex = (() => {
         const prev = navIdx - 1;
         if (prev >= 0) {
           navIdx = prev; currentCard = navList[navIdx];
-          if (currentCard.imageName) ciLightboxImg.src = `./${activeDeck}/${currentCard.imageName}.png`;
+          if (currentCard.imageName) ciLightboxImg.src = getImgSrc(currentCard) || "";
           else closeLightbox();
           renderDetailInfo(currentCard); renderNavDots(); updateSwipeHint();
         }
@@ -410,8 +420,8 @@ window.CardIndex = (() => {
       if (nextIdx >= 0 && nextIdx < navList.length) {
         navIdx = nextIdx;
         const card = navList[navIdx];
-        if (card?.imageName) {
-          ciLightboxImg.src = `./${activeDeck}/${card.imageName}.png`;
+        if (getImgSrc(card)) {
+          ciLightboxImg.src = getImgSrc(card);
           // Also update detail view in background
           currentCard = card;
           renderDetailImage(card);

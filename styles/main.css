@@ -1016,14 +1016,16 @@ select option {
   transition: width 200ms ease;
 }
 
-/* ── Cards strip — 5 across, scroll beyond ────────── */
+/* ── Cards strip — above the scroll area, keyboard-safe ─── */
 .jo-cards-strip {
   display: flex;
   gap: 0;
-  padding: 0 0 10px;
-  flex-shrink: 0;
-  overflow-x: hidden; /* default: clips at 5 */
+  padding: 0;
+  flex-shrink: 0; /* never crushed by keyboard */
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  background: rgba(6,7,16,0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 .jo-cards-strip.scrollable {
   overflow-x: auto;
@@ -1035,8 +1037,8 @@ select option {
   font-style: italic;
 }
 .jo-card-thumb {
-  flex-shrink: 0;
-  width: 20%; /* exactly 5 across */
+  flex: 0 0 20%; /* exactly 5 across, no shrink/grow */
+  min-width: 0;
   aspect-ratio: 2/3;
   position: relative;
   overflow: hidden;
@@ -1073,6 +1075,7 @@ select option {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 0; /* critical for flex scroll */
+  /* When keyboard opens, this shrinks but cards strip above stays */
 }
 .jo-paper {
   width: 100%;
@@ -1258,6 +1261,9 @@ select option {
 }
 #cardIndexOverlay, #journalOverlay {
   padding-bottom: 60px;
+  /* Don't resize when keyboard opens */
+  height: 100%;
+  max-height: 100%;
 }
 .ci-bottom-btn, .jo-bottom-btn {
   width: 44px;
@@ -1277,6 +1283,10 @@ select option {
 .ci-bottom-btn:hover, .jo-bottom-btn:hover {
   color: var(--auraColor);
   border-color: var(--auraColor);
+}
+/* Close button always on the right */
+.ci-close-right, .jo-close-right {
+  margin-left: auto;
 }
 
 /* ── Journal: day header row + popup cal button ───── */
@@ -1379,54 +1389,82 @@ select option {
   object-position: center top;
 }
 
-/* ── Atmosphere panel ─────────────────────────────── */
+/* ── Settings panel (full-screen, same as index/journal) ── */
 .atmo-panel {
   position: fixed;
-  bottom: 72px;
-  right: 16px;
-  width: 272px;
-  background: rgba(11, 14, 26, 0.96);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
+  inset: 0;
+  z-index: 50;
+  background: rgba(6, 7, 16, 0.97);
   backdrop-filter: blur(16px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-  z-index: 38;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(8px);
-  transition: opacity 200ms ease, transform 200ms ease;
+  transition: opacity 220ms ease;
+  overflow: hidden;
+  touch-action: pan-y;
 }
 .atmo-panel.atmo-open {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
 }
 .atmo-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px 8px;
+  padding: 14px 16px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 .atmo-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
+  color: var(--auraColor);
+  text-shadow: 0 0 12px var(--auraColor);
 }
 .atmo-close {
   background: none;
   border: none;
   box-shadow: none;
-  color: rgba(255,255,255,0.4);
-  font-size: 14px;
-  padding: 2px 6px;
+  color: rgba(255,255,255,0.6);
+  font-size: 20px;
+  padding: 4px 8px;
   cursor: pointer;
+  transition: color 150ms ease;
 }
+.atmo-close:hover { color: var(--auraColor); }
 .atmo-body {
-  padding: 10px;
-  max-height: calc(100vh - 160px);
+  flex: 1;
   overflow-y: auto;
+  padding: 16px;
+  -webkit-overflow-scrolling: touch;
 }
+/* Section subheader within settings */
+.atmo-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  padding: 8px 0 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 12px;
+}
+/* Bottom bar for settings */
+.atmo-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 16px;
+  background: rgba(6,7,16,0.95);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+}
+.atmo-panel { padding-bottom: 60px; }
