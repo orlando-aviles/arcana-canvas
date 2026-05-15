@@ -334,7 +334,7 @@ select option {
   background: rgba(11, 14, 26, 0.92);
   border-top: 1px solid var(--auraColor);
   backdrop-filter: blur(12px);
-  padding: 10px 80px 16px 16px; /* right pad clears menu button */
+  padding: 10px 16px 14px; /* buttons inside overlay */
   z-index: 30;
   pointer-events: none;
   opacity: 0;
@@ -534,18 +534,27 @@ select option {
 }
 .ci-card-img {
   width: min(200px, 52vw);
-  height: min(320px, 78vw);
-  object-fit: contain;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
   object-position: center;
   border-radius: 12px;
   box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
-  background: rgba(0,0,0,0.3);
+  background: transparent;
   -webkit-touch-callout: none;
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
+}
+/* Rune images — narrower domino proportion, contain so art isn't cropped */
+.ci-card-img.ci-rune-img {
+  width: min(130px, 34vw);
+  aspect-ratio: 9 / 16;
+  object-fit: contain;
+  object-position: center;
+  background: rgba(0,0,0,0.3);
 }
 .ci-card-img-placeholder {
   width: min(220px, 55vw);
@@ -1410,6 +1419,11 @@ select option {
 }
 .atmo-panel { padding-bottom: 60px; }
 
+/* ── Aura off: white text instead of gray ────────── */
+body.aura-off {
+  --auraColor: rgba(255,255,255,0.88);
+}
+
 /* ── Button tooltips (tap-hold) ───────────────────── */
 .btn-tooltip {
   position: fixed;
@@ -1531,32 +1545,7 @@ select option {
   display: none; /* Chrome/Safari/Android */
 }
 
-/* ── Overlay action buttons (float left of hamburger) ─ */
-.overlayBtns {
-  position: fixed;
-  bottom: 16px;
-  right: 72px; /* left of the 60px hamburger + 16px margin */
-  display: flex;
-  gap: 8px;
-  z-index: 31; /* above overlay (30), below menu (40) */
-  align-items: center;
-}
-.overlayActionBtn {
-  height: 44px;
-  padding: 0 12px;
-  border-radius: 12px;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(255,255,255,0.18);
-  backdrop-filter: blur(12px);
-  color: rgba(255,255,255,0.85);
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  transition: background 150ms ease;
-}
-.overlayActionBtn:active { background: rgba(255,255,255,0.12); }
+
 
 /* ── Orientation badge ─────────────────────────────── */
 .desc-orient-badge {
@@ -1661,3 +1650,53 @@ select option {
   font-size: 13px;
   outline: none;
 }
+
+/* ── Overlay inline action buttons ────────────────── */
+.descActionRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.descActionBtn {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: none;
+  color: rgba(255,255,255,0.75);
+  cursor: pointer;
+  transition: background 150ms ease;
+  white-space: nowrap;
+  text-align: center;
+}
+.descActionBtn:active { background: rgba(255,255,255,0.14); }
+
+/* ── Overlay action buttons (inside overlay, below text) ─ */
+.overlayBtns {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.overlayActionBtn {
+  flex: 1;
+  height: 38px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.overlayActionBtn:active { background: rgba(255,255,255,0.15); }

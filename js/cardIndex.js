@@ -19,9 +19,8 @@ window.CardIndex = (() => {
 
   // ── State ─────────────────────────────────────────────
   function defaultDeck() {
-    if (!window.App) return "LuminousArc";
-    if (App.activeDeck === "riderwaite") return "RiderWaite";
-    return "LuminousArc";
+    // Index defaults to Rider-Waite for classic reference look
+    return "RiderWaite";
   }
   let activeDeck  = defaultDeck(); // image deck for rendering
   let deckFilter  = "all";         // filter for list/detail
@@ -97,15 +96,16 @@ window.CardIndex = (() => {
       <img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />
     </div>
     <div class="ci-bottom-bar">
-      <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal">&#x270E;</button>
-      <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" style="display:none">&#x2B;</button>
+      <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal" data-tooltip="Open Journal">&#x270E;</button>
+      <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" data-tooltip="Save to Journal" style="display:none">&#x2B;</button>
       <div class="ci-bottom-counter" id="ciBottomCounter"></div>
-      <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" style="display:none">&#x2190;</button>
-      <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close">&#x2715;</button>
+      <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" data-tooltip="Back" style="display:none">&#x2190;</button>
+      <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close" data-tooltip="Close">&#x2715;</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
+  if (window.Tooltips) Tooltips.wire(overlay);
 
   // ── Refs ──────────────────────────────────────────────
   // Title shown in swipe hint / header removed — use ciSwipeHint instead
@@ -286,6 +286,8 @@ window.CardIndex = (() => {
       ciCardImg.alt = card.name;
       ciCardImg.style.display = "block";
       ciCardImgPlaceholder.style.display = "none";
+      // Rune images use contain (thinner proportions)
+      ciCardImg.classList.toggle("ci-rune-img", card.section === "Runes");
     } else {
       ciCardImg.style.display = "none";
       ciCardImgPlaceholder.style.display = "flex";
@@ -549,6 +551,7 @@ window.CardIndex = (() => {
   function open() {
     if (window.Journal) Journal.close();
     activeDeck = defaultDeck();
+    if (window.Tooltips) Tooltips.wire(overlay);
     deckFilter = "all";
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = "all");
     mode = "full";

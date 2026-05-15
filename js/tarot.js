@@ -272,14 +272,9 @@ function showDesc(card) {
   descOverlay.dataset.cardName = cleanFile;
   descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");
-  // Show floating action buttons
-  const ob = document.getElementById("overlayBtns");
-  if (ob) ob.style.display = "flex";
 }
 function hideDesc() {
   descOverlay.classList.remove("visible");
-  const ob = document.getElementById("overlayBtns");
-  if (ob) ob.style.display = "none";
 }
 descOverlay.addEventListener("click", (e) => {
   if (e.target === descOverlay || e.target === descTitle || e.target === descBody) hideDesc();

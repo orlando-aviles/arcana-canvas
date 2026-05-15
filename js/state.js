@@ -10,7 +10,7 @@ window.App = {
   activeDeck: "luminousarc",
   cardScale: 1.0,
   // "starfield" | "particles"
-  bg: "particles",
+  bg: "starfield",
   reversals:    false,
   auraOn:       true,
   auraOpacity:  0.72,
@@ -93,8 +93,12 @@ window.applyAuras = function applyAuras() {
     `hsla(${FX.hueA} 92% 70% / 0.50)`,
   );
   // Menu button border + bar color track the aura
-  const auraColor = `hsla(${FX.hueA} 85% 72% / 0.72)`;
+  const auraColor = App.auraOn !== false
+    ? `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
+    : "rgba(255,255,255,0.85)";
   document.documentElement.style.setProperty("--auraColor", auraColor);
+  // Toggle body class so CSS can flip aura text to white when off
+  document.body.classList.toggle("aura-off", App.auraOn === false);
 };
 
 

@@ -56,6 +56,11 @@
         <div id="descTitle" class="descTitle"></div>
       </div>
       <div id="descBody" class="descBody"></div>
+      <div class="overlayBtns" id="overlayBtns">
+        <button id="descAddCardBtn"   class="overlayActionBtn" type="button" data-tooltip="Save to Journal">&#x271A; Save</button>
+        <button id="descSpreadBtn"    class="overlayActionBtn" type="button" data-tooltip="View Spread Index">&#x26B7; Index</button>
+        <button id="descGoJournalBtn" class="overlayActionBtn" type="button" data-tooltip="Open Journal">&#x270E; Open</button>
+      </div>
     </div>
 
     <!-- Settings panel (full-screen) -->
@@ -67,7 +72,7 @@
         <div class="atmo-section-title">Atmosphere</div>
         <div class="sliderRow">
           <select id="bgSelect">
-            <option value="starfield">Starfield</option>
+            <option value="starfield" selected>Starfield</option>
             <option value="particles">Animus</option>
             <option value="snowfall">Snowfall</option>
           </select>
@@ -145,13 +150,6 @@
       </div>
     </div>
 
-    <!-- Overlay action buttons — float left of hamburger -->
-    <div id="overlayBtns" class="overlayBtns" style="display:none">
-      <button id="descAddCardBtn" class="overlayActionBtn" type="button" title="Save to Journal" data-tooltip="Save to Journal">&#x271A; Save</button>
-      <button id="descSpreadBtn"  class="overlayActionBtn" type="button" title="View Spread Index" data-tooltip="View Spread Index">&#x26B7; Index</button>
-      <button id="descGoJournalBtn" class="overlayActionBtn" type="button" title="Open Journal" data-tooltip="Open Journal">&#x270E; Open</button>
-    </div>
-
     <!-- Hamburger button -->
     <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu" data-tooltip="Menu">
       <span class="bar"></span>
@@ -199,9 +197,9 @@
       <!-- ACTIONS -->
       <div class="sectionTitle">Actions</div>
         <div class="actionBtnRow">
-          <button id="journalBtn"    type="button" class="actionIconBtn" title="Journal">&#x270E;</button>
-          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index" data-tooltip="Card Index">&#x26B7;</button>
-          <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Atmosphere" data-tooltip="Settings">&#x2600;</button>
+          <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Settings"     data-tooltip="Settings">&#x2600;</button>
+          <button id="journalBtn"    type="button" class="actionIconBtn" title="Journal"      data-tooltip="Journal" data-tooltip="Open Journal">&#x270E;</button>
+          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index"   data-tooltip="Card Index">&#x26B7;</button>
           <button id="clearBtn"      type="button" class="actionIconBtn" title="Clear Canvas" data-tooltip="Clear Canvas">&#x2298;</button>
         </div>
 

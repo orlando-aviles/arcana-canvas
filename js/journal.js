@@ -94,13 +94,14 @@ window.Journal = (() => {
     </div>
 
     <div class="jo-bottom-bar">
-      <button class="jo-bottom-btn" id="joToIndex"    title="Card Index">&#x2726;</button>
-      <button class="jo-bottom-btn" id="joCalJumpBtn" title="Jump to date">&#x25A6;</button>
-      <button class="jo-bottom-btn jo-close-right" id="joClose" title="Close">&#x2715;</button>
+      <button class="jo-bottom-btn" id="joToIndex"    title="Card Index"   data-tooltip="Card Index">&#x26B7;</button>
+      <button class="jo-bottom-btn" id="joCalJumpBtn" title="Jump to date" data-tooltip="Jump to Date">&#x25A6;</button>
+      <button class="jo-bottom-btn jo-close-right" id="joClose" title="Close" data-tooltip="Close">&#x2715;</button>
     </div>
   `;
 
   document.body.appendChild(overlay);
+  if (window.Tooltips) Tooltips.wire(overlay);
 
   // ── Refs ──────────────────────────────────────────────
   const joClose       = overlay.querySelector("#joClose");
@@ -374,6 +375,7 @@ window.Journal = (() => {
   // ── Open / close ──────────────────────────────────────
   function open() {
     if (window.CardIndex) CardIndex.close();
+    if (window.Tooltips) Tooltips.wire(overlay);
     isOpen = true;
     overlay.classList.add("jo-open");
     document.body.style.overflow = "hidden";
