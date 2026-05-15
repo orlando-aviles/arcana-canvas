@@ -937,8 +937,9 @@ select option {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: hidden; /* cards strip fixed, textarea scrolls internally */
+  overflow: hidden;
   position: relative;
+  min-height: 0; /* critical — lets flex children scroll */
 }
 .jo-day-header {
   padding: 14px 20px 6px;
@@ -1032,8 +1033,8 @@ select option {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  min-height: 0; /* critical for flex scroll */
-  /* When keyboard opens, this shrinks but cards strip above stays */
+  min-height: 0;
+  overscroll-behavior: contain;
 }
 .jo-paper {
   width: 100%;
@@ -1205,11 +1206,6 @@ select option {
 }
 #cardIndexOverlay, #journalOverlay {
   padding-bottom: 60px;
-  /* Fixed to viewport — keyboard handled by visualViewport in JS */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 .ci-bottom-btn, .jo-bottom-btn {
   width: 44px;
@@ -1735,4 +1731,33 @@ body.aura-off {
   font-size: 12px;
   outline: none;
   margin-top: 4px;
+}
+
+/* ── Settings text inputs ──────────────────────────── */
+.text-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.88);
+  font-size: 13px;
+  outline: none;
+  margin-top: 4px;
+  font-family: inherit;
+}
+.text-input::placeholder { color: rgba(255,255,255,0.25); }
+.text-input:focus { border-color: var(--auraColor); }
+
+/* ── PRO badge ─────────────────────────────────────── */
+.paid-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255,200,80,0.9);
+  border: 1px solid rgba(255,200,80,0.4);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
 }

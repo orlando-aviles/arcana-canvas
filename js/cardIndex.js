@@ -136,9 +136,9 @@ window.CardIndex = (() => {
   ciSaveCard.addEventListener("click", () => {
     if (!currentCard?.imageName) return;
     if (window.Journal) Journal.saveCardToToday(currentCard.imageName);
-    ciSaveCard.textContent = "✦";
+    ciSaveCard.textContent = "⚷";
     ciSaveCard.style.color = "var(--auraColor)";
-    setTimeout(() => { ciSaveCard.textContent = "✛"; ciSaveCard.style.color = ""; }, 1500);
+    setTimeout(() => { ciSaveCard.textContent = "+"; ciSaveCard.style.color = ""; }, 1500);
   });
 
   // ── Nav list builders ─────────────────────────────────

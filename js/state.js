@@ -17,8 +17,10 @@ window.App = {
   auraCycle:    false,
   showHeader:   true,
   cardAuraMode: "dynamic", // "dynamic" | "static" | "off"
-  perfMode:     "full",    // "full" | "balanced" | "saver"
+  perfMode:     "full",
   maxCards:     40,
+  headerTitle:  "",
+  headerSub:    "",
 };
 
 window.clamp = function clamp(v, a, b) {

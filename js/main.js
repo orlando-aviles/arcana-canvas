@@ -50,6 +50,15 @@ applyBg();
   const canvasHeader = document.getElementById("canvasHeader");
   if (headerToggle) headerToggle.checked = App.showHeader !== false;
   if (canvasHeader) canvasHeader.style.display = (App.showHeader === false) ? "none" : "";
+  // Restore header text
+  const _hTitle = document.querySelector(".canvasHeader-title");
+  const _hSub   = document.querySelector(".canvasHeader-sub");
+  const _hTitleInput = document.getElementById("headerTitleInput");
+  const _hSubInput   = document.getElementById("headerSubInput");
+  if (App.headerTitle && _hTitle) { _hTitle.textContent = App.headerTitle; }
+  if (App.headerSub   && _hSub)   { _hSub.textContent   = App.headerSub; }
+  if (_hTitleInput) _hTitleInput.value = App.headerTitle || "";
+  if (_hSubInput)   _hSubInput.value   = App.headerSub   || "";
 })();
 
 redrawAll();

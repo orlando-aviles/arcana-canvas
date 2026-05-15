@@ -205,6 +205,27 @@ if (navigator.getBattery) {
   }).catch(() => {});
 }
 
+// Canvas header text editing
+const headerTitleInput = document.getElementById("headerTitleInput");
+const headerSubInput   = document.getElementById("headerSubInput");
+const headerTitleEl    = document.querySelector(".canvasHeader-title");
+const headerSubEl      = document.querySelector(".canvasHeader-sub");
+if (headerTitleInput) {
+  headerTitleInput.addEventListener("input", () => {
+    App.headerTitle = headerTitleInput.value;
+    if (headerTitleEl) headerTitleEl.textContent = headerTitleInput.value || "Arcana Canvas";
+    saveSettings();
+  });
+}
+if (headerSubInput) {
+  headerSubInput.addEventListener("input", () => {
+    App.headerSub = headerSubInput.value;
+    if (headerSubEl) headerSubEl.textContent = headerSubInput.value
+      || "Tap to draw · Hold for meaning · Drag to move";
+    saveSettings();
+  });
+}
+
 // Canvas header toggle
 headerToggle.addEventListener("change", () => {
   App.showHeader = headerToggle.checked;

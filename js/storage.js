@@ -18,6 +18,8 @@ function saveSettings() {
       cardAuraMode: App.cardAuraMode,
       perfMode:     App.perfMode,
       maxCards:     App.maxCards,
+      headerTitle:  App.headerTitle,
+      headerSub:    App.headerSub,
     },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -47,6 +49,8 @@ function loadSettings() {
       if (["dynamic","static","off"].includes(data.app.cardAuraMode)) App.cardAuraMode = data.app.cardAuraMode;
       if (["full","balanced","saver"].includes(data.app.perfMode)) App.perfMode = data.app.perfMode;
       if (typeof data.app.maxCards === "number") App.maxCards = Math.max(5, Math.min(60, data.app.maxCards));
+      if (typeof data.app.headerTitle === "string") App.headerTitle = data.app.headerTitle;
+      if (typeof data.app.headerSub   === "string") App.headerSub   = data.app.headerSub;
     }
     return true;
   } catch { return false; }
