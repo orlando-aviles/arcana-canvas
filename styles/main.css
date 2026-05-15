@@ -535,13 +535,17 @@ select option {
 .ci-card-img {
   width: min(200px, 52vw);
   height: min(320px, 78vw);
-  object-fit: contain; /* contain so rune images show fully */
+  object-fit: contain;
   object-position: center;
   border-radius: 12px;
   box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
   border: 1px solid rgba(255,255,255,0.12);
   display: block;
   background: rgba(0,0,0,0.3);
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 .ci-card-img-placeholder {
   width: min(220px, 55vw);
@@ -829,14 +833,7 @@ select option {
 .jo-back:hover, .jo-close:hover { color: var(--auraColor); }
 
 /* ── Views ────────────────────────────────────────── */
-.jo-day-view {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ── Calendar nav ─────────────────────────────────── */
+/* ── Calendar nav (mini popup only) ──────────────── */
 .jo-cal-nav {
   display: flex;
   align-items: center;
@@ -1007,7 +1004,8 @@ select option {
 .jo-card-thumb {
   flex: 0 0 20%; /* exactly 5 across, no shrink/grow */
   min-width: 0;
-  height: 130px; /* tall enough for portrait cards without clipping */
+  height: 0;
+  padding-bottom: 33.3%; /* aspect ratio trick: 20% wide × 5/3 = portrait */
   position: relative;
   overflow: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
@@ -1020,6 +1018,8 @@ select option {
 .jo-card-thumb:last-child { border-right: none; }
 .jo-card-thumb:active { opacity: 0.85; }
 .jo-card-thumb img {
+  position: absolute;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1231,9 +1231,11 @@ select option {
 }
 #cardIndexOverlay, #journalOverlay {
   padding-bottom: 60px;
-  /* Don't resize when keyboard opens */
-  height: 100%;
-  max-height: 100%;
+  /* Fixed to viewport — keyboard handled by visualViewport in JS */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 .ci-bottom-btn, .jo-bottom-btn {
   width: 44px;

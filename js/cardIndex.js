@@ -437,6 +437,12 @@ window.CardIndex = (() => {
   // Click to close (desktop)
   ciLightbox.addEventListener("click", closeLightbox);
 
+  // Prevent save-image callout on long press
+  ciCardImg.addEventListener("contextmenu", e => e.preventDefault());
+  ciCardImg.draggable = false;
+  ciLightboxImg.addEventListener("contextmenu", e => e.preventDefault());
+  ciLightboxImg.draggable = false;
+
   ciImgWrap.addEventListener("click", () => {
     if (currentCard?.imageName) {
       openLightbox(`./${activeDeck}/${currentCard.imageName}.png`);

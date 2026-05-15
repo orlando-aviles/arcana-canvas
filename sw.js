@@ -1,4 +1,4 @@
-const CACHE_NAME  = 'arcana-cache-v29';
+const CACHE_NAME  = 'arcana-cache-v30';
 const IMAGE_CACHE = 'arcana-images-v1'; // separate — survives core cache bumps
 
 const CORE_FILES = [
