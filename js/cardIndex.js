@@ -282,12 +282,56 @@ window.CardIndex = (() => {
   }
 
   function renderDetailInfo(card) {
-    const inSpread    = mode === "spread";
-    const isReversed  = !!card.isReversedOrientation;
+    const inSpread      = mode === "spread";
+    const isReversed    = !!card.isReversedOrientation;
     const uprightClass  = inSpread ? (isReversed ? "" : "ci-meaning-active") : "";
     const reversedClass = inSpread ? (isReversed ? "ci-meaning-active" : "") : "";
-    const revBadge = (inSpread && isReversed)
+    const revBadge      = (inSpread && isReversed)
       ? ' <span class="ci-rev-badge">Reversed</span>' : "";
+
+    // Get extended lore
+    const lore = card.section === "Runes"
+      ? (window.CardLore ? CardLore.getRune(card.name) : null)
+      : (window.CardLore ? CardLore.getTarot(card.name) : null);
+
+    let loreHTML = "";
+    if (lore) {
+      if (card.section === "Runes") {
+        loreHTML =
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x26F5; Elder Meaning</div>' +
+            '<div class="ci-lore-text">' + lore.elderMeaning + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x2467; In a Cast</div>' +
+            '<div class="ci-lore-text">' + lore.inCast + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x2442; Phoneme</div>' +
+            '<div class="ci-lore-text">' + lore.phoneme + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-affirmation">&ldquo;' + lore.affirmation + '&rdquo;</div>';
+      } else {
+        loreHTML =
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x2726; Theme</div>' +
+            '<div class="ci-lore-text ci-lore-theme">' + lore.theme + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x25CB; In a Reading</div>' +
+            '<div class="ci-lore-text">' + lore.inReading + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x25B3; Shadow</div>' +
+            '<div class="ci-lore-text">' + lore.shadow + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-block">' +
+            '<div class="ci-lore-label">&#x25C6; Symbol</div>' +
+            '<div class="ci-lore-text">' + lore.symbol + '</div>' +
+          '</div>' +
+          '<div class="ci-lore-affirmation">&ldquo;' + lore.affirmation + '&rdquo;</div>';
+      }
+    }
 
     ciCardInfo.innerHTML =
       '<div class="ci-detail-name">' + card.name + revBadge + '</div>' +
@@ -304,7 +348,8 @@ window.CardIndex = (() => {
       '<div class="ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
         '<div class="ci-meaning-label">Reversed</div>' +
         '<div class="ci-meaning-text">' + card.reversed + '</div>' +
-      '</div>';
+      '</div>' +
+      loreHTML;
   }
 
   function renderNavDots() {
