@@ -260,8 +260,14 @@ function showDesc(card) {
     meaning = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
   }
 
-  descTitle.innerHTML = displayName + ` <span class="desc-orientation-label">${orientation}</span>`;
-  descBody.textContent = meaning;
+  descTitle.textContent = displayName;
+  descBody.textContent  = meaning;
+  // Orientation dot — subtle color indicator
+  const dot = document.getElementById("descOrientDot");
+  if (dot) {
+    dot.title = orientation;
+    dot.className = "desc-orient-dot " + (isReversed ? "desc-orient-reversed" : "desc-orient-upright");
+  }
   descOverlay.dataset.cardName = cleanFile;
   descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");
@@ -271,6 +277,18 @@ function hideDesc() {
 }
 descOverlay.addEventListener("click", (e) => {
   if (e.target === descOverlay || e.target === descTitle || e.target === descBody) hideDesc();
+});
+
+// Add to Journal button
+document.getElementById("descAddCardBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const cardName = descOverlay.dataset.cardName || "";
+  if (window.Journal && cardName) {
+    Journal.saveCardToToday(cardName);
+    const btn = document.getElementById("descAddCardBtn");
+    btn.textContent = "✦ Added!";
+    setTimeout(() => { btn.innerHTML = "&#x271A; Add to Journal"; }, 1500);
+  }
 });
 
 // View Spread button

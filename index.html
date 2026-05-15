@@ -52,10 +52,14 @@
     <!-- Description overlay (tap/hold) -->
     <div id="descOverlay" class="descOverlay" aria-live="polite">
       <div class="descTitleRow">
-        <button id="descSpreadBtn" class="descSpreadBtn" type="button" title="View in Spread Index" data-tooltip="View Spread Index">⚷</button>
+        <span class="desc-orient-dot" id="descOrientDot" title=""></span>
         <div id="descTitle" class="descTitle"></div>
       </div>
       <div id="descBody" class="descBody"></div>
+      <div class="descActionRow">
+        <button id="descAddCardBtn" class="descActionBtn" type="button" title="Add to Journal" data-tooltip="Add to Journal">&#x271A; Add to Journal</button>
+        <button id="descSpreadBtn"  class="descActionBtn descActionBtn--index" type="button" title="View in Spread Index" data-tooltip="View Spread Index">&#x26B7; View Spread</button>
+      </div>
     </div>
 
     <!-- Settings panel (full-screen) -->
@@ -184,7 +188,7 @@
       <div class="sectionTitle">Actions</div>
         <div class="actionBtnRow">
           <button id="journalBtn"    type="button" class="actionIconBtn" title="Journal">&#x270E;</button>
-          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index" data-tooltip="Card Index">&#x2726;</button>
+          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index" data-tooltip="Card Index">&#x26B7;</button>
           <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Atmosphere" data-tooltip="Settings">&#x2600;</button>
           <button id="clearBtn"      type="button" class="actionIconBtn" title="Clear Canvas" data-tooltip="Clear Canvas">&#x2298;</button>
         </div>

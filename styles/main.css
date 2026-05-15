@@ -642,31 +642,12 @@ select option {
   .ci-numerology { text-align: left; }
 }
 
-/* ── Desc overlay: title row + spread icon button ────── */
+/* ── Desc overlay: title row ─────────────────────────── */
 .descTitleRow {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 6px;
-}
-.descSpreadBtn {
-  flex-shrink: 0;
-  background: none;
-  border: 1px solid var(--auraColor);
-  border-radius: 8px;
-  color: var(--auraColor);
-  font-size: 16px;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 0 6px var(--auraColor);
-  transition: background 150ms ease;
-  line-height: 1;
 }
 
 /* ── Card index: no pinch-zoom ───────────────────────── */
@@ -1092,23 +1073,7 @@ select option {
 }
 .ci-journal-go:hover { background: rgba(100,80,200,0.2); }
 
-/* ── Description overlay: orientation label ──────── */
-.desc-orientation-label {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--auraColor);
-  border: 1px solid var(--auraColor);
-  border-radius: 4px;
-  padding: 1px 6px;
-  margin-right: 8px;
-  vertical-align: middle;
-  opacity: 0.8;
-  pointer-events: none;
-  cursor: default;
-}
+
 
 /* ── Canvas header ────────────────────────────────── */
 .canvasHeader {
@@ -1502,4 +1467,66 @@ select option {
   color: var(--auraColor);
   text-shadow: 0 0 12px var(--auraColor);
   line-height: 1.5;
+}
+
+/* ── Desc overlay redesign ───────────────────────── */
+/* Orientation dot — subtle, doesn't take space */
+.desc-orient-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+  opacity: 0.8;
+}
+.desc-orient-upright  { background: var(--auraColor); box-shadow: 0 0 5px var(--auraColor); }
+.desc-orient-reversed { background: rgba(200,100,100,0.9); box-shadow: 0 0 5px rgba(200,100,100,0.7); }
+
+/* Action row — add card + view spread */
+.descActionRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.descActionBtn {
+  flex: 1;
+  padding: 7px 10px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+.descActionBtn:active { background: rgba(255,255,255,0.12); }
+.descActionBtn--index {
+  border-color: var(--auraColor);
+  color: var(--auraColor);
+}
+
+/* Remove old badge and spread button styles */
+.descSpreadBtn { display: none !important; } /* replaced by .descActionBtn */
+
+/* ── Index sticky nav counter ────────────────────── */
+.ci-bottom-counter {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.06em;
+  pointer-events: none;
+}
+
+/* ── Journal cards strip — no visible scrollbar ──── */
+.jo-cards-strip {
+  scrollbar-width: none; /* Firefox */
+}
+.jo-cards-strip::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Android */
 }

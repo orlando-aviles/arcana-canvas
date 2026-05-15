@@ -82,7 +82,7 @@ window.CardIndex = (() => {
         <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
       </div>
       <div class="ci-card-info" id="ciCardInfo"></div>
-      <div class="ci-nav-dots" id="ciNavDots"></div>
+      <div class="ci-nav-dots" id="ciNavDots" style="display:none"></div>
     </div>
 
     <div class="ci-lightbox" id="ciLightbox">
@@ -91,6 +91,7 @@ window.CardIndex = (() => {
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" style="display:none">&#x2B;</button>
+      <div class="ci-bottom-counter" id="ciBottomCounter"></div>
       <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" style="display:none">&#x2190;</button>
       <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close">&#x2715;</button>
     </div>
@@ -109,7 +110,8 @@ window.CardIndex = (() => {
   const ciCardImgPlaceholder = overlay.querySelector("#ciCardImgPlaceholder");
   const ciCardInfo   = overlay.querySelector("#ciCardInfo");
   const ciSwipeHint  = overlay.querySelector("#ciSwipeHint");
-  const ciNavDots    = overlay.querySelector("#ciNavDots");
+  const ciNavDots       = overlay.querySelector("#ciNavDots");
+  const ciBottomCounter = overlay.querySelector("#ciBottomCounter");
   const ciLightbox   = overlay.querySelector("#ciLightbox");
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
   // Save card in bottom bar
@@ -353,21 +355,11 @@ window.CardIndex = (() => {
   }
 
   function renderNavDots() {
-    if (navList.length <= 1) { ciNavDots.innerHTML = ""; return; }
-    // Show at most 7 dots; current is highlighted
     const total = navList.length;
-    let html = "";
-    if (total <= 9) {
-      for (let i = 0; i < total; i++) {
-        html += `<span class="ci-dot${i === navIdx ? " ci-dot-active" : ""}" data-idx="${i}"></span>`;
-      }
-    } else {
-      html = `<span class="ci-dot-count">${navIdx + 1} / ${total}</span>`;
+    // Bottom bar counter — always N / Total
+    if (ciBottomCounter) {
+      ciBottomCounter.textContent = total > 1 ? `${navIdx + 1} / ${total}` : "";
     }
-    ciNavDots.innerHTML = html;
-    ciNavDots.querySelectorAll(".ci-dot").forEach(dot => {
-      dot.addEventListener("click", () => showDetailAtIdx(parseInt(dot.dataset.idx)));
-    });
   }
 
   function updateSwipeHint() {
