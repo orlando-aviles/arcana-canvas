@@ -187,8 +187,8 @@ function cardDisplayName(card) {
   if (card.type === "playing") return `${card.rank}${card.suit}`;
   if (card.type === "tarot" || card.type === "luminous") return card.name;
   if (card.type === "gilded")  return card.isMajor
-    ? GildedMinima.majorName(card.majorIdx)
-    : GildedMinima.minorName(card.rank, card.suitIdx);
+    ? GildedMinima.MAJORS[card.majorIdx]?.name || "Unknown"
+    : `${card.rank} of ${GildedMinima.SUITS[card.suitIdx]?.name || "?"}`;
   if (card.type === "rune")    return Runes.name(card.runeIdx);
   return "";
 }
@@ -217,15 +217,51 @@ const descTitle   = document.getElementById("descTitle");
 const descBody    = document.getElementById("descBody");
 
 function showDesc(card) {
-  const filename = cardDisplayName(card);
-  // Reversed state lives in card.rot — a rotation near π means reversed
+  const filename   = cardDisplayName(card);
   const isReversed = App.reversals && !!card.rot && (Math.abs(card.rot % (Math.PI * 2)) > Math.PI / 2);
   const cleanFile  = filename.replace(/ \(R\)$/, "");
-  const displayName = CardData.fromFilename(cleanFile) || cleanFile;
   const orientation = isReversed ? "Reversed" : "Upright";
 
+  // Resolve display name and meaning based on card type
+  let displayName, meaning;
+
+  if (card.type === "rune") {
+    // Rune: name from RUNES array, meaning from cardData
+    displayName = Runes.RUNES[card.runeIdx]?.name || cleanFile;
+    const runeCard = CardData.get(displayName);
+    meaning = runeCard
+      ? (isReversed ? runeCard.reversed : runeCard.upright)
+      : "A rune of mystery.";
+  } else if (card.type === "playing") {
+    // Playing card: map suit to Minor Arcana suit, look up meaning
+    const SUIT_TO_TAROT = { "♠":"Swords", "♥":"Cups", "♦":"Pentacles", "♣":"Wands" };
+    const RANK_TO_TAROT = {
+      "A":"Ace","2":"Two","3":"Three","4":"Four","5":"Five","6":"Six","7":"Seven",
+      "8":"Eight","9":"Nine","10":"Ten","J":"Page","Q":"Queen","K":"King"
+    };
+    const tarotRank = RANK_TO_TAROT[card.rank] || card.rank;
+    const tarotSuit = SUIT_TO_TAROT[card.suit] || card.suit;
+    displayName = `${card.rank}${card.suit}`;
+    const tarotName = `${tarotRank} of ${tarotSuit}`;
+    const tarotCard = CardData.get(tarotName);
+    meaning = tarotCard
+      ? `${tarotName} — ${isReversed ? tarotCard.reversed : tarotCard.upright}`
+      : "A card of fortune.";
+  } else if (card.type === "gilded") {
+    // Gilded: resolve to standard tarot name for meaning
+    displayName = cleanFile;
+    const tarotCard = CardData.get(cleanFile);
+    meaning = tarotCard
+      ? (isReversed ? tarotCard.reversed : tarotCard.upright)
+      : "A gilded mystery.";
+  } else {
+    // Tarot / Luminous: use CardData
+    displayName = CardData.fromFilename(cleanFile) || cleanFile;
+    meaning = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
+  }
+
   descTitle.innerHTML = displayName + ` <span class="desc-orientation-label">${orientation}</span>`;
-  descBody.textContent = CardData.getMeaningByNameOrFile(cleanFile, isReversed);
+  descBody.textContent = meaning;
   descOverlay.dataset.cardName = cleanFile;
   descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");

@@ -52,7 +52,7 @@
     <!-- Description overlay (tap/hold) -->
     <div id="descOverlay" class="descOverlay" aria-live="polite">
       <div class="descTitleRow">
-        <button id="descSpreadBtn" class="descSpreadBtn" type="button" title="View in Spread Index">⚷</button>
+        <button id="descSpreadBtn" class="descSpreadBtn" type="button" title="View in Spread Index" data-tooltip="View Spread Index">⚷</button>
         <div id="descTitle" class="descTitle"></div>
       </div>
       <div id="descBody" class="descBody"></div>
@@ -137,7 +137,7 @@
     </div>
 
     <!-- Hamburger button -->
-    <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu">
+    <button id="menuBtn" class="menuBtn" type="button" aria-label="Menu" data-tooltip="Menu">
       <span class="bar"></span>
       <span class="bar"></span>
       <span class="bar"></span>
@@ -184,9 +184,9 @@
       <div class="sectionTitle">Actions</div>
         <div class="actionBtnRow">
           <button id="journalBtn"    type="button" class="actionIconBtn" title="Journal">&#x270E;</button>
-          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index">&#x2726;</button>
-          <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Atmosphere">&#x2600;</button>
-          <button id="clearBtn"      type="button" class="actionIconBtn" title="Clear Canvas">&#x2298;</button>
+          <button id="cardIndexBtn"  type="button" class="actionIconBtn" title="Card Index" data-tooltip="Card Index">&#x2726;</button>
+          <button id="atmosphereBtn" type="button" class="actionIconBtn" title="Atmosphere" data-tooltip="Settings">&#x2600;</button>
+          <button id="clearBtn"      type="button" class="actionIconBtn" title="Clear Canvas" data-tooltip="Clear Canvas">&#x2298;</button>
         </div>
 
     </div>
@@ -205,6 +205,7 @@
     <script src="./js/journal.js"></script>
     <script src="./js/tarot.js"></script>
     <script src="./js/ui.js"></script>
+    <script src="./js/tooltips.js"></script>
     <script src="./js/main.js" type="module"></script>
   </body>
 </html>

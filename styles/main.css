@@ -334,7 +334,7 @@ select option {
   background: rgba(11, 14, 26, 0.92);
   border-top: 1px solid var(--auraColor);
   backdrop-filter: blur(12px);
-  padding: 10px 16px 16px;
+  padding: 10px 80px 16px 16px; /* right pad clears menu button */
   z-index: 30;
   pointer-events: none;
   opacity: 0;
@@ -1007,7 +1007,7 @@ select option {
 .jo-card-thumb {
   flex: 0 0 20%; /* exactly 5 across, no shrink/grow */
   min-width: 0;
-  height: 110px; /* fixed height — no aspect-ratio so images don't cut */
+  height: 130px; /* tall enough for portrait cards without clipping */
   position: relative;
   overflow: hidden;
   border-right: 1px solid rgba(255,255,255,0.06);
@@ -1442,3 +1442,26 @@ select option {
   backdrop-filter: blur(16px);
 }
 .atmo-panel { padding-bottom: 60px; }
+
+/* ── Button tooltips (tap-hold) ───────────────────── */
+.btn-tooltip {
+  position: fixed;
+  background: rgba(11, 14, 26, 0.95);
+  border: 1px solid var(--auraColor);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12px;
+  color: var(--auraColor);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+  box-shadow: 0 0 10px var(--auraColor);
+}
+.btn-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

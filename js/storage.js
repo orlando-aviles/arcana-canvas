@@ -5,8 +5,17 @@ const VALID_BGS   = ["starfield","particles","snowfall"];
 
 function saveSettings() {
   const settings = {
-    fx: { intensity: FX.intensity, hueA: FX.hueA, hueB: FX.hueB },
-    app: { activeDeck: App.activeDeck, cardScale: App.cardScale, bg: App.bg, reversals: App.reversals },
+    fx:  { intensity: FX.intensity, hueA: FX.hueA, hueB: FX.hueB },
+    app: {
+      activeDeck:  App.activeDeck,
+      cardScale:   App.cardScale,
+      bg:          App.bg,
+      reversals:   App.reversals,
+      auraOn:      App.auraOn,
+      auraOpacity: App.auraOpacity,
+      auraCycle:   App.auraCycle,
+      showHeader:  App.showHeader,
+    },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
 }
@@ -25,9 +34,13 @@ function loadSettings() {
     }
     if (data.app) {
       if (VALID_DECKS.includes(data.app.activeDeck)) App.activeDeck = data.app.activeDeck;
-      if (typeof data.app.cardScale === "number") App.cardScale = clamp(data.app.cardScale, 0.6, 1.6);
-      if (VALID_BGS.includes(data.app.bg)) App.bg = data.app.bg;
-      if (typeof data.app.reversals === "boolean") App.reversals = data.app.reversals;
+      if (typeof data.app.cardScale   === "number")  App.cardScale   = clamp(data.app.cardScale, 0.6, 1.6);
+      if (VALID_BGS.includes(data.app.bg))           App.bg          = data.app.bg;
+      if (typeof data.app.reversals   === "boolean") App.reversals   = data.app.reversals;
+      if (typeof data.app.auraOn      === "boolean") App.auraOn      = data.app.auraOn;
+      if (typeof data.app.auraOpacity === "number")  App.auraOpacity = clamp(data.app.auraOpacity, 0.1, 1);
+      if (typeof data.app.auraCycle   === "boolean") App.auraCycle   = data.app.auraCycle;
+      if (typeof data.app.showHeader  === "boolean") App.showHeader  = data.app.showHeader;
     }
     return true;
   } catch { return false; }

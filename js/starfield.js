@@ -225,8 +225,15 @@ window.Starfield = (() => {
       // Parallax — gyroscope if available, drift fallback
       driftTime += dt;
       if (!gyroAvailable) {
-        parallax.targetX = Math.sin(driftTime * 0.07) * 22 + Math.cos(driftTime * 0.031) * 10;
-        parallax.targetY = Math.cos(driftTime * 0.05) * 14 + Math.sin(driftTime * 0.042) * 8;
+        // Multi-layered drift — different frequencies create organic, unpredictable motion
+        parallax.targetX =
+          Math.sin(driftTime * 0.11)  * 28 +
+          Math.cos(driftTime * 0.047) * 18 +
+          Math.sin(driftTime * 0.023) * 12;
+        parallax.targetY =
+          Math.cos(driftTime * 0.083) * 20 +
+          Math.sin(driftTime * 0.061) * 14 +
+          Math.cos(driftTime * 0.031) * 8;
       }
       // Smooth lerp toward target (gyro or drift)
       parallax.x += (parallax.targetX - parallax.x) * Math.min(1, dt * 4);

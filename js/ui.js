@@ -74,7 +74,7 @@ auraOpacitySlider.addEventListener("input", () => {
 
 // Auto-cycle — randomly shift hues every 8 seconds
 let _cycleTimer = null;
-function startCycle() {
+window.startCycle = function startCycle() {
   if (_cycleTimer) return;
   _cycleTimer = setInterval(() => {
     FX.hueA = Math.floor(Math.random() * 360);
@@ -88,7 +88,7 @@ function startCycle() {
     saveSettings();
   }, 8000);
 }
-function stopCycle() {
+window.stopCycle = function stopCycle() {
   clearInterval(_cycleTimer);
   _cycleTimer = null;
 }
