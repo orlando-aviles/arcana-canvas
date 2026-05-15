@@ -52,14 +52,10 @@
     <!-- Description overlay (tap/hold) -->
     <div id="descOverlay" class="descOverlay" aria-live="polite">
       <div class="descTitleRow">
-        <span class="desc-orient-dot" id="descOrientDot" title=""></span>
+        <span class="desc-orient-badge" id="descOrientBadge"></span>
         <div id="descTitle" class="descTitle"></div>
       </div>
       <div id="descBody" class="descBody"></div>
-      <div class="descActionRow">
-        <button id="descAddCardBtn" class="descActionBtn" type="button" title="Add to Journal" data-tooltip="Add to Journal">&#x271A; Add to Journal</button>
-        <button id="descSpreadBtn"  class="descActionBtn descActionBtn--index" type="button" title="View in Spread Index" data-tooltip="View Spread Index">&#x26B7; View Spread</button>
-      </div>
     </div>
 
     <!-- Settings panel (full-screen) -->
@@ -126,6 +122,15 @@
           <input id="auraOpacitySlider" type="range" min="10" max="100" value="72" />
         </div>
 
+        <div class="atmo-section-title">Card Aura</div>
+        <div class="sliderRow">
+          <select id="cardAuraModeSelect">
+            <option value="dynamic">Dynamic — updates with aura</option>
+            <option value="static">Static — keeps drawn color</option>
+            <option value="off">Off — no card aura</option>
+          </select>
+        </div>
+
         <div class="atmo-section-title">Display</div>
         <div class="sliderRow toggleRow">
           <span class="toggleLabel">Canvas Header</span>
@@ -138,6 +143,13 @@
       <div class="atmo-bottom-bar">
         <button class="ci-bottom-btn atmo-close" id="atmosphereClose" title="Close">&#x2715;</button>
       </div>
+    </div>
+
+    <!-- Overlay action buttons — float left of hamburger -->
+    <div id="overlayBtns" class="overlayBtns" style="display:none">
+      <button id="descAddCardBtn" class="overlayActionBtn" type="button" title="Save to Journal" data-tooltip="Save to Journal">&#x271A; Save</button>
+      <button id="descSpreadBtn"  class="overlayActionBtn" type="button" title="View Spread Index" data-tooltip="View Spread Index">&#x26B7; Index</button>
+      <button id="descGoJournalBtn" class="overlayActionBtn" type="button" title="Open Journal" data-tooltip="Open Journal">&#x270E; Open</button>
     </div>
 
     <!-- Hamburger button -->

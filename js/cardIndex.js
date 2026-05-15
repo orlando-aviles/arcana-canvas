@@ -18,13 +18,13 @@
 window.CardIndex = (() => {
 
   // ── State ─────────────────────────────────────────────
-  // Default to whatever deck is active on canvas
   function defaultDeck() {
     if (!window.App) return "LuminousArc";
     if (App.activeDeck === "riderwaite") return "RiderWaite";
     return "LuminousArc";
   }
-  let activeDeck = defaultDeck();
+  let activeDeck  = defaultDeck(); // image deck for rendering
+  let deckFilter  = "all";         // filter for list/detail
   let mode        = "full";      // "full" | "spread"
   let navList     = [];          // ordered list for swipe nav
   let navIdx      = 0;           // current position in navList
@@ -63,19 +63,27 @@ window.CardIndex = (() => {
       <div class="ci-search-row">
         <input class="ci-search" id="ciSearch" type="search"
                placeholder="Search cards…" autocomplete="off" />
-        <div class="ci-deck-toggle">
-          <button class="ci-deck-btn active" data-deck="LuminousArc">Luminous</button>
-          <button class="ci-deck-btn" data-deck="RiderWaite">Rider-Waite</button>
-        </div>
+        <select class="ci-deck-select" id="ciDeckSelectList">
+          <option value="all">All Decks</option>
+          <option value="LuminousArc">Luminous Arc</option>
+          <option value="RiderWaite">Rider-Waite</option>
+          <option value="Gilded">Gilded Minima</option>
+          <option value="Runes">Runes</option>
+          <option value="Playing">Playing Cards</option>
+        </select>
       </div>
       <div class="ci-list" id="ciList"></div>
     </div>
 
     <div class="ci-detail-view" id="ciDetailView">
-      <div class="ci-deck-toggle ci-detail-deck">
-        <button class="ci-deck-btn active" data-deck="LuminousArc">Luminous</button>
-        <button class="ci-deck-btn" data-deck="RiderWaite">Rider-Waite</button>
-      </div>
+      <select class="ci-deck-select ci-detail-deck-select" id="ciDeckSelectDetail">
+        <option value="all">All Decks</option>
+        <option value="LuminousArc">Luminous Arc</option>
+        <option value="RiderWaite">Rider-Waite</option>
+        <option value="Gilded">Gilded Minima</option>
+        <option value="Runes">Runes</option>
+        <option value="Playing">Playing Cards</option>
+      </select>
       <div class="ci-swipe-hint" id="ciSwipeHint"></div>
       <div class="ci-card-img-wrap" id="ciImgWrap">
         <img class="ci-card-img" id="ciCardImg" src="" alt="" />
@@ -136,9 +144,16 @@ window.CardIndex = (() => {
   // ── Nav list builders ─────────────────────────────────
   function buildFullNavList() {
     const q = searchQuery.toLowerCase();
-    return CardData.getAll().filter(c =>
-      !q || c.name.toLowerCase().includes(q)
-    );
+    return CardData.getAll().filter(card => {
+      if (q && !card.name.toLowerCase().includes(q)) return false;
+      if (deckFilter === "all") return true;
+      if (deckFilter === "Runes")   return card.section === "Runes";
+      if (deckFilter === "LuminousArc" || deckFilter === "RiderWaite") {
+        return card.section !== "Runes"; // tarot cards for image decks
+      }
+      // Gilded and Playing — show all non-rune cards (they share the tarot structure)
+      return card.section !== "Runes";
+    });
   }
 
   // Build nav list from canvas draws (deduped, preserving draw order)
@@ -237,13 +252,8 @@ window.CardIndex = (() => {
 
   // ── Detail view ───────────────────────────────────────
   function showDetailAtIdx(idx) {
-    // Show save button in detail view
     const saveBtn = overlay.querySelector("#ciSaveCard");
     if (saveBtn) saveBtn.style.display = "flex";
-    // Sync deck toggle buttons on every detail render
-    overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.deck === activeDeck);
-    });
     navIdx = Math.max(0, Math.min(navList.length - 1, idx));
     const card = navList[navIdx];
     if (!card) return;
@@ -487,16 +497,26 @@ window.CardIndex = (() => {
   });
 
   // ── Deck toggle ───────────────────────────────────────
-  function setDeck(deck) {
-    activeDeck = deck;
-    overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.deck === deck);
-    });
-    if (currentCard) renderDetailImage(currentCard);
-    if (!ciDetailView.classList.contains("ci-active")) renderList();
+
+  // Wire deck dropdowns
+  function onDeckSelectChange(sel) {
+    const val = sel.value;
+    // Sync both selects
+    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = val);
+    deckFilter = val;
+    // activeDeck for image rendering — map to image folder
+    if (val === "RiderWaite") activeDeck = "RiderWaite";
+    else if (val === "Runes") activeDeck = "Runes";
+    else activeDeck = "LuminousArc";
+    navList = buildFullNavList();
+    if (ciDetailView.classList.contains("ci-active") && currentCard) {
+      renderDetailImage(currentCard);
+    } else {
+      renderList();
+    }
   }
-  overlay.querySelectorAll(".ci-deck-btn").forEach(btn => {
-    btn.addEventListener("click", () => setDeck(btn.dataset.deck));
+  overlay.querySelectorAll(".ci-deck-select").forEach(sel => {
+    sel.addEventListener("change", () => onDeckSelectChange(sel));
   });
 
   // ── Search ────────────────────────────────────────────
@@ -529,6 +549,8 @@ window.CardIndex = (() => {
   function open() {
     if (window.Journal) Journal.close();
     activeDeck = defaultDeck();
+    deckFilter = "all";
+    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = "all");
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";
@@ -548,6 +570,7 @@ window.CardIndex = (() => {
   // openSpread(filenameOrName) — spread view from description overlay
   function openSpread(filenameOrName) {
     activeDeck = defaultDeck();
+    deckFilter = "all";
     mode = "spread";
     navList = buildSpreadNavList();
     if (navList.length === 0) return;
@@ -572,5 +595,9 @@ window.CardIndex = (() => {
     document.body.style.overflow = "";
   }
 
-  return { open, openSpread, close, _showDetailAtIdx: showDetailAtIdx };
+  return {
+    open, openSpread, close,
+    _showDetailAtIdx: showDetailAtIdx,
+    _openLightbox: openLightbox,
+  };
 })();

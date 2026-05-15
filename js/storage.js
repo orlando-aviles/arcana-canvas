@@ -14,7 +14,8 @@ function saveSettings() {
       auraOn:      App.auraOn,
       auraOpacity: App.auraOpacity,
       auraCycle:   App.auraCycle,
-      showHeader:  App.showHeader,
+      showHeader:   App.showHeader,
+      cardAuraMode: App.cardAuraMode,
     },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -41,6 +42,7 @@ function loadSettings() {
       if (typeof data.app.auraOpacity === "number")  App.auraOpacity = clamp(data.app.auraOpacity, 0.1, 1);
       if (typeof data.app.auraCycle   === "boolean") App.auraCycle   = data.app.auraCycle;
       if (typeof data.app.showHeader  === "boolean") App.showHeader  = data.app.showHeader;
+      if (["dynamic","static","off"].includes(data.app.cardAuraMode)) App.cardAuraMode = data.app.cardAuraMode;
     }
     return true;
   } catch { return false; }

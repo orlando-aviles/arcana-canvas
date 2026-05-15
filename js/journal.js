@@ -216,8 +216,7 @@ window.Journal = (() => {
     updateWordCount(entry.text || "");
     renderCardsStrip(entry.cards || []);
 
-    // Focus textarea on today
-    if (isToday) setTimeout(() => joPaper.focus(), 100);
+    // User taps textarea to type — no auto-focus
   }
 
   function updateWordCount(text) {
@@ -248,10 +247,10 @@ window.Journal = (() => {
         ${imgSrc
           ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
-        <div class="jo-card-confirm" data-idx="${i}">
-          <span class="jo-card-confirm-name">${displayName}</span>
-          <button class="jo-card-confirm-btn" data-idx="${i}">Remove</button>
-          <button class="jo-card-cancel-btn">Cancel</button>
+        <div class="jo-thumb-popup">
+          <button class="jo-popup-btn jo-popup-expand" title="Expand">&#x2922;</button>
+          <button class="jo-popup-btn jo-popup-index"  title="Index">&#x26B7;</button>
+          <button class="jo-popup-btn jo-popup-remove" title="Remove">&#x2715;</button>
         </div>
       </div>`;
     }).join("");
@@ -262,39 +261,43 @@ window.Journal = (() => {
       img.draggable = false;
     });
 
-    const HOLD_MS = 500;
-    let holdTimer = null;
-
-    function showConfirm(thumb) {
-      // Hide any other open confirms first
-      joCardsStrip.querySelectorAll(".jo-card-confirm.visible")
+    // Tap → popup menu with Expand / Index / Remove
+    function closeAllPopups() {
+      joCardsStrip.querySelectorAll(".jo-thumb-popup.visible")
         .forEach(el => el.classList.remove("visible"));
-      thumb.querySelector(".jo-card-confirm")?.classList.add("visible");
-    }
-    function hideConfirm(thumb) {
-      thumb.querySelector(".jo-card-confirm")?.classList.remove("visible");
     }
 
     joCardsStrip.querySelectorAll(".jo-card-thumb").forEach(thumb => {
-      // Hold to show confirm
-      thumb.addEventListener("mousedown", () => {
-        holdTimer = setTimeout(() => showConfirm(thumb), HOLD_MS);
-      });
-      thumb.addEventListener("mouseup",   () => clearTimeout(holdTimer));
-      thumb.addEventListener("mouseleave",() => clearTimeout(holdTimer));
-
-      thumb.addEventListener("touchstart", (e) => {
-        holdTimer = setTimeout(() => { showConfirm(thumb); }, HOLD_MS);
-      }, { passive: true });
-      thumb.addEventListener("touchend",   () => clearTimeout(holdTimer), { passive: true });
-      thumb.addEventListener("touchmove",  () => clearTimeout(holdTimer), { passive: true });
-
-      // Short tap → open in index (only if confirm not showing)
       thumb.addEventListener("click", (e) => {
-        if (e.target.closest(".jo-card-confirm")) return;
-        const confirm = thumb.querySelector(".jo-card-confirm");
-        if (confirm?.classList.contains("visible")) { hideConfirm(thumb); return; }
-        const filename = thumb.dataset.filename;
+        if (e.target.closest(".jo-thumb-popup")) return; // handled by popup buttons
+        closeAllPopups();
+        const popup = thumb.querySelector(".jo-thumb-popup");
+        if (popup) popup.classList.add("visible");
+      });
+    });
+
+    // Expand
+    joCardsStrip.querySelectorAll(".jo-popup-expand").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllPopups();
+        const filename = btn.closest(".jo-card-thumb").dataset.filename;
+        const card = CardData.getByNameOrFile(filename);
+        if (card?.imageName) {
+          const deckFolder = card.section === "Runes" ? "Runes"
+            : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
+          // Open lightbox in CardIndex
+          if (window.CardIndex) CardIndex._openLightbox(`./${deckFolder}/${card.imageName}.png`);
+        }
+      });
+    });
+
+    // Index
+    joCardsStrip.querySelectorAll(".jo-popup-index").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllPopups();
+        const filename = btn.closest(".jo-card-thumb").dataset.filename;
         const card = CardData.getByNameOrFile(filename);
         if (card) {
           close();
@@ -307,25 +310,26 @@ window.Journal = (() => {
       });
     });
 
-    // Confirm remove
-    joCardsStrip.querySelectorAll(".jo-card-confirm-btn").forEach(btn => {
+    // Remove
+    joCardsStrip.querySelectorAll(".jo-popup-remove").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const idx = parseInt(btn.dataset.idx);
+        closeAllPopups();
+        const cardIdx = parseInt(btn.closest(".jo-card-thumb").dataset.idx);
         const entry = getEntry(currentDay);
-        entry.cards.splice(idx, 1);
+        entry.cards.splice(cardIdx, 1);
         entry.updatedAt = Date.now();
         saveEntry(currentDay, entry);
         renderCardsStrip(entry.cards);
       });
     });
 
-    // Cancel
-    joCardsStrip.querySelectorAll(".jo-card-cancel-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        btn.closest(".jo-card-confirm")?.classList.remove("visible");
-      });
+    // Close popups on tap outside
+    joCardsStrip.addEventListener("click", (e) => {
+      if (!e.target.closest(".jo-card-thumb")) closeAllPopups();
+    });
+    joDayView.addEventListener("click", (e) => {
+      if (!e.target.closest(".jo-cards-strip")) closeAllPopups();
     });
   }
 

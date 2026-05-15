@@ -98,10 +98,11 @@ function dispatchDraw(x, y) {
   const rev  = rollReversal();
   const baseTilt = (Math.random() * 10 - 5) * (Math.PI / 180);
   const rot = baseTilt + (rev ? Math.PI : 0);
+  const auraH = FX.hueA; // stored per-card for static mode
 
   if (deck === "text") {
     const name = DeckQueues.next("text", tarotNames);
-    const card = { type: "text", x, y, name: rev ? name + " (R)" : name };
+    const card = { type: "text", x, y, name: rev ? name + " (R)" : name, auraH };
     draws.push(card); drawTextCard(card); return;
   }
 
@@ -115,19 +116,19 @@ function dispatchDraw(x, y) {
       });
     });
     const c = DeckQueues.next("playing", allPlaying);
-    const card = { type: "playing", x, y, rank: c.rank, suit: c.suit, ink: c.ink, rot };
+    const card = { type: "playing", x, y, rank: c.rank, suit: c.suit, ink: c.ink, rot, auraH };
     draws.push(card); drawPlayingCard(card); return;
   }
 
   if (deck === "riderwaite") {
     const name = DeckQueues.next("riderwaite", Tarot.cardNames);
-    const card = { type: "tarot", x, y, name, deckKey: "riderwaite", rot };
+    const card = { type: "tarot", x, y, name, deckKey: "riderwaite", rot, auraH };
     draws.push(card); drawTarotCard(card); return;
   }
 
   if (deck === "luminousarc") {
     const name = DeckQueues.next("luminousarc", Tarot.cardNames);
-    const card = { type: "luminous", x, y, name, deckKey: "luminousarc", rot };
+    const card = { type: "luminous", x, y, name, deckKey: "luminousarc", rot, auraH };
     draws.push(card); drawLuminousCard(card); return;
   }
 
@@ -141,7 +142,7 @@ function dispatchDraw(x, y) {
       });
     });
     const g = DeckQueues.next("gilded", gildedAll);
-    const card = { type: "gilded", x, y, rank: g.rank, suitIdx: g.suitIdx, isMajor: g.isMajor, majorIdx: g.majorIdx, rot };
+    const card = { type: "gilded", x, y, rank: g.rank, suitIdx: g.suitIdx, isMajor: g.isMajor, majorIdx: g.majorIdx, rot, auraH };
     draws.push(card); drawGildedCard(card); return;
   }
 
@@ -150,7 +151,7 @@ function dispatchDraw(x, y) {
     const runeRot = (Math.random() * 10 - 5) * (Math.PI / 180) + (runeRev ? Math.PI : 0);
     const allRunes = Runes.RUNES.map((_, i) => i);
     const runeIdx  = DeckQueues.next("runes", allRunes);
-    const card = { type: "rune", x, y, runeIdx, rot: runeRot };
+    const card = { type: "rune", x, y, runeIdx, rot: runeRot, auraH };
     draws.push(card); drawRuneCard(card); return;
   }
 }
@@ -262,18 +263,23 @@ function showDesc(card) {
 
   descTitle.textContent = displayName;
   descBody.textContent  = meaning;
-  // Orientation dot — subtle color indicator
-  const dot = document.getElementById("descOrientDot");
-  if (dot) {
-    dot.title = orientation;
-    dot.className = "desc-orient-dot " + (isReversed ? "desc-orient-reversed" : "desc-orient-upright");
+  // Orientation badge — color coded text pill
+  const badge = document.getElementById("descOrientBadge");
+  if (badge) {
+    badge.textContent = orientation;
+    badge.className = "desc-orient-badge " + (isReversed ? "desc-orient-reversed" : "desc-orient-upright");
   }
   descOverlay.dataset.cardName = cleanFile;
   descOverlay.dataset.reversed = isReversed ? "1" : "0";
   descOverlay.classList.add("visible");
+  // Show floating action buttons
+  const ob = document.getElementById("overlayBtns");
+  if (ob) ob.style.display = "flex";
 }
 function hideDesc() {
   descOverlay.classList.remove("visible");
+  const ob = document.getElementById("overlayBtns");
+  if (ob) ob.style.display = "none";
 }
 descOverlay.addEventListener("click", (e) => {
   if (e.target === descOverlay || e.target === descTitle || e.target === descBody) hideDesc();
@@ -297,6 +303,13 @@ document.getElementById("descSpreadBtn").addEventListener("click", (e) => {
   const cardName = descOverlay.dataset.cardName || "";
   hideDesc();
   CardIndex.openSpread(cardName);
+});
+
+// Go to Journal button
+document.getElementById("descGoJournalBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  hideDesc();
+  if (window.Journal) Journal.openToday();
 });
 
 // ── Touch (mobile) ────────────────────────────────────────
@@ -346,6 +359,7 @@ tarotCanvas.addEventListener("touchmove", (e) => {
     const card = draws[_touch.cardIdx];
     card.x = t.clientX - _touch.dragOffsetX;
     card.y = t.clientY - _touch.dragOffsetY;
+    if ((App.cardAuraMode || "dynamic") === "dynamic") card.auraH = FX.hueA;
     scheduleDragRedraw();
   }
 }, { passive: false });
@@ -408,6 +422,7 @@ tarotCanvas.addEventListener("mousemove", (e) => {
     const card = draws[_mouse.cardIdx];
     card.x = e.clientX - _mouse.dragOffsetX;
     card.y = e.clientY - _mouse.dragOffsetY;
+    if ((App.cardAuraMode || "dynamic") === "dynamic") card.auraH = FX.hueA;
     scheduleDragRedraw();
   }
 });
@@ -455,7 +470,7 @@ function drawTextCard(card) {
   // Reversed cards get a subtle warm tint on the border
   tarotCtx.strokeStyle = isReversed
     ? "rgba(180, 60, 60, 0.55)"
-    : getCssVar("--cardStroke");
+    : getCardStroke(card);
   tarotCtx.lineWidth = isReversed ? 1.5 : 1;
   tarotCtx.stroke();
 
@@ -530,12 +545,12 @@ function drawTarotCard(card) {
   tarotCtx.shadowBlur = 0; tarotCtx.shadowOffsetY = 0;
   tarotCtx.strokeStyle = "rgba(0,0,0,0.22)"; tarotCtx.lineWidth = 1;
   roundRect(tarotCtx, x, y, w, h, r); tarotCtx.stroke();
-  tarotCtx.strokeStyle = getCssVar("--cardStroke"); tarotCtx.lineWidth = 2;
+  tarotCtx.strokeStyle = getCardStroke(card); tarotCtx.lineWidth = 2;
   roundRect(tarotCtx, x, y, w, h, r); tarotCtx.stroke();
   tarotCtx.save();
   tarotCtx.globalAlpha = 0.75;
-  tarotCtx.shadowColor = getCssVar("--cardStroke"); tarotCtx.shadowBlur = 14*s;
-  tarotCtx.strokeStyle = getCssVar("--cardStroke"); tarotCtx.lineWidth = 1.5;
+  tarotCtx.shadowColor = getCardShadow(card); tarotCtx.shadowBlur = 14*s;
+  tarotCtx.strokeStyle = getCardStroke(card); tarotCtx.lineWidth = 1.5;
   roundRect(tarotCtx, x, y, w, h, r); tarotCtx.stroke();
   tarotCtx.restore();
   tarotCtx.strokeStyle = "rgba(0,0,0,0.08)"; tarotCtx.lineWidth = 1;
@@ -594,7 +609,7 @@ function drawLuminousCard(card) {
   tarotCtx.shadowBlur = 0; tarotCtx.shadowOffsetY = 0;
 
   // Bright thin gilded glow — no white, pure hue-reactive stroke
-  const guildColor = getCssVar("--cardStroke");
+  const guildColor = getCardStroke(card);
   tarotCtx.save();
   tarotCtx.shadowColor = guildColor;
   tarotCtx.shadowBlur  = 18 * s;

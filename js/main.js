@@ -32,6 +32,9 @@ applyBg();
     cycleToggle.checked = !!App.auraCycle;
     if (App.auraCycle && window.startCycle) startCycle();
   }
+  // Card aura mode
+  const cardAuraSel = document.getElementById("cardAuraModeSelect");
+  if (cardAuraSel) cardAuraSel.value = App.cardAuraMode || "dynamic";
   // Canvas header
   const headerToggle = document.getElementById("headerToggle");
   const canvasHeader = document.getElementById("canvasHeader");

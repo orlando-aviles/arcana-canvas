@@ -98,6 +98,17 @@ auraCycleToggle.addEventListener("change", () => {
   saveSettings();
 });
 
+// Card aura mode
+const cardAuraModeSelect = document.getElementById("cardAuraModeSelect");
+if (cardAuraModeSelect) {
+  cardAuraModeSelect.value = App.cardAuraMode || "dynamic";
+  cardAuraModeSelect.addEventListener("change", () => {
+    App.cardAuraMode = cardAuraModeSelect.value;
+    redrawAll();
+    saveSettings();
+  });
+}
+
 // Canvas header toggle
 headerToggle.addEventListener("change", () => {
   App.showHeader = headerToggle.checked;

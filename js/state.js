@@ -11,11 +11,12 @@ window.App = {
   cardScale: 1.0,
   // "starfield" | "particles"
   bg: "particles",
-  reversals:   false,
-  auraOn:      true,
-  auraOpacity: 0.72,
-  auraCycle:   false,
-  showHeader:  true,
+  reversals:    false,
+  auraOn:       true,
+  auraOpacity:  0.72,
+  auraCycle:    false,
+  showHeader:   true,
+  cardAuraMode: "dynamic", // "dynamic" | "static" | "off"
 };
 
 window.clamp = function clamp(v, a, b) {
@@ -37,6 +38,21 @@ window.getCssVar = function getCssVar(name) {
   return getComputedStyle(document.documentElement)
     .getPropertyValue(name)
     .trim();
+};
+
+// Card aura color helpers — respect App.cardAuraMode
+window.getCardStroke = function getCardStroke(card) {
+  const mode = App.cardAuraMode || "dynamic";
+  if (mode === "off" || !App.auraOn) return "rgba(80,80,100,0.25)";
+  const hue = (mode === "static" && card && card.auraH != null) ? card.auraH : FX.hueA;
+  return `hsla(${hue}, 85%, 65%, ${(App.auraOpacity || 0.72) * 0.85})`;
+};
+
+window.getCardShadow = function getCardShadow(card) {
+  const mode = App.cardAuraMode || "dynamic";
+  if (mode === "off" || !App.auraOn) return "rgba(0,0,0,0)";
+  const hue = (mode === "static" && card && card.auraH != null) ? card.auraH : FX.hueA;
+  return `hsla(${hue}, 85%, 65%, ${(App.auraOpacity || 0.72) * 0.55})`;
 };
 
 /*********************************************************

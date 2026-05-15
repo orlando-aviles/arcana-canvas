@@ -1530,3 +1530,134 @@ select option {
 .jo-cards-strip::-webkit-scrollbar {
   display: none; /* Chrome/Safari/Android */
 }
+
+/* ── Overlay action buttons (float left of hamburger) ─ */
+.overlayBtns {
+  position: fixed;
+  bottom: 16px;
+  right: 72px; /* left of the 60px hamburger + 16px margin */
+  display: flex;
+  gap: 8px;
+  z-index: 31; /* above overlay (30), below menu (40) */
+  align-items: center;
+}
+.overlayActionBtn {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(12px);
+  color: rgba(255,255,255,0.85);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  transition: background 150ms ease;
+}
+.overlayActionBtn:active { background: rgba(255,255,255,0.12); }
+
+/* ── Orientation badge ─────────────────────────────── */
+.desc-orient-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-right: 6px;
+  vertical-align: middle;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.desc-orient-upright {
+  color: var(--auraColor);
+  border: 1px solid var(--auraColor);
+  text-shadow: 0 0 6px var(--auraColor);
+}
+.desc-orient-reversed {
+  color: rgba(220,100,100,0.95);
+  border: 1px solid rgba(220,100,100,0.6);
+}
+
+/* ── Index deck dropdown ───────────────────────────── */
+.ci-deck-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(100,80,200,0.15);
+  color: rgba(255,255,255,0.85);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.ci-detail-deck-select {
+  margin: 8px 16px 4px;
+  width: calc(100% - 32px);
+}
+
+/* ── Journal thumbnail popup menu ─────────────────── */
+.jo-thumb-popup {
+  position: absolute;
+  inset: 0;
+  background: rgba(6,7,16,0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+  z-index: 3;
+  border-radius: 0;
+}
+.jo-thumb-popup.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.jo-popup-btn {
+  width: 80%;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: none;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: background 120ms ease;
+  text-align: center;
+}
+.jo-popup-btn:active { background: rgba(255,255,255,0.18); }
+.jo-popup-remove {
+  border-color: rgba(200,80,80,0.5);
+  color: rgba(220,120,120,0.9);
+}
+
+/* ── Index/journal nav button spacing ─────────────── */
+.ci-bottom-bar, .jo-bottom-bar {
+  gap: 8px;
+}
+
+/* ── Remove old confirm popup styles ──────────────── */
+.jo-card-confirm { display: none !important; }
+
+/* ── Settings card aura select ────────────────────── */
+#cardAuraModeSelect {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.9);
+  font-size: 13px;
+  outline: none;
+}
