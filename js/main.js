@@ -3,7 +3,7 @@
  *********************************************************/
 loadSettings();
 
-Tarot.preloadAll();
+const _preloadPromise = Tarot.preloadAll();
 
 syncVisualUI();
 syncDeckUI();
@@ -32,6 +32,16 @@ applyBg();
     cycleToggle.checked = !!App.auraCycle;
     if (App.auraCycle && window.startCycle) startCycle();
   }
+  // Performance mode
+  const perfSel = document.getElementById("perfModeSelect");
+  if (perfSel) {
+    perfSel.value = App.perfMode || "full";
+    if (window.applyPerfMode) applyPerfMode(App.perfMode || "full");
+  }
+  const maxSlider = document.getElementById("maxCardsSlider");
+  const maxLabel  = document.getElementById("maxCardsLabel");
+  if (maxSlider) { maxSlider.value = App.maxCards || 40; }
+  if (maxLabel)  { maxLabel.textContent = App.maxCards || 40; }
   // Card aura mode
   const cardAuraSel = document.getElementById("cardAuraModeSelect");
   if (cardAuraSel) cardAuraSel.value = App.cardAuraMode || "dynamic";
@@ -44,9 +54,14 @@ applyBg();
 
 redrawAll();
 
-// Dismiss splash — short delay so the user sees it on fast devices too
-setTimeout(() => {
+// Smart splash — wait for BOTH: deck images loaded AND minimum 2s display
+const _splashStart = Date.now();
+Promise.all([
+  _preloadPromise,
+  new Promise(r => setTimeout(r, 2000))
+]).then(() => {
   const splash = document.getElementById("splash");
+  if (!splash) return;
   splash.classList.add("hidden");
   splash.addEventListener("transitionend", () => splash.remove(), { once: true });
-}, 1200);
+});

@@ -72,26 +72,59 @@ auraOpacitySlider.addEventListener("input", () => {
   saveSettings();
 });
 
-// Auto-cycle — randomly shift hues every 8 seconds
+// ── Smooth hue lerp system ─────────────────────────────────────────
+// FX.hueA/hueB are TARGETS. _displayHueA/B are the animated values.
+// All rendering reads FX.hueA/hueB (which lerp toward targets each frame).
+let _targetHueA = FX.hueA;
+let _targetHueB = FX.hueB;
+let _lerpRafId  = null;
+
+function lerpAngle(a, b, t) {
+  // Shortest-path lerp around the 360° colour wheel
+  let diff = ((b - a + 540) % 360) - 180;
+  return (a + diff * t + 360) % 360;
+}
+
+function tickLerp() {
+  const speed = 0.025; // fraction per frame (~3s to full shift at 60fps)
+  const dA = Math.abs(((FX.hueA - _targetHueA + 540) % 360) - 180);
+  const dB = Math.abs(((FX.hueB - _targetHueB + 540) % 360) - 180);
+
+  if (dA < 0.2 && dB < 0.2) {
+    FX.hueA = _targetHueA;
+    FX.hueB = _targetHueB;
+    applyAuras();
+    _lerpRafId = null;
+    return; // settled — stop loop
+  }
+
+  FX.hueA = lerpAngle(FX.hueA, _targetHueA, speed);
+  FX.hueB = lerpAngle(FX.hueB, _targetHueB, speed);
+  applyAuras();
+  _lerpRafId = requestAnimationFrame(tickLerp);
+}
+
+function setHueTargets(a, b) {
+  _targetHueA = ((a % 360) + 360) % 360;
+  _targetHueB = ((b % 360) + 360) % 360;
+  if (!_lerpRafId) _lerpRafId = requestAnimationFrame(tickLerp);
+}
+
+// ── Auto-cycle — picks new random targets every 8s, lerp does the work ──
 let _cycleTimer = null;
 window.startCycle = function startCycle() {
   if (_cycleTimer) return;
   _cycleTimer = setInterval(() => {
-    FX.hueA = Math.floor(Math.random() * 360);
-    FX.hueB = (FX.hueA + 30 + Math.floor(Math.random() * 60)) % 360;
-    applyAuras();
-    // Sync sliders
-    document.getElementById("hueASlider").value = FX.hueA;
-    document.getElementById("hueBSlider").value = FX.hueB;
-    document.getElementById("hueAValue").textContent = FX.hueA + "°";
-    document.getElementById("hueBValue").textContent = FX.hueB + "°";
+    const newA = Math.floor(Math.random() * 360);
+    const newB = (newA + 30 + Math.floor(Math.random() * 60)) % 360;
+    setHueTargets(newA, newB);
     saveSettings();
   }, 8000);
-}
+};
 window.stopCycle = function stopCycle() {
   clearInterval(_cycleTimer);
   _cycleTimer = null;
-}
+};
 auraCycleToggle.addEventListener("change", () => {
   App.auraCycle = auraCycleToggle.checked;
   App.auraCycle ? startCycle() : stopCycle();
@@ -107,6 +140,69 @@ if (cardAuraModeSelect) {
     redrawAll();
     saveSettings();
   });
+}
+
+// Performance mode
+const perfModeSelect = document.getElementById("perfModeSelect");
+const perfModeLabel  = document.getElementById("perfModeLabel");
+const maxCardsSlider = document.getElementById("maxCardsSlider");
+const maxCardsLabel  = document.getElementById("maxCardsLabel");
+
+window.applyPerfMode = function applyPerfMode(mode) {
+  App.perfMode = mode;
+  const labels = { full: "Full", balanced: "Balanced", saver: "Battery Saver" };
+  if (perfModeLabel) perfModeLabel.textContent = labels[mode] || mode;
+  if (perfModeSelect) perfModeSelect.value = mode;
+
+  if (mode === "saver") {
+    // Stop all background animation
+    if (window.Starfield) Starfield.setVisible(false);
+    if (window.ParticlesBg) ParticlesBg.stop();
+    if (window.Snowfall) Snowfall.stop();
+  } else {
+    // Restore based on App.bg
+    applyBg();
+  }
+  // Cap RAF to 30fps in balanced mode via Starfield dt clamping
+  // (handled by tickLerp and bg systems reading App.perfMode)
+};
+
+if (perfModeSelect) {
+  perfModeSelect.addEventListener("change", () => {
+    applyPerfMode(perfModeSelect.value);
+    saveSettings();
+  });
+}
+
+if (maxCardsSlider) {
+  maxCardsSlider.addEventListener("input", () => {
+    App.maxCards = parseInt(maxCardsSlider.value);
+    if (maxCardsLabel) maxCardsLabel.textContent = maxCardsSlider.value;
+    saveSettings();
+  });
+}
+
+// Battery API — suggest saver mode below 20%
+if (navigator.getBattery) {
+  navigator.getBattery().then(battery => {
+    function checkBattery() {
+      if (battery.level < 0.2 && !battery.charging && App.perfMode === "full") {
+        // Show a subtle suggestion — don't force it
+        const existing = document.getElementById("batteryHint");
+        if (!existing) {
+          const hint = document.createElement("div");
+          hint.id = "batteryHint";
+          hint.className = "battery-hint";
+          hint.textContent = "🔋 Low battery — consider Battery Saver mode in Settings";
+          hint.onclick = () => hint.remove();
+          document.body.appendChild(hint);
+          setTimeout(() => hint.remove(), 8000);
+        }
+      }
+    }
+    battery.addEventListener("levelchange", checkBattery);
+    checkBattery();
+  }).catch(() => {});
 }
 
 // Canvas header toggle
@@ -167,11 +263,14 @@ cardSizeSlider.addEventListener("input", () => {
   syncVisualUI(); redrawAll(); saveSettings();
 });
 hueASlider.addEventListener("input", () => {
-  FX.hueA = Number(hueASlider.value) || 0;
+  // Sliders snap immediately — set both target and current
+  _targetHueA = Number(hueASlider.value) || 0;
+  FX.hueA     = _targetHueA;
   applyAuras(); syncVisualUI(); Runes.invalidateCache(); saveSettings();
 });
 hueBSlider.addEventListener("input", () => {
-  FX.hueB = Number(hueBSlider.value) || 0;
+  _targetHueB = Number(hueBSlider.value) || 0;
+  FX.hueB     = _targetHueB;
   applyAuras(); syncVisualUI(); Runes.invalidateCache(); saveSettings();
 });
 

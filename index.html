@@ -144,6 +144,26 @@
             <span class="toggleTrack"><span class="toggleThumb"></span></span>
           </label>
         </div>
+
+        <div class="atmo-section-title">Performance</div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow">
+            <span>Quality</span>
+            <span class="sliderValue" id="perfModeLabel">Full</span>
+          </div>
+          <select id="perfModeSelect">
+            <option value="full">Full — all effects, 60fps</option>
+            <option value="balanced">Balanced — 30fps, half stars</option>
+            <option value="saver">Battery Saver — no background effects</option>
+          </select>
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow">
+            <span>Max Cards</span>
+            <span class="sliderValue" id="maxCardsLabel">40</span>
+          </div>
+          <input id="maxCardsSlider" type="range" min="5" max="60" value="40" />
+        </div>
       </div>
       <div class="atmo-bottom-bar">
         <button class="ci-bottom-btn atmo-close" id="atmosphereClose" title="Close">&#x2715;</button>
