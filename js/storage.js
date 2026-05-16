@@ -18,8 +18,9 @@ function saveSettings() {
       cardAuraMode: App.cardAuraMode,
       perfMode:     App.perfMode,
       maxCards:     App.maxCards,
-      headerTitle:  App.headerTitle,
-      headerSub:    App.headerSub,
+      headerTitle:     App.headerTitle,
+      headerSub:       App.headerSub,
+      indexDeckFilter: App.indexDeckFilter,
     },
   };
   localStorage.setItem(STORAGE_KEY_SETTINGS, JSON.stringify(settings));
@@ -51,6 +52,7 @@ function loadSettings() {
       if (typeof data.app.maxCards === "number") App.maxCards = Math.max(5, Math.min(60, data.app.maxCards));
       if (typeof data.app.headerTitle === "string") App.headerTitle = data.app.headerTitle;
       if (typeof data.app.headerSub   === "string") App.headerSub   = data.app.headerSub;
+      if (typeof data.app.indexDeckFilter === "string") App.indexDeckFilter = data.app.indexDeckFilter;
     }
     return true;
   } catch { return false; }

@@ -19,6 +19,7 @@ window.App = {
   cardAuraMode: "dynamic", // "dynamic" | "static" | "off"
   perfMode:     "full",
   maxCards:     40,
+  indexDeckFilter: "all",
   headerTitle:  "",
   headerSub:    "",
 };

@@ -75,21 +75,28 @@ window.CardIndex = (() => {
     </div>
 
     <div class="ci-detail-view" id="ciDetailView">
-      <select class="ci-deck-select ci-detail-deck-select" id="ciDeckSelectDetail">
-        <option value="all">All Decks</option>
-        <option value="LuminousArc">Luminous Arc</option>
-        <option value="RiderWaite">Rider-Waite</option>
-        <option value="Gilded">Gilded Minima</option>
-        <option value="Runes">Runes</option>
-        <option value="Playing">Playing Cards</option>
-      </select>
-      <div class="ci-swipe-hint" id="ciSwipeHint"></div>
-      <div class="ci-card-img-wrap" id="ciImgWrap">
-        <img class="ci-card-img" id="ciCardImg" src="" alt="" />
-        <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
+      <!-- Sticky top: deck select, swipe hint, image, card name -->
+      <div class="ci-detail-sticky">
+        <select class="ci-deck-select ci-detail-deck-select" id="ciDeckSelectDetail">
+          <option value="all">All Decks</option>
+          <option value="LuminousArc">Luminous Arc</option>
+          <option value="RiderWaite">Rider-Waite</option>
+          <option value="Gilded">Gilded Minima</option>
+          <option value="Runes">Runes</option>
+          <option value="Playing">Playing Cards</option>
+        </select>
+        <div class="ci-swipe-hint" id="ciSwipeHint"></div>
+        <div class="ci-card-img-wrap" id="ciImgWrap">
+          <img class="ci-card-img" id="ciCardImg" src="" alt="" />
+          <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
+        </div>
+        <div class="ci-detail-name-bar" id="ciDetailNameBar"></div>
       </div>
-      <div class="ci-card-info" id="ciCardInfo"></div>
-      <div class="ci-nav-dots" id="ciNavDots" style="display:none"></div>
+      <!-- Scrollable bottom: meta, meanings, lore -->
+      <div class="ci-detail-scroll">
+        <div class="ci-card-info" id="ciCardInfo"></div>
+        <div class="ci-nav-dots" id="ciNavDots" style="display:none"></div>
+      </div>
     </div>
 
     <div class="ci-lightbox" id="ciLightbox">
@@ -120,6 +127,7 @@ window.CardIndex = (() => {
   const ciSwipeHint  = overlay.querySelector("#ciSwipeHint");
   const ciNavDots       = overlay.querySelector("#ciNavDots");
   const ciBottomCounter = overlay.querySelector("#ciBottomCounter");
+  const ciDetailNameBar = overlay.querySelector("#ciDetailNameBar");
   const ciLightbox   = overlay.querySelector("#ciLightbox");
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
   // Save card in bottom bar
@@ -270,6 +278,9 @@ window.CardIndex = (() => {
     renderNavDots();
     updateSwipeHint();
     ciDetailView.scrollTop = 0;
+    // Also scroll the inner scroll zone
+    const scrollZone = ciDetailView.querySelector(".ci-detail-scroll");
+    if (scrollZone) scrollZone.scrollTop = 0;
   }
 
   function getImgSrc(card) {
@@ -347,8 +358,12 @@ window.CardIndex = (() => {
       }
     }
 
+    // Card name goes in the sticky bar (always visible above scroll)
+    if (ciDetailNameBar) {
+      ciDetailNameBar.innerHTML = '<div class="ci-detail-name">' + card.name + revBadge + '</div>';
+    }
+
     ciCardInfo.innerHTML =
-      '<div class="ci-detail-name">' + card.name + revBadge + '</div>' +
       '<div class="ci-detail-meta-row">' +
         '<span class="ci-meta-pill">' + (ELEMENT_GLYPH[card.element]||"") + " " + card.element + '</span>' +
         '<span class="ci-meta-pill">' + astroGlyph(card.astro) + " " + card.astro + '</span>' +
@@ -506,6 +521,7 @@ window.CardIndex = (() => {
     // Sync both selects
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = val);
     deckFilter = val;
+    if (window.App) { App.indexDeckFilter = val; if (window.saveSettings) saveSettings(); }
     // activeDeck for image rendering — map to image folder
     if (val === "RiderWaite") activeDeck = "RiderWaite";
     else if (val === "Runes") activeDeck = "Runes";
@@ -550,10 +566,13 @@ window.CardIndex = (() => {
   // open() — full index from menu
   function open() {
     if (window.Journal) Journal.close();
-    activeDeck = defaultDeck();
+    // Restore saved deck filter preference
+    deckFilter = (window.App && App.indexDeckFilter) ? App.indexDeckFilter : "all";
+    if (deckFilter === "RiderWaite") activeDeck = "RiderWaite";
+    else if (deckFilter === "Runes") activeDeck = "Runes";
+    else activeDeck = defaultDeck();
     if (window.Tooltips) Tooltips.wire(overlay);
-    deckFilter = "all";
-    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = "all");
+    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";

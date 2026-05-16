@@ -334,7 +334,7 @@ select option {
   background: rgba(11, 14, 26, 0.92);
   border-top: 1px solid var(--auraColor);
   backdrop-filter: blur(12px);
-  padding: 10px 16px 14px; /* buttons inside overlay */
+  padding: 10px 80px 14px 16px; /* right clears 60px hamburger + margin */
   z-index: 30;
   pointer-events: none;
   opacity: 0;
@@ -519,8 +519,23 @@ select option {
 
 /* ── Detail view ──────────────────────────────────── */
 .ci-detail-view {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* children manage their own scroll */
+}
+/* Sticky top: deck select + image + card name */
+.ci-detail-sticky {
+  flex-shrink: 0;
+  background: rgba(6,7,16,0.98);
+  z-index: 2;
+}
+/* Scrollable bottom: meta, meanings, lore */
+.ci-detail-scroll {
+  flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 20px;
 }
 .ci-detail-deck {
   padding: 10px 16px 0;
@@ -547,6 +562,7 @@ select option {
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
+  touch-action: none;
 }
 /* Rune images — narrower domino proportion, contain so art isn't cropped */
 .ci-card-img.ci-rune-img {
@@ -972,20 +988,26 @@ select option {
   transition: width 200ms ease;
 }
 
-/* ── Cards strip — above the scroll area, keyboard-safe ─── */
+/* ── Cards strip — sticky at top, keyboard never hides it ─── */
 .jo-cards-strip {
   display: flex;
   gap: 0;
   padding: 0;
-  flex-shrink: 0; /* never crushed by keyboard */
+  flex-shrink: 0;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   background: rgba(6,7,16,0.97);
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 4;
 }
 .jo-cards-strip.scrollable {
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
+.jo-cards-strip.scrollable::-webkit-scrollbar { display: none; }
 .jo-cards-empty {
   font-size: 12px;
   color: rgba(255,255,255,0.25);
@@ -1018,6 +1040,10 @@ select option {
   display: block;
   -webkit-touch-callout: none;
   pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  draggable: false;
 }
 .jo-card-glyph {
   font-size: 22px;
@@ -1760,4 +1786,26 @@ body.aura-off {
   padding: 1px 5px;
   margin-left: 6px;
   vertical-align: middle;
+}
+
+/* ── Index detail: sticky top / scroll bottom ────── */
+.ci-detail-sticky {
+  flex-shrink: 0;
+  background: rgba(6,7,16,0.98);
+  z-index: 2;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ci-detail-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0 0 20px;
+}
+/* Card name in sticky bar */
+.ci-detail-name-bar {
+  padding: 4px 20px 8px;
+}
+.ci-detail-name-bar .ci-detail-name {
+  margin: 0;
 }
