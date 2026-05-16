@@ -92,9 +92,7 @@ window.CardIndex = (() => {
       </div>
     </div>
 
-    <div class="ci-lightbox" id="ciLightbox">
-      <img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />
-    </div>
+    <!-- lightbox lives on body, mounted separately -->
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal" data-tooltip="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" data-tooltip="Save to Journal" style="display:none">&#x2B;</button>
@@ -108,6 +106,13 @@ window.CardIndex = (() => {
 
   document.body.appendChild(overlay);
   if (window.Tooltips) Tooltips.wire(overlay);
+
+  // Lightbox lives on body — works from journal and index
+  const lbEl = document.createElement("div");
+  lbEl.id = "ciLightbox";
+  lbEl.className = "ci-lightbox";
+  lbEl.innerHTML = '<img class="ci-lightbox-img" id="ciLightboxImg" src="" alt="" />';
+  document.body.appendChild(lbEl);
 
   // ── Refs ──────────────────────────────────────────────
   // Title shown in swipe hint / header removed — use ciSwipeHint instead
@@ -123,8 +128,8 @@ window.CardIndex = (() => {
   const ciNavDots       = overlay.querySelector("#ciNavDots");
   const ciBottomCounter = overlay.querySelector("#ciBottomCounter");
   const ciDetailNameBar = overlay.querySelector("#ciDetailNameBar");
-  const ciLightbox   = overlay.querySelector("#ciLightbox");
-  const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
+  const ciLightbox    = document.getElementById("ciLightbox");
+  const ciLightboxImg = document.getElementById("ciLightboxImg");
   // Save card in bottom bar
   // Deck cycle button — tapping steps through all deck options
   const _deckCycle = [
