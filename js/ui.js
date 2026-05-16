@@ -94,13 +94,31 @@ function tickLerp() {
     FX.hueA = _targetHueA;
     FX.hueB = _targetHueB;
     applyAuras();
+    // Sync sliders to final settled value
+    const hAs = document.getElementById("hueASlider");
+    const hBs = document.getElementById("hueBSlider");
+    const hAv = document.getElementById("hueAValue");
+    const hBv = document.getElementById("hueBValue");
+    if (hAs) hAs.value = Math.round(FX.hueA);
+    if (hBs) hBs.value = Math.round(FX.hueB);
+    if (hAv) hAv.textContent = Math.round(FX.hueA) + "°";
+    if (hBv) hBv.textContent = Math.round(FX.hueB) + "°";
+    // Redraw cards with settled color
+    if (window.redrawAll && window.draws && draws.length > 0) redrawAll();
     _lerpRafId = null;
-    return; // settled — stop loop
+    return;
   }
 
   FX.hueA = lerpAngle(FX.hueA, _targetHueA, speed);
   FX.hueB = lerpAngle(FX.hueB, _targetHueB, speed);
   applyAuras();
+  // In dynamic mode, update cards every N lerp frames (not every frame — too expensive)
+  if (window.App && App.cardAuraMode === "dynamic" &&
+      window.draws && draws.length > 0 &&
+      window.redrawAll && !(tickLerp._frame % 6)) {
+    redrawAll();
+  }
+  tickLerp._frame = ((tickLerp._frame || 0) + 1) % 60;
   _lerpRafId = requestAnimationFrame(tickLerp);
 }
 

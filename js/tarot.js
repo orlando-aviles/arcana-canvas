@@ -8,42 +8,9 @@ tarotCtx.imageSmoothingEnabled = true;
 let draws = [];
 window.getDraws = () => draws;
 
-/**** Offscreen cache canvas — composited during drag for O(1) frames ****/
-// Strategy: when drag starts, snapshot all non-dragged cards to offCanvas.
-// Each drag frame: blit offCanvas + draw only the dragged card.
-// On drag end or any non-drag redraw: invalidate cache.
-const offCanvas = document.createElement("canvas");
-const offCtx    = offCanvas.getContext("2d");
-offCtx.imageSmoothingEnabled = true;
-let offValid  = false;  // true = offCanvas snapshot is usable
-let _dragIdx  = -1;     // which card is being dragged (-1 = none)
-
-function buildOffscreenCache(dragIdx) {
-  _dragIdx = dragIdx;
-  offCanvas.width  = tarotCanvas.width;
-  offCanvas.height = tarotCanvas.height;
-  offCtx.clearRect(0, 0, offCanvas.width, offCanvas.height);
-  // Draw all cards EXCEPT the dragged one to offCanvas
-  // We draw them to the main canvas first, then snapshot
-  tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
-  draws.forEach((d, i) => {
-    if (i === dragIdx) return;
-    if      (d.type === "text")     drawTextCard(d);
-    else if (d.type === "playing")  drawPlayingCard(d);
-    else if (d.type === "tarot")    drawTarotCard(d);
-    else if (d.type === "luminous") drawLuminousCard(d);
-    else if (d.type === "gilded")   drawGildedCard(d);
-    else if (d.type === "rune")     drawRuneCard(d);
-  });
-  // Snapshot the main canvas to offCanvas (raw pixel copy)
-  offCtx.drawImage(tarotCanvas, 0, 0);
-  offValid = true;
-}
-
-function invalidateOffscreen() {
-  offValid = false;
-  _dragIdx = -1;
-}
+/**** Offscreen cache — disabled, DPR transform mismatch causes misalignment ****/
+// Reverted to simple redrawAll() on drag. Revisit with proper DPR handling.
+function invalidateOffscreen() {} // no-op, kept so call sites don't break
 
 const REVERSAL_CHANCE = 0.40;
 
@@ -243,26 +210,13 @@ function cardDisplayName(card) {
   return "";
 }
 
-/**** RAF-throttled drag redraw — uses offscreen cache ****/
+/**** RAF-throttled drag redraw ****/
 let _dragRafId = null;
 function scheduleDragRedraw() {
   if (_dragRafId) return;
   _dragRafId = requestAnimationFrame(() => {
     _dragRafId = null;
-    if (offValid && _dragIdx >= 0 && _dragIdx < draws.length) {
-      // Fast path: blit cached background + draw only dragged card
-      tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
-      tarotCtx.drawImage(offCanvas, 0, 0);
-      const d = draws[_dragIdx];
-      if      (d.type === "text")     drawTextCard(d);
-      else if (d.type === "playing")  drawPlayingCard(d);
-      else if (d.type === "tarot")    drawTarotCard(d);
-      else if (d.type === "luminous") drawLuminousCard(d);
-      else if (d.type === "gilded")   drawGildedCard(d);
-      else if (d.type === "rune")     drawRuneCard(d);
-    } else {
-      redrawAll();
-    }
+    redrawAll();
   });
 }
 
@@ -414,9 +368,6 @@ tarotCanvas.addEventListener("touchmove", (e) => {
   if (_touch.isDrag && _touch.cardIdx >= 0) {
     e.preventDefault();
     const card = draws[_touch.cardIdx];
-    if (!offValid || _dragIdx !== _touch.cardIdx) {
-      buildOffscreenCache(_touch.cardIdx);
-    }
     card.x = t.clientX - _touch.dragOffsetX;
     card.y = t.clientY - _touch.dragOffsetY;
     if ((App.cardAuraMode || "dynamic") === "dynamic") card.auraH = FX.hueA;
@@ -480,10 +431,6 @@ tarotCanvas.addEventListener("mousemove", (e) => {
 
   if (_mouse.isDrag && _mouse.cardIdx >= 0) {
     const card = draws[_mouse.cardIdx];
-    // Build cache on first move of a drag
-    if (!offValid || _dragIdx !== _mouse.cardIdx) {
-      buildOffscreenCache(_mouse.cardIdx);
-    }
     card.x = e.clientX - _mouse.dragOffsetX;
     card.y = e.clientY - _mouse.dragOffsetY;
     if ((App.cardAuraMode || "dynamic") === "dynamic") card.auraH = FX.hueA;
@@ -711,11 +658,9 @@ function clearCanvas() {
   tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
   draws = [];
   DeckQueues.reset();
-  invalidateOffscreen();
 }
 
 function redrawAll() {
-  invalidateOffscreen();
   tarotCtx.clearRect(0, 0, tarotCanvas.width, tarotCanvas.height);
   for (const d of draws) {
     if      (d.type === "text")    drawTextCard(d);
