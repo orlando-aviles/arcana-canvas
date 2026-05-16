@@ -577,14 +577,15 @@ select option {
   object-fit: cover;
   object-position: center;
   border-radius: 12px;
-  box-shadow: 0 0 32px var(--auraColor), 0 8px 32px rgba(0,0,0,0.6);
-  border: 1px solid rgba(255,255,255,0.12);
+  /* Flat frame — thin border + drop shadow, no color glow */
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.08) inset;
   display: block;
   background: transparent;
   -webkit-touch-callout: none;
   user-select: none;
   -webkit-user-select: none;
-  pointer-events: auto; /* needs to receive touches for lightbox */
+  pointer-events: auto;
   touch-action: manipulation;
   cursor: zoom-in;
 }
@@ -611,18 +612,10 @@ select option {
   text-shadow: 0 0 24px var(--auraColor);
 }
 
-/* Single frosted panel — wraps entire scrollable info block */
+/* Info block — free layout, sections separated by spacing */
 .ci-card-info {
-  margin: 8px 10px 24px;
-  background: rgba(20, 15, 45, 0.55);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-  padding: 20px 16px 24px;
-  backdrop-filter: blur(8px);
-  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  padding: 4px 20px 32px;
 }
-/* Section dividers inside the panel — no individual panel per section */
 .ci-content-panel {
   background: none;
   border: none;
@@ -1959,8 +1952,8 @@ body.aura-off {
 .ci-hint-count {
   flex-shrink: 0;
   font-size: 11px;
-  color: rgba(255,255,255,0.3);
-  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.45); /* matches hint button color */
+  letter-spacing: 0.06em;
   padding: 0 8px;
 }
 
