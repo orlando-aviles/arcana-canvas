@@ -299,10 +299,12 @@ window.CardIndex = (() => {
     renderDetailInfo(card);
     renderNavDots();
     updateSwipeHint();
-    ciDetailView.scrollTop = 0;
-    // Also scroll the inner scroll zone
-    const scrollZone = ciDetailView.querySelector(".ci-detail-scroll");
-    if (scrollZone) scrollZone.scrollTop = 0;
+    // Defer scroll reset — layout must be painted before scrollTop works
+    requestAnimationFrame(() => {
+      ciDetailView.scrollTop = 0;
+      const scrollZone = ciDetailView.querySelector(".ci-detail-scroll");
+      if (scrollZone) scrollZone.scrollTop = 0;
+    });
   }
 
   function getImgSrc(card) {
@@ -430,11 +432,11 @@ window.CardIndex = (() => {
       ciDetailNameBar.innerHTML = '<div class="ci-detail-name">' + card.name + revBadge + '</div>';
     }
 
-    // Build keyword chips from comma-separated upright/reversed
+    // Keywords rendered as plain comma-separated text — no badge spans
     function makeChips(str) {
       return str.split(",").map(k => k.trim()).filter(Boolean)
-        .map(k => `<span class="ci-keyword-chip">${k.replace(/^./, m => m.toUpperCase())}</span>`)
-        .join("");
+        .map(k => k.replace(/^./, m => m.toUpperCase()))
+        .join(", ");
     }
 
     ciCardInfo.innerHTML =
@@ -444,11 +446,11 @@ window.CardIndex = (() => {
         '<span class="ci-meta-pill"># ' + card.number + '</span>' +
       '</div>' +
       (card.numNote ? '<div class="ci-numerology">' + card.number + " — " + card.numNote + '</div>' : "") +
-      '<div class="ci-meaning-block ' + uprightClass + '">' +
+      '<div class="ci-content-panel ci-meaning-block ' + uprightClass + '">' +
         '<div class="ci-meaning-label">&#x2726; Upright</div>' +
         '<div class="ci-keyword-chips">' + makeChips(card.upright) + '</div>' +
       '</div>' +
-      '<div class="ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
+      '<div class="ci-content-panel ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
         '<div class="ci-meaning-label" style="color:rgba(200,100,100,0.85)">&#x25BD; Reversed</div>' +
         '<div class="ci-keyword-chips">' + makeChips(card.reversed) + '</div>' +
       '</div>' +
