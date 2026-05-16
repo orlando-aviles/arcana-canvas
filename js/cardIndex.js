@@ -77,14 +77,6 @@ window.CardIndex = (() => {
     <div class="ci-detail-view" id="ciDetailView">
       <!-- Sticky top: deck select, image, name with prev/next flanking -->
       <div class="ci-detail-sticky">
-        <select class="ci-deck-select ci-detail-deck-select" id="ciDeckSelectDetail">
-          <option value="all">All Decks</option>
-          <option value="LuminousArc">Luminous Arc</option>
-          <option value="RiderWaite">Rider-Waite</option>
-          <option value="Gilded">Gilded Minima</option>
-          <option value="Runes">Runes</option>
-          <option value="Playing">Playing Cards</option>
-        </select>
         <div class="ci-card-img-wrap" id="ciImgWrap">
           <img class="ci-card-img" id="ciCardImg" src="" alt="" />
           <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
@@ -149,7 +141,7 @@ window.CardIndex = (() => {
   function syncDeckCycleLabel() {
     const entry = _deckCycle.find(d => d.val === deckFilter) || _deckCycle[0];
     if (ciDeckCycleName) ciDeckCycleName.textContent = entry.label;
-    // Also sync both selects
+    // Sync list select
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
   }
 
@@ -553,7 +545,7 @@ window.CardIndex = (() => {
   // Wire deck dropdowns
   function onDeckSelectChange(sel) {
     const val = sel.value;
-    // Sync both selects
+    // Sync list select only (detail select removed)
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = val);
     deckFilter = val;
     if (window.App) { App.indexDeckFilter = val; if (window.saveSettings) saveSettings(); }

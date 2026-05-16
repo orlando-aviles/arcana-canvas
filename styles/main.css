@@ -386,24 +386,22 @@ select option {
   pointer-events: auto;
 }
 
-/* Both views hidden by default, stacked in the same space */
+/* Views fill the overlay, only one shown at a time */
 .ci-list-view, .ci-detail-view {
   display: none;
   flex-direction: column;
-  flex: 1;
   overflow: hidden;
+  /* Fill available space between search row and bottom bar */
+  flex: 1;
   min-height: 0;
 }
-.ci-list-view.ci-active, .ci-detail-view.ci-active {
+.ci-list-view.ci-active {
   display: flex;
-}
-/* List scrolls normally */
-.ci-list-view {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
-/* Detail: flex column with sticky top + scroll bottom */
-.ci-detail-view {
+.ci-detail-view.ci-active {
+  display: flex;
   overflow: hidden;
 }
 
@@ -529,11 +527,6 @@ select option {
 }
 
 /* ── Detail view ──────────────────────────────────── */
-.ci-detail-view {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden; /* children manage their own scroll */
-}
 /* Sticky top: deck select + image + card name */
 .ci-detail-sticky {
   flex-shrink: 0;
