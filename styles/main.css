@@ -193,19 +193,44 @@ input[type="range"] {
   width: 100%;
   accent-color: rgba(255,255,255,0.8);
 }
-
-.huePreview {
-  height: 8px;
+/* Hue-specific sliders get rainbow gradient track */
+#hueASlider, #hueBSlider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.1);
-  margin-top: 8px;
+  outline: none;
   background: linear-gradient(
     90deg,
-    hsl(0 85% 55%), hsl(60 85% 55%), hsl(120 85% 55%),
-    hsl(180 85% 55%), hsl(240 85% 55%), hsl(300 85% 55%), hsl(360 85% 55%)
+    hsl(0,85%,55%), hsl(45,85%,55%), hsl(90,85%,55%),
+    hsl(135,85%,55%), hsl(180,85%,55%), hsl(225,85%,55%),
+    hsl(270,85%,55%), hsl(315,85%,55%), hsl(360,85%,55%)
   );
-  opacity: 0.75;
+  cursor: pointer;
 }
+#hueASlider::-webkit-slider-thumb,
+#hueBSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+#hueASlider::-moz-range-thumb,
+#hueBSlider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,0.2);
+}
+
+
 
 .fullWidthBtn {
   width: 100%;
@@ -591,15 +616,25 @@ select option {
   text-shadow: 0 0 24px var(--auraColor);
 }
 .ci-card-info {
-  padding: 8px 20px 40px;
+  padding: 8px 12px 40px;
+}
+/* Translucent panel wrapping lore content */
+.ci-content-panel {
+  background: rgba(20, 15, 45, 0.55);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 0 12px;
+  backdrop-filter: blur(8px);
 }
 .ci-detail-name {
-  font-size: 22px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.95);
+  font-size: 28px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.97);
   text-align: center;
-  margin-bottom: 12px;
-  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 .ci-detail-meta-row {
   display: flex;
@@ -628,20 +663,51 @@ select option {
   margin-bottom: 16px;
 }
 .ci-meaning-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--auraColor);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.ci-reversed .ci-meaning-label {
+.ci-reversed-block .ci-meaning-label {
   color: rgba(200,100,100,0.85);
 }
 .ci-meaning-text {
   font-size: 14px;
   line-height: 1.6;
   color: rgba(220,210,255,0.82);
+}
+/* Keyword chips row */
+.ci-keyword-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ci-keyword-chip {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.04em;
+}
+/* Lore labels same treatment */
+.ci-lore-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ── Desktop: two-column detail ───────────────────── */
@@ -1818,17 +1884,69 @@ body.aura-off {
   overscroll-behavior: contain;
   padding: 0 0 20px;
 }
-/* Card name in sticky bar — tight gap to badges below */
+/* ── Name bar: title + ornament + nav row ─────────── */
 .ci-detail-name-bar {
-  padding: 2px 20px 4px;
+  padding: 6px 20px 0;
+  text-align: center;
 }
 .ci-detail-name-bar .ci-detail-name {
-  margin: 0;
+  margin: 0 0 6px;
 }
-/* Tighten meta pills top padding */
-.ci-detail-scroll .ci-detail-meta-row {
-  padding-top: 6px;
-  margin-top: 0;
+/* Ornamental divider */
+.ci-name-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--auraColor);
+  opacity: 0.5;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  margin-bottom: 0;
+}
+.ci-name-ornament::before,
+.ci-name-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--auraColor), transparent);
+  opacity: 0.4;
+}
+/* Nav row below ornament */
+.ci-hint-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 0 8px;
+  gap: 0;
+}
+.ci-prev-hint {
+  flex: 1;
+  text-align: left;
+  font-size: 10px;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 20px;
+}
+.ci-next-hint {
+  flex: 1;
+  text-align: right;
+  font-size: 10px;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0;
+}
+.ci-hint-count {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: rgba(255,255,255,0.18);
+  letter-spacing: 0.08em;
+  padding: 0 10px;
 }
 
 /* ── Index: name bar + hint row below ─────────────── */

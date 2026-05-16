@@ -390,35 +390,35 @@ window.CardIndex = (() => {
     if (lore) {
       if (card.section === "Runes") {
         loreHTML =
-          '<div class="ci-lore-block">' +
+          '<div class="ci-content-panel ci-lore-block">' +
             '<div class="ci-lore-label">&#x26F5; Elder Meaning</div>' +
             '<div class="ci-lore-text">' + lore.elderMeaning + '</div>' +
           '</div>' +
-          '<div class="ci-lore-block">' +
+          '<div class="ci-content-panel ci-lore-block">' +
             '<div class="ci-lore-label">&#x2467; In a Cast</div>' +
             '<div class="ci-lore-text">' + lore.inCast + '</div>' +
           '</div>' +
-          '<div class="ci-lore-block">' +
+          '<div class="ci-content-panel ci-lore-block">' +
             '<div class="ci-lore-label">&#x2442; Phoneme</div>' +
             '<div class="ci-lore-text">' + lore.phoneme + '</div>' +
           '</div>' +
           '<div class="ci-lore-affirmation">&ldquo;' + lore.affirmation + '&rdquo;</div>';
       } else {
         loreHTML =
-          '<div class="ci-lore-block">' +
+          '<div class="ci-content-panel ci-lore-block">' +
             '<div class="ci-lore-label">&#x2726; Theme</div>' +
             '<div class="ci-lore-text ci-lore-theme">' + lore.theme + '</div>' +
           '</div>' +
-          '<div class="ci-lore-block">' +
-            '<div class="ci-lore-label">&#x25CB; In a Reading</div>' +
+          '<div class="ci-content-panel ci-lore-block">' +
+            '<div class="ci-lore-label">&#x25CE; In a Reading</div>' +
             '<div class="ci-lore-text">' + lore.inReading + '</div>' +
           '</div>' +
-          '<div class="ci-lore-block">' +
+          '<div class="ci-content-panel ci-lore-block">' +
             '<div class="ci-lore-label">&#x25B3; Shadow</div>' +
             '<div class="ci-lore-text">' + lore.shadow + '</div>' +
           '</div>' +
-          '<div class="ci-lore-block">' +
-            '<div class="ci-lore-label">&#x25C6; Symbol</div>' +
+          '<div class="ci-content-panel ci-lore-block">' +
+            '<div class="ci-lore-label">&#x25C7; Symbol</div>' +
             '<div class="ci-lore-text">' + lore.symbol + '</div>' +
           '</div>' +
           '<div class="ci-lore-affirmation">&ldquo;' + lore.affirmation + '&rdquo;</div>';
@@ -430,6 +430,13 @@ window.CardIndex = (() => {
       ciDetailNameBar.innerHTML = '<div class="ci-detail-name">' + card.name + revBadge + '</div>';
     }
 
+    // Build keyword chips from comma-separated upright/reversed
+    function makeChips(str) {
+      return str.split(",").map(k => k.trim()).filter(Boolean)
+        .map(k => `<span class="ci-keyword-chip">${k.replace(/^./, m => m.toUpperCase())}</span>`)
+        .join("");
+    }
+
     ciCardInfo.innerHTML =
       '<div class="ci-detail-meta-row">' +
         '<span class="ci-meta-pill">' + (ELEMENT_GLYPH[card.element]||"") + " " + card.element + '</span>' +
@@ -437,13 +444,13 @@ window.CardIndex = (() => {
         '<span class="ci-meta-pill"># ' + card.number + '</span>' +
       '</div>' +
       (card.numNote ? '<div class="ci-numerology">' + card.number + " — " + card.numNote + '</div>' : "") +
-      '<div class="ci-meaning-block ' + uprightClass + '">' +
-        '<div class="ci-meaning-label">Upright</div>' +
-        '<div class="ci-meaning-text">' + card.upright + '</div>' +
+      '<div class="ci-content-panel ci-meaning-block ' + uprightClass + '">' +
+        '<div class="ci-meaning-label">&#x2726; Upright</div>' +
+        '<div class="ci-keyword-chips">' + makeChips(card.upright) + '</div>' +
       '</div>' +
-      '<div class="ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
-        '<div class="ci-meaning-label">Reversed</div>' +
-        '<div class="ci-meaning-text">' + card.reversed + '</div>' +
+      '<div class="ci-content-panel ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
+        '<div class="ci-meaning-label" style="color:rgba(200,100,100,0.85)">&#x25BD; Reversed</div>' +
+        '<div class="ci-keyword-chips">' + makeChips(card.reversed) + '</div>' +
       '</div>' +
       loreHTML;
   }
@@ -460,8 +467,12 @@ window.CardIndex = (() => {
     const nameEl   = ciDetailNameBar.querySelector(".ci-detail-name");
     const nameTxt  = nameEl ? nameEl.outerHTML : "";
     const counter  = total > 1 ? `<span class="ci-hint-count">${navIdx + 1} / ${total}</span>` : "";
+    // Get current card astro symbol for ornament
+    const card = navList[navIdx];
+    const ornGlyph = card ? (astroGlyph(card.astro) || "✦") : "✦";
     ciDetailNameBar.innerHTML =
       nameTxt +
+      `<div class="ci-name-ornament">${ornGlyph}</div>` +
       '<div class="ci-hint-row">' +
         '<span class="ci-prev-hint">' + (prevName ? "← " + prevName : "") + "</span>" +
         counter +
