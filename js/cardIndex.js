@@ -477,14 +477,27 @@ window.CardIndex = (() => {
     // Get current card astro symbol for ornament
     const card = navList[navIdx];
     const ornGlyph = card ? (astroGlyph(card.astro) || "✦") : "✦";
+    const prevIdx = navIdx - 1;
+    const nextIdx = navIdx + 1;
     ciDetailNameBar.innerHTML =
       nameTxt +
-      `<div class="ci-name-ornament">${ornGlyph}</div>` +
       '<div class="ci-hint-row">' +
-        '<span class="ci-prev-hint">' + (prevName ? "← " + prevName : "") + "</span>" +
+        (prevName
+          ? `<button class="ci-prev-hint ci-hint-btn" data-idx="${prevIdx}">← ${prevName}</button>`
+          : '<span class="ci-prev-hint"></span>') +
         counter +
-        '<span class="ci-next-hint">' + (nextName ? nextName + " →" : "") + "</span>" +
+        (nextName
+          ? `<button class="ci-next-hint ci-hint-btn" data-idx="${nextIdx}">${nextName} →</button>`
+          : '<span class="ci-next-hint"></span>') +
       "</div>";
+
+    // Wire hint buttons to navigate
+    ciDetailNameBar.querySelectorAll(".ci-hint-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        showDetailAtIdx(parseInt(btn.dataset.idx));
+      });
+    });
   }
 
   // ── Swipe navigation ──────────────────────────────────

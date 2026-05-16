@@ -619,6 +619,8 @@ select option {
   border-radius: 16px;
   padding: 20px 16px 24px;
   backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
 }
 /* Section dividers inside the panel — no individual panel per section */
 .ci-content-panel {
@@ -1917,27 +1919,7 @@ body.aura-off {
 .ci-detail-name-bar .ci-detail-name {
   margin: 0 0 4px;
 }
-/* Ornamental divider */
-.ci-name-ornament {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: var(--auraColor);
-  opacity: 0.5;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  margin-bottom: 0;
-  line-height: 1;
-}
-.ci-name-ornament::before,
-.ci-name-ornament::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--auraColor), transparent);
-  opacity: 0.4;
-}
+/* ornament removed */
 /* Nav row below ornament */
 .ci-hint-row {
   display: flex;
@@ -1945,34 +1927,41 @@ body.aura-off {
   padding: 3px 0 6px;
   gap: 0;
 }
-.ci-prev-hint {
+.ci-prev-hint, .ci-next-hint {
   flex: 1;
-  text-align: left;
-  font-size: 10px;
-  color: rgba(255,255,255,0.22);
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-left: 20px;
 }
-.ci-next-hint {
-  flex: 1;
-  text-align: right;
-  font-size: 10px;
-  color: rgba(255,255,255,0.22);
+.ci-prev-hint { text-align: left; }
+.ci-next-hint { text-align: right; }
+.ci-hint-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
   letter-spacing: 0.03em;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 0;
+  max-width: 42%;
+  transition: color 150ms ease;
 }
+.ci-hint-btn:active { color: var(--auraColor); background: rgba(255,255,255,0.05); }
+.ci-prev-hint.ci-hint-btn { text-align: left; }
+.ci-next-hint.ci-hint-btn { text-align: right; }
 .ci-hint-count {
   flex-shrink: 0;
   font-size: 11px;
-  color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.3);
   letter-spacing: 0.08em;
-  padding: 0 10px;
+  padding: 0 8px;
 }
 
 /* ── Index: name bar + hint row below ─────────────── */
@@ -1991,35 +1980,7 @@ body.aura-off {
   padding: 4px 0 6px;
   gap: 0;
 }
-.ci-prev-hint {
-  flex: 1;
-  text-align: left;
-  font-size: 10px;
-  color: rgba(255,255,255,0.25);
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-left: 20px;
-}
-.ci-next-hint {
-  flex: 1;
-  text-align: right;
-  font-size: 10px;
-  color: rgba(255,255,255,0.25);
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 0; /* flush to edge */
-}
-.ci-hint-count {
-  flex-shrink: 0;
-  font-size: 11px;
-  color: rgba(255,255,255,0.2);
-  letter-spacing: 0.06em;
-  padding: 0 8px;
-}
+/* hint styles consolidated above */
 
 /* ── Journal: paper-wrap keyboard shrink ────────── */
 .jo-paper-wrap {
