@@ -235,12 +235,22 @@ window.Journal = (() => {
     return typeof c === "string" ? { filename: c, reversed: false } : c;
   }
 
+  function updateHeaderHeight() {
+    const header = overlay.querySelector(".jo-day-header");
+    if (header) {
+      const h = header.getBoundingClientRect().height;
+      overlay.style.setProperty("--jo-header-h", Math.round(h) + "px");
+    }
+  }
+
   function renderCardsStrip(cards) {
     if (!cards || cards.length === 0) {
       joCardsStrip.innerHTML = `<div class="jo-cards-empty">No cards saved to this entry yet.</div>`;
       return;
     }
     joCardsStrip.classList.toggle("scrollable", cards.length > 5);
+    // Update after render so header height is accurate
+    requestAnimationFrame(updateHeaderHeight);
     joCardsStrip.innerHTML = cards.map((raw, i) => {
       const { filename, reversed } = cardEntry(raw);
       const card = CardData.getByNameOrFile(filename);
@@ -283,18 +293,22 @@ window.Journal = (() => {
       });
     });
 
-    // Expand
+    // Expand — open card image in CardIndex lightbox
     joCardsStrip.querySelectorAll(".jo-popup-expand").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         closeAllPopups();
         const filename = btn.closest(".jo-card-thumb").dataset.filename;
         const card = CardData.getByNameOrFile(filename);
-        if (card?.imageName) {
-          const deckFolder = card.section === "Runes" ? "Runes"
-            : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
-          // Open lightbox in CardIndex
-          if (window.CardIndex) CardIndex._openLightbox(`./${deckFolder}/${card.imageName}.png`);
+        if (!card?.imageName) return;
+        const deckFolder = card.section === "Runes" ? "Runes"
+          : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
+        const imgPath = `./${deckFolder}/${card.imageName}.png`;
+        if (window.CardIndex && CardIndex._openLightbox) {
+          CardIndex._openLightbox(imgPath);
+        } else {
+          // Fallback — open in new tab
+          window.open(imgPath, "_blank");
         }
       });
     });
@@ -418,13 +432,11 @@ window.Journal = (() => {
       if (!isOpen) return;
       const vvHeight = window.visualViewport.height;
       const fullHeight = window.innerHeight;
-      const kbHeight = fullHeight - vvHeight; // keyboard height
-      const paperWrap = overlay.querySelector(".jo-paper-wrap");
-      if (paperWrap) {
-        // Shrink only the paper-wrap by keyboard height
-        paperWrap.style.maxHeight = kbHeight > 50
-          ? `calc(${vvHeight}px - var(--jo-fixed-top, 200px))`
-          : "";
+      const kbHeight = fullHeight - vvHeight;
+      const dayView = overlay.querySelector("#joDayView");
+      if (dayView) {
+        // Shrink the scroll container to keep header/strip pinned above keyboard
+        dayView.style.maxHeight = kbHeight > 50 ? vvHeight + "px" : "";
       }
     });
   }
@@ -432,9 +444,9 @@ window.Journal = (() => {
   function close() {
     isOpen = false;
     overlay.classList.remove("jo-open");
-    // Reset paper-wrap height on close
-    const paperWrap = overlay.querySelector(".jo-paper-wrap");
-    if (paperWrap) paperWrap.style.maxHeight = "";
+    // Reset day-view height on close
+    const dayView = overlay.querySelector("#joDayView");
+    if (dayView) dayView.style.maxHeight = "";
     document.body.style.overflow = "";
     clearTimeout(saveTimer);
     // Flush any pending save

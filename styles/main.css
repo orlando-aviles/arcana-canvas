@@ -1025,13 +1025,20 @@ select option {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: visible; /* sticky children need visible/auto ancestor */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   position: relative;
   min-height: 0;
 }
 .jo-day-header {
   padding: 14px 20px 6px;
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: rgba(6,7,16,0.97);
+  backdrop-filter: blur(8px);
 }
 .jo-day-date {
   font-size: 14px;
@@ -1071,7 +1078,7 @@ select option {
   background: rgba(6,7,16,0.97);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   position: sticky;
-  top: 0;
+  top: var(--jo-header-h, 56px); /* sticks below the day header */
   z-index: 4;
 }
 .jo-cards-strip.scrollable {
@@ -1129,11 +1136,8 @@ select option {
 /* ── Textarea ──────────────────────────────────────── */
 .jo-paper-wrap {
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  min-height: 0;
-  overscroll-behavior: contain;
-  /* Keyboard shrinks this, not the cards strip above */
+  min-height: 200px; /* ensures textarea has room */
+  /* Scroll is on jo-day-view — paper-wrap just provides height */
 }
 .jo-paper {
   width: 100%;
@@ -1645,12 +1649,8 @@ body.aura-off {
 .ci-bottom-deck-btn:active { background: rgba(255,255,255,0.14); }
 
 /* ── Journal cards strip — no visible scrollbar ──── */
-.jo-cards-strip {
-  scrollbar-width: none; /* Firefox */
-}
-.jo-cards-strip::-webkit-scrollbar {
-  display: none; /* Chrome/Safari/Android */
-}
+.jo-cards-strip { scrollbar-width: none; }
+.jo-cards-strip::-webkit-scrollbar { display: none; }
 
 
 
