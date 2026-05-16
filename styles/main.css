@@ -616,15 +616,15 @@ select option {
   text-shadow: 0 0 24px var(--auraColor);
 }
 .ci-card-info {
-  padding: 8px 12px 40px;
+  padding: 6px 10px 32px;
 }
 /* Translucent panel wrapping lore content */
 .ci-content-panel {
   background: rgba(20, 15, 45, 0.55);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-  padding: 16px;
-  margin: 0 0 12px;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 0 0 6px;
   backdrop-filter: blur(8px);
 }
 .ci-detail-name {
@@ -639,9 +639,9 @@ select option {
 .ci-detail-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .ci-meta-pill {
   background: rgba(100,80,200,0.18);
@@ -660,7 +660,7 @@ select option {
   font-style: italic;
 }
 .ci-meaning-block {
-  margin-bottom: 16px;
+  margin-bottom: 0; /* spacing handled by panel margin */
 }
 .ci-meaning-label {
   font-size: 10px;
@@ -685,8 +685,8 @@ select option {
 .ci-keyword-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 8px;
+  gap: 5px;
+  margin-bottom: 0;
 }
 .ci-keyword-chip {
   background: rgba(255,255,255,0.07);
@@ -1543,7 +1543,7 @@ body.aura-off {
 
 /* ── Card lore (extended index descriptions) ─────── */
 .ci-lore-block {
-  margin-top: 16px;
+  margin-top: 0; /* panel gap handles spacing */
 }
 .ci-lore-label {
   font-size: 10px;
@@ -1882,15 +1882,15 @@ body.aura-off {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 0 0 20px;
+  padding: 4px 0 20px;
 }
 /* ── Name bar: title + ornament + nav row ─────────── */
 .ci-detail-name-bar {
-  padding: 6px 20px 0;
+  padding: 4px 20px 0;
   text-align: center;
 }
 .ci-detail-name-bar .ci-detail-name {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 /* Ornamental divider */
 .ci-name-ornament {
@@ -1900,9 +1900,10 @@ body.aura-off {
   gap: 8px;
   color: var(--auraColor);
   opacity: 0.5;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.1em;
   margin-bottom: 0;
+  line-height: 1;
 }
 .ci-name-ornament::before,
 .ci-name-ornament::after {
@@ -1916,7 +1917,7 @@ body.aura-off {
 .ci-hint-row {
   display: flex;
   align-items: center;
-  padding: 5px 0 8px;
+  padding: 3px 0 6px;
   gap: 0;
 }
 .ci-prev-hint {

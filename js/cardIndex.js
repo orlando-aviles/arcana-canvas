@@ -438,7 +438,7 @@ window.CardIndex = (() => {
     }
 
     ciCardInfo.innerHTML =
-      '<div class="ci-detail-meta-row">' +
+      '<div class="ci-detail-meta-row" style="padding-top:4px">' +
         '<span class="ci-meta-pill">' + (ELEMENT_GLYPH[card.element]||"") + " " + card.element + '</span>' +
         '<span class="ci-meta-pill">' + astroGlyph(card.astro) + " " + card.astro + '</span>' +
         '<span class="ci-meta-pill"># ' + card.number + '</span>' +
