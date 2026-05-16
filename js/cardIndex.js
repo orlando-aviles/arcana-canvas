@@ -106,7 +106,9 @@ window.CardIndex = (() => {
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal" data-tooltip="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" data-tooltip="Save to Journal" style="display:none">&#x2B;</button>
-      <div class="ci-bottom-counter" id="ciBottomCounter"></div>
+      <button class="ci-bottom-deck-btn" id="ciDeckCycleBtn" title="Switch deck">
+        <span id="ciDeckCycleName">Luminous</span>
+      </button>
       <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" data-tooltip="Back" style="display:none">&#x2190;</button>
       <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close" data-tooltip="Close">&#x2715;</button>
     </div>
@@ -132,6 +134,33 @@ window.CardIndex = (() => {
   const ciLightbox   = overlay.querySelector("#ciLightbox");
   const ciLightboxImg= overlay.querySelector("#ciLightboxImg");
   // Save card in bottom bar
+  // Deck cycle button — tapping steps through all deck options
+  const _deckCycle = [
+    { val: "all",         label: "All" },
+    { val: "LuminousArc", label: "Luminous" },
+    { val: "RiderWaite",  label: "Rider-Waite" },
+    { val: "Gilded",      label: "Gilded" },
+    { val: "Runes",       label: "Runes" },
+    { val: "Playing",     label: "Playing" },
+  ];
+  const ciDeckCycleBtn  = overlay.querySelector("#ciDeckCycleBtn");
+  const ciDeckCycleName = overlay.querySelector("#ciDeckCycleName");
+
+  function syncDeckCycleLabel() {
+    const entry = _deckCycle.find(d => d.val === deckFilter) || _deckCycle[0];
+    if (ciDeckCycleName) ciDeckCycleName.textContent = entry.label;
+    // Also sync both selects
+    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
+  }
+
+  ciDeckCycleBtn.addEventListener("click", () => {
+    const idx     = _deckCycle.findIndex(d => d.val === deckFilter);
+    const nextIdx = (idx + 1) % _deckCycle.length;
+    const next    = _deckCycle[nextIdx];
+    onDeckSelectChange({ value: next.val });
+    syncDeckCycleLabel();
+  });
+
   // Bottom bar nav
   overlay.querySelector("#ciCloseBtn").addEventListener("click", () => close());
   overlay.querySelector("#ciBackBtn").addEventListener("click", () => goBack());
@@ -383,25 +412,24 @@ window.CardIndex = (() => {
   }
 
   function renderNavDots() {
-    const total = navList.length;
-    // Bottom bar counter — always N / Total
-    if (ciBottomCounter) {
-      ciBottomCounter.textContent = total > 1 ? `${navIdx + 1} / ${total}` : "";
-    }
+    // Counter now lives in the swipe hint row — updateSwipeHint handles it
   }
 
   function updateSwipeHint() {
-    // Prev/next are now in the name bar, not a separate hint element
-    if (ciDetailNameBar) {
-      const prevName = navIdx > 0 ? navList[navIdx - 1].name : "";
-      const nextName = navIdx < navList.length - 1 ? navList[navIdx + 1].name : "";
-      const nameEl   = ciDetailNameBar.querySelector(".ci-detail-name");
-      const nameTxt  = nameEl ? nameEl.outerHTML : "";
-      ciDetailNameBar.innerHTML =
+    if (!ciDetailNameBar) return;
+    const total    = navList.length;
+    const prevName = navIdx > 0 ? navList[navIdx - 1].name : "";
+    const nextName = navIdx < navList.length - 1 ? navList[navIdx + 1].name : "";
+    const nameEl   = ciDetailNameBar.querySelector(".ci-detail-name");
+    const nameTxt  = nameEl ? nameEl.outerHTML : "";
+    const counter  = total > 1 ? `<span class="ci-hint-count">${navIdx + 1} / ${total}</span>` : "";
+    ciDetailNameBar.innerHTML =
+      nameTxt +
+      '<div class="ci-hint-row">' +
         '<span class="ci-prev-hint">' + (prevName ? "← " + prevName : "") + "</span>" +
-        nameTxt +
-        '<span class="ci-next-hint">' + (nextName ? nextName + " →" : "") + "</span>";
-    }
+        counter +
+        '<span class="ci-next-hint">' + (nextName ? nextName + " →" : "") + "</span>" +
+      "</div>";
   }
 
   // ── Swipe navigation ──────────────────────────────────
@@ -580,6 +608,7 @@ window.CardIndex = (() => {
     else activeDeck = defaultDeck();
     if (window.Tooltips) Tooltips.wire(overlay);
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
+    if (typeof syncDeckCycleLabel === "function") syncDeckCycleLabel();
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";
