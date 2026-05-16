@@ -444,11 +444,11 @@ window.CardIndex = (() => {
         '<span class="ci-meta-pill"># ' + card.number + '</span>' +
       '</div>' +
       (card.numNote ? '<div class="ci-numerology">' + card.number + " — " + card.numNote + '</div>' : "") +
-      '<div class="ci-content-panel ci-meaning-block ' + uprightClass + '">' +
+      '<div class="ci-meaning-block ' + uprightClass + '">' +
         '<div class="ci-meaning-label">&#x2726; Upright</div>' +
         '<div class="ci-keyword-chips">' + makeChips(card.upright) + '</div>' +
       '</div>' +
-      '<div class="ci-content-panel ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
+      '<div class="ci-meaning-block ci-reversed-block ' + reversedClass + '">' +
         '<div class="ci-meaning-label" style="color:rgba(200,100,100,0.85)">&#x25BD; Reversed</div>' +
         '<div class="ci-keyword-chips">' + makeChips(card.reversed) + '</div>' +
       '</div>' +
@@ -590,11 +590,19 @@ window.CardIndex = (() => {
   ciLightboxImg.addEventListener("contextmenu", e => e.preventDefault());
   ciLightboxImg.draggable = false;
 
-  ciImgWrap.addEventListener("click", () => {
+  function tryOpenLightbox() {
     if (currentCard?.imageName) {
-      openLightbox(`./${activeDeck}/${currentCard.imageName}.png`);
+      openLightbox(getImgSrc(currentCard));
     }
+  }
+  // Use both click and touchend — Android WebView needs touchend
+  let _imgTouchMoved = false;
+  ciImgWrap.addEventListener("touchstart", () => { _imgTouchMoved = false; }, { passive: true });
+  ciImgWrap.addEventListener("touchmove",  () => { _imgTouchMoved = true;  }, { passive: true });
+  ciImgWrap.addEventListener("touchend",   (e) => {
+    if (!_imgTouchMoved) { e.preventDefault(); tryOpenLightbox(); }
   });
+  ciImgWrap.addEventListener("click", tryOpenLightbox);
 
   // ── Deck toggle ───────────────────────────────────────
 

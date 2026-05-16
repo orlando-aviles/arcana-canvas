@@ -590,8 +590,9 @@ select option {
   -webkit-touch-callout: none;
   user-select: none;
   -webkit-user-select: none;
-  pointer-events: none;
-  touch-action: none;
+  pointer-events: auto; /* needs to receive touches for lightbox */
+  touch-action: manipulation;
+  cursor: zoom-in;
 }
 /* Rune images — narrower domino proportion, contain so art isn't cropped */
 .ci-card-img.ci-rune-img {
@@ -618,14 +619,23 @@ select option {
 .ci-card-info {
   padding: 6px 10px 32px;
 }
-/* Translucent panel wrapping lore content */
+/* Translucent panel — lore sections only */
 .ci-content-panel {
   background: rgba(20, 15, 45, 0.55);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 14px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 10px 14px;
   margin: 0 0 6px;
   backdrop-filter: blur(8px);
+}
+/* Upright/reversed blocks — no panel, just flat */
+.ci-meaning-block.ci-content-panel {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 10px;
+  backdrop-filter: none;
 }
 .ci-detail-name {
   font-size: 28px;
@@ -660,7 +670,7 @@ select option {
   font-style: italic;
 }
 .ci-meaning-block {
-  margin-bottom: 0; /* spacing handled by panel margin */
+  margin-bottom: 0;
 }
 .ci-meaning-label {
   font-size: 10px;
