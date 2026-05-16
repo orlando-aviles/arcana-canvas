@@ -1700,42 +1700,65 @@ body.aura-off {
 .jo-thumb-popup {
   position: absolute;
   inset: 0;
-  background: rgba(6,7,16,0.88);
+  background: rgba(6,7,16,0.92);
   backdrop-filter: blur(4px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   opacity: 0;
   pointer-events: none;
   transition: opacity 150ms ease;
   z-index: 3;
-  border-radius: 0;
 }
 .jo-thumb-popup.visible {
   opacity: 1;
   pointer-events: auto;
 }
 .jo-popup-btn {
-  width: 80%;
-  padding: 4px 6px;
-  font-size: 10px;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 0;
+  background: none;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   box-shadow: none;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.7);
   cursor: pointer;
-  transition: background 120ms ease;
+  transition: background 100ms ease;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.jo-popup-btn:active { background: rgba(255,255,255,0.18); }
+.jo-popup-btn:active { background: rgba(255,255,255,0.1); }
+.jo-popup-btn:nth-child(2) { border-right: none; }
+.jo-popup-btn:nth-child(4) { border-right: none; border-bottom: none; }
+.jo-popup-btn:nth-child(3) { border-bottom: none; }
 .jo-popup-remove {
-  border-color: rgba(200,80,80,0.5);
-  color: rgba(220,120,120,0.9);
+  color: rgba(220,100,100,0.85);
+}
+.jo-popup-reverse {
+  color: var(--auraColor);
+}
+
+/* ── Reversed indicator — red glow line at bottom of thumb ─────────── */
+.jo-thumb-reversed::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(200, 70, 70, 0.9);
+  box-shadow: 0 0 6px rgba(200, 70, 70, 0.8), 0 0 12px rgba(200, 70, 70, 0.4);
+  z-index: 2;
+  pointer-events: none;
 }
 
 /* ── Index/journal nav button spacing ─────────────── */

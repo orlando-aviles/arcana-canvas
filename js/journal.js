@@ -230,28 +230,34 @@ window.Journal = (() => {
     joProgressFill.style.width = pct + "%";
   }
 
+  // Card entries: legacy string OR {filename, reversed}
+  function cardEntry(c) {
+    return typeof c === "string" ? { filename: c, reversed: false } : c;
+  }
+
   function renderCardsStrip(cards) {
     if (!cards || cards.length === 0) {
       joCardsStrip.innerHTML = `<div class="jo-cards-empty">No cards saved to this entry yet.</div>`;
       return;
     }
-    // Enable horizontal scroll only when more than 5 cards
     joCardsStrip.classList.toggle("scrollable", cards.length > 5);
-    joCardsStrip.innerHTML = cards.map((filename, i) => {
+    joCardsStrip.innerHTML = cards.map((raw, i) => {
+      const { filename, reversed } = cardEntry(raw);
       const card = CardData.getByNameOrFile(filename);
-      // Use active deck if available, fall back to LuminousArc
       const deckFolder = (card?.section === "Runes") ? "Runes"
         : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
       const imgSrc = card?.imageName ? `./${deckFolder}/${card.imageName}.png` : "";
       const displayName = card?.name || filename;
-      return `<div class="jo-card-thumb" data-filename="${filename}" data-idx="${i}" title="${displayName}">
+      const revClass = reversed ? " jo-thumb-reversed" : "";
+      return `<div class="jo-card-thumb${revClass}" data-filename="${filename}" data-idx="${i}" data-reversed="${reversed ? '1' : '0'}" title="${displayName}">
         ${imgSrc
           ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
         <div class="jo-thumb-popup">
-          <button class="jo-popup-btn jo-popup-expand" title="Expand">&#x2922;</button>
-          <button class="jo-popup-btn jo-popup-index"  title="Index">&#x26B7;</button>
-          <button class="jo-popup-btn jo-popup-remove" title="Remove">&#x2715;</button>
+          <button class="jo-popup-btn jo-popup-expand">Expand</button>
+          <button class="jo-popup-btn jo-popup-index">Index</button>
+          <button class="jo-popup-btn jo-popup-reverse">${reversed ? "Upright" : "Reverse"}</button>
+          <button class="jo-popup-btn jo-popup-remove">Remove</button>
         </div>
       </div>`;
     }).join("");
@@ -311,6 +317,23 @@ window.Journal = (() => {
       });
     });
 
+    // Reverse
+    joCardsStrip.querySelectorAll(".jo-popup-reverse").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllPopups();
+        const thumb = btn.closest(".jo-card-thumb");
+        const cardIdx = parseInt(thumb.dataset.idx);
+        const entry = getEntry(currentDay);
+        const cur = cardEntry(entry.cards[cardIdx]);
+        cur.reversed = !cur.reversed;
+        entry.cards[cardIdx] = cur;
+        entry.updatedAt = Date.now();
+        saveEntry(currentDay, entry);
+        renderCardsStrip(entry.cards);
+      });
+    });
+
     // Remove
     joCardsStrip.querySelectorAll(".jo-popup-remove").forEach(btn => {
       btn.addEventListener("click", (e) => {
@@ -349,12 +372,13 @@ window.Journal = (() => {
   });
 
   // ── Save a card to today ──────────────────────────────
-  function saveCardToToday(filename) {
+  function saveCardToToday(filename, reversed = false) {
     const key   = todayKey();
     const entry = getEntry(key);
     if (!entry.cards) entry.cards = [];
-    if (!entry.cards.includes(filename)) {
-      entry.cards.push(filename);
+    const exists = entry.cards.some(c => cardEntry(c).filename === filename);
+    if (!exists) {
+      entry.cards.push({ filename, reversed });
       entry.updatedAt = Date.now();
       saveEntry(key, entry);
     }
