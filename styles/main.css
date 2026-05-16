@@ -392,6 +392,11 @@ select option {
   flex: 1;
   overflow: hidden;
 }
+/* List view scrolls normally */
+.ci-list-view {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .ci-list-view.ci-active, .ci-detail-view.ci-active {
   display: flex;
 }
@@ -819,6 +824,7 @@ select option {
   overflow: hidden;
   touch-action: pan-y;
 }
+/* Cards strip pinned above keyboard via absolute positioning */
 #journalOverlay.jo-open {
   opacity: 1;
   pointer-events: auto;
@@ -953,9 +959,9 @@ select option {
   display: flex;
   flex-direction: column;
   flex: 1;
-  overflow: hidden;
+  overflow: visible; /* sticky children need visible/auto ancestor */
   position: relative;
-  min-height: 0; /* critical — lets flex children scroll */
+  min-height: 0;
 }
 .jo-day-header {
   padding: 14px 20px 6px;
@@ -1061,6 +1067,7 @@ select option {
   -webkit-overflow-scrolling: touch;
   min-height: 0;
   overscroll-behavior: contain;
+  /* Keyboard shrinks this, not the cards strip above */
 }
 .jo-paper {
   width: 100%;
@@ -1793,7 +1800,7 @@ body.aura-off {
   flex-shrink: 0;
   background: rgba(6,7,16,0.98);
   z-index: 2;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  /* no border — gap handled by padding */
 }
 .ci-detail-scroll {
   flex: 1;
@@ -1802,10 +1809,45 @@ body.aura-off {
   overscroll-behavior: contain;
   padding: 0 0 20px;
 }
-/* Card name in sticky bar */
+/* Card name in sticky bar — tight gap to badges below */
 .ci-detail-name-bar {
-  padding: 4px 20px 8px;
+  padding: 2px 20px 4px;
 }
 .ci-detail-name-bar .ci-detail-name {
   margin: 0;
+}
+/* Tighten meta pills top padding */
+.ci-detail-scroll .ci-detail-meta-row {
+  padding-top: 6px;
+  margin-top: 0;
+}
+
+/* ── Index: prev/next flanking card name ────────── */
+.ci-detail-name-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 12px 4px;
+  min-height: 44px;
+}
+.ci-prev-hint, .ci-next-hint {
+  flex: 1;
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ci-prev-hint { text-align: left; }
+.ci-next-hint { text-align: right; }
+.ci-detail-name-bar .ci-detail-name {
+  flex-shrink: 0;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Journal: paper-wrap keyboard shrink ────────── */
+.jo-paper-wrap {
+  transition: max-height 200ms ease;
 }

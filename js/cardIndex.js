@@ -75,7 +75,7 @@ window.CardIndex = (() => {
     </div>
 
     <div class="ci-detail-view" id="ciDetailView">
-      <!-- Sticky top: deck select, swipe hint, image, card name -->
+      <!-- Sticky top: deck select, image, name with prev/next flanking -->
       <div class="ci-detail-sticky">
         <select class="ci-deck-select ci-detail-deck-select" id="ciDeckSelectDetail">
           <option value="all">All Decks</option>
@@ -85,12 +85,13 @@ window.CardIndex = (() => {
           <option value="Runes">Runes</option>
           <option value="Playing">Playing Cards</option>
         </select>
-        <div class="ci-swipe-hint" id="ciSwipeHint"></div>
         <div class="ci-card-img-wrap" id="ciImgWrap">
           <img class="ci-card-img" id="ciCardImg" src="" alt="" />
           <div class="ci-card-img-placeholder" id="ciCardImgPlaceholder"></div>
         </div>
-        <div class="ci-detail-name-bar" id="ciDetailNameBar"></div>
+        <div class="ci-detail-name-bar" id="ciDetailNameBar">
+          <!-- name and prev/next inserted by renderDetailInfo -->
+        </div>
       </div>
       <!-- Scrollable bottom: meta, meanings, lore -->
       <div class="ci-detail-scroll">
@@ -390,11 +391,17 @@ window.CardIndex = (() => {
   }
 
   function updateSwipeHint() {
-    if (navList.length <= 1) { ciSwipeHint.textContent = ""; return; }
-    const parts = [];
-    if (navIdx > 0) parts.push("← " + navList[navIdx - 1].name);
-    if (navIdx < navList.length - 1) parts.push(navList[navIdx + 1].name + " →");
-    ciSwipeHint.textContent = parts.join("   ");
+    // Prev/next are now in the name bar, not a separate hint element
+    if (ciDetailNameBar) {
+      const prevName = navIdx > 0 ? navList[navIdx - 1].name : "";
+      const nextName = navIdx < navList.length - 1 ? navList[navIdx + 1].name : "";
+      const nameEl   = ciDetailNameBar.querySelector(".ci-detail-name");
+      const nameTxt  = nameEl ? nameEl.outerHTML : "";
+      ciDetailNameBar.innerHTML =
+        '<span class="ci-prev-hint">' + (prevName ? "← " + prevName : "") + "</span>" +
+        nameTxt +
+        '<span class="ci-next-hint">' + (nextName ? nextName + " →" : "") + "</span>";
+    }
   }
 
   // ── Swipe navigation ──────────────────────────────────

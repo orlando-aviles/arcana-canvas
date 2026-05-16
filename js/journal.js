@@ -384,9 +384,33 @@ window.Journal = (() => {
 
   function openToday() { open(); }
 
+  // Keep cards strip visible when keyboard opens
+  // Adjust only the paper-wrap height, not the whole overlay
+  const _joCardsStripEl = overlay.querySelector("#joCardsStrip");
+  const _joPaperWrapEl  = overlay.querySelector ? null : null; // resolved below
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      if (!isOpen) return;
+      const vvHeight = window.visualViewport.height;
+      const fullHeight = window.innerHeight;
+      const kbHeight = fullHeight - vvHeight; // keyboard height
+      const paperWrap = overlay.querySelector(".jo-paper-wrap");
+      if (paperWrap) {
+        // Shrink only the paper-wrap by keyboard height
+        paperWrap.style.maxHeight = kbHeight > 50
+          ? `calc(${vvHeight}px - var(--jo-fixed-top, 200px))`
+          : "";
+      }
+    });
+  }
+
   function close() {
     isOpen = false;
     overlay.classList.remove("jo-open");
+    // Reset paper-wrap height on close
+    const paperWrap = overlay.querySelector(".jo-paper-wrap");
+    if (paperWrap) paperWrap.style.maxHeight = "";
     document.body.style.overflow = "";
     clearTimeout(saveTimer);
     // Flush any pending save
