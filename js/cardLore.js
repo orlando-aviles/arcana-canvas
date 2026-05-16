@@ -735,8 +735,16 @@ window.CardLore = (() => {
     return tarot[clean] || null;
   }
 
+  // Name normalizer — cardData uses Nauthiz/Isa/Othala,
+  // lore keys use Naudhiz/Isaz/Othalan
+  const _runeAliases = {
+    "Nauthiz": "Naudhiz",
+    "Isa":     "Isaz",
+    "Othala":  "Othalan",
+  };
+
   function getRune(name) {
-    return runes[name] || null;
+    return runes[name] || runes[_runeAliases[name]] || null;
   }
 
   return { getTarot, getRune };

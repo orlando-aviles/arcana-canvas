@@ -1881,3 +1881,12 @@ body.aura-off {
 .jo-paper-wrap {
   transition: max-height 200ms ease;
 }
+
+/* ── Settings inline toggle row ────────────────────── */
+.settings-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0 10px;
+  flex-wrap: wrap;
+}

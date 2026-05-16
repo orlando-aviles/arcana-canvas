@@ -69,119 +69,81 @@
         <span class="atmo-title">Settings</span>
       </div>
       <div class="atmo-body">
-        <div class="atmo-section-title">Atmosphere</div>
+
+        <div class="atmo-section-title">Background</div>
         <div class="sliderRow">
           <select id="bgSelect">
-            <option value="starfield" selected>Starfield</option>
+            <option value="starfield">Starfield</option>
             <option value="particles">Animus</option>
             <option value="snowfall">Snowfall</option>
           </select>
         </div>
         <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Intensity</span>
-            <span class="sliderValue" id="intensityValue">80%</span>
-          </div>
+          <div class="sliderLabelRow"><span>Intensity</span><span class="sliderValue" id="intensityValue">80%</span></div>
           <input id="intensitySlider" type="range" min="0" max="100" value="80" />
-        </div>
-        <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Hue A</span>
-            <span class="sliderValue" id="hueAValue">245°</span>
-          </div>
-          <input id="hueASlider" type="range" min="0" max="360" value="245" />
-          <div class="huePreview"></div>
-        </div>
-        <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Hue B</span>
-            <span class="sliderValue" id="hueBValue">285°</span>
-          </div>
-          <input id="hueBSlider" type="range" min="0" max="360" value="285" />
-          <div class="huePreview"></div>
-        </div>
-        <div class="sliderRow">
-          <button id="randomizeBtn" type="button" class="fullWidthBtn">🎲 Randomize Auras</button>
         </div>
 
         <div class="atmo-section-title">Aura</div>
-        <div class="sliderRow toggleRow">
-          <span class="toggleLabel">Aura Color</span>
-          <label class="toggle">
-            <input type="checkbox" id="auraToggle" checked />
-            <span class="toggleTrack"><span class="toggleThumb"></span></span>
-          </label>
+        <div class="settings-inline-row">
+          <span class="toggleLabel">On</span>
+          <label class="toggle"><input type="checkbox" id="auraToggle" checked /><span class="toggleTrack"><span class="toggleThumb"></span></span></label>
+          <span class="toggleLabel" style="margin-left:16px">Auto-cycle</span>
+          <label class="toggle"><input type="checkbox" id="auraCycleToggle" /><span class="toggleTrack"><span class="toggleThumb"></span></span></label>
         </div>
-        <div class="sliderRow toggleRow">
-          <span class="toggleLabel">Auto-cycle Colors</span>
-          <label class="toggle">
-            <input type="checkbox" id="auraCycleToggle" />
-            <span class="toggleTrack"><span class="toggleThumb"></span></span>
-          </label>
+        <div class="sliderRow">
+          <div class="sliderLabelRow"><span>Hue A</span><span class="sliderValue" id="hueAValue">245&#xb0;</span></div>
+          <input id="hueASlider" type="range" min="0" max="360" value="245" />
         </div>
-        <div class="sliderRow" id="auraOpacityRow">
-          <div class="sliderLabelRow">
-            <span>Opacity</span>
-            <span class="sliderValue" id="auraOpacityValue">72%</span>
-          </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow"><span>Hue B</span><span class="sliderValue" id="hueBValue">285&#xb0;</span></div>
+          <input id="hueBSlider" type="range" min="0" max="360" value="285" />
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow"><span>Opacity</span><span class="sliderValue" id="auraOpacityValue">72%</span></div>
           <input id="auraOpacitySlider" type="range" min="10" max="100" value="72" />
         </div>
+        <div class="sliderRow">
+          <button id="randomizeBtn" type="button" class="fullWidthBtn">&#x1F3B2; Randomize</button>
+        </div>
 
-        <div class="atmo-section-title">Card Aura</div>
+        <div class="atmo-section-title">Cards</div>
         <div class="sliderRow">
           <select id="cardAuraModeSelect">
-            <option value="dynamic">Dynamic — updates with aura</option>
-            <option value="static">Static — keeps drawn color</option>
-            <option value="off">Off — no card aura</option>
+            <option value="dynamic">Card Aura — Dynamic</option>
+            <option value="static">Card Aura — Static</option>
+            <option value="off">Card Aura — Off</option>
           </select>
+        </div>
+        <div class="sliderRow">
+          <div class="sliderLabelRow"><span>Max on Canvas</span><span class="sliderValue" id="maxCardsLabel">40</span></div>
+          <input id="maxCardsSlider" type="range" min="5" max="60" value="40" />
         </div>
 
         <div class="atmo-section-title">Display</div>
         <div class="sliderRow toggleRow">
           <span class="toggleLabel">Canvas Header</span>
-          <label class="toggle">
-            <input type="checkbox" id="headerToggle" checked />
-            <span class="toggleTrack"><span class="toggleThumb"></span></span>
-          </label>
+          <label class="toggle"><input type="checkbox" id="headerToggle" checked /><span class="toggleTrack"><span class="toggleThumb"></span></span></label>
         </div>
         <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Header Title</span>
-            <span class="paid-badge">PRO</span>
-          </div>
-          <input type="text" id="headerTitleInput" class="text-input"
-                 placeholder="Arcana Canvas" maxlength="40" />
+          <div class="sliderLabelRow"><span>Header Title</span><span class="paid-badge">PRO</span></div>
+          <input type="text" id="headerTitleInput" class="text-input" placeholder="Arcana Canvas" maxlength="40" />
         </div>
         <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Header Subtitle</span>
-            <span class="paid-badge">PRO</span>
-          </div>
-          <input type="text" id="headerSubInput" class="text-input"
-                 placeholder="Tap to draw · Hold for meaning · Drag to move"
-                 maxlength="60" />
+          <div class="sliderLabelRow"><span>Subtitle</span><span class="paid-badge">PRO</span></div>
+          <input type="text" id="headerSubInput" class="text-input" placeholder="Tap to draw &#xb7; Hold for meaning &#xb7; Drag to move" maxlength="60" />
         </div>
 
         <div class="atmo-section-title">Performance</div>
         <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Quality</span>
-            <span class="sliderValue" id="perfModeLabel">Full</span>
-          </div>
           <select id="perfModeSelect">
-            <option value="full">Full — all effects, 60fps</option>
-            <option value="balanced">Balanced — 30fps, half stars</option>
-            <option value="saver">Battery Saver — no background effects</option>
+            <option value="full">Full quality</option>
+            <option value="balanced">Balanced (30fps)</option>
+            <option value="saver">Battery Saver</option>
           </select>
         </div>
-        <div class="sliderRow">
-          <div class="sliderLabelRow">
-            <span>Max Cards</span>
-            <span class="sliderValue" id="maxCardsLabel">40</span>
-          </div>
-          <input id="maxCardsSlider" type="range" min="5" max="60" value="40" />
-        </div>
-      </div>
+        <div class="sliderRow"><span class="sliderValue" id="perfModeLabel" style="font-size:11px;color:rgba(255,255,255,0.35)">Full quality active</span></div>
+
+            </div>
       <div class="atmo-bottom-bar">
         <button class="ci-bottom-btn atmo-close" id="atmosphereClose" title="Close">&#x2715;</button>
       </div>

@@ -314,17 +314,62 @@ window.CardIndex = (() => {
 
   function renderDetailImage(card) {
     const src = getImgSrc(card);
+    ciCardImgPlaceholder.innerHTML = "";
     if (src) {
       ciCardImg.src = src;
       ciCardImg.alt = card.name;
       ciCardImg.style.display = "block";
       ciCardImgPlaceholder.style.display = "none";
-      // Rune images use contain (thinner proportions)
       ciCardImg.classList.toggle("ci-rune-img", card.section === "Runes");
-    } else {
+    } else if (card.section === "Runes") {
       ciCardImg.style.display = "none";
       ciCardImgPlaceholder.style.display = "flex";
       ciCardImgPlaceholder.textContent = runeGlyph(card.name);
+    } else {
+      // Gilded / Playing — render live canvas preview
+      ciCardImg.style.display = "none";
+      ciCardImgPlaceholder.style.display = "flex";
+      const PW = 180, PH = 270;
+      const previewCanvas = document.createElement("canvas");
+      previewCanvas.width  = PW;
+      previewCanvas.height = PH;
+      previewCanvas.style.cssText = "border-radius:10px;box-shadow:0 0 24px var(--auraColor);display:block;";
+      const pCtx = previewCanvas.getContext("2d");
+      pCtx.imageSmoothingEnabled = true;
+
+      let drawn = false;
+      if (window.GildedMinima && card.imageName === undefined) {
+        const isMajor = card.section === "Major Arcana";
+        let tempCard = null;
+        if (isMajor) {
+          const majorIdx = GildedMinima.MAJORS.findIndex(m => m.name === card.name);
+          if (majorIdx >= 0) tempCard = { type:"gilded", x:PW/2, y:PH/2,
+            isMajor:true, majorIdx, rot:0, auraH: FX.hueA };
+        } else {
+          const suitMap = { Wands:0, Cups:1, Swords:2, Pentacles:3 };
+          const parts = card.name.split(" of ");
+          if (parts.length === 2) {
+            const rankStr = parts[0], suitStr = parts[1];
+            const suitIdx = suitMap[suitStr];
+            const rankIdx = GildedMinima.MINOR_RANKS.indexOf(rankStr);
+            if (suitIdx !== undefined && rankIdx >= 0) {
+              tempCard = { type:"gilded", x:PW/2, y:PH/2,
+                isMajor:false, rank:GildedMinima.MINOR_RANKS[rankIdx],
+                suitIdx, rot:0, auraH: FX.hueA };
+            }
+          }
+        }
+        if (tempCard) {
+          const s = 1.4;
+          GildedMinima.draw(pCtx, tempCard, PW/2, PH/2, PW*0.88, PH*0.94, 0, s);
+          drawn = true;
+        }
+      }
+      if (drawn) {
+        ciCardImgPlaceholder.appendChild(previewCanvas);
+      } else {
+        ciCardImgPlaceholder.textContent = card.name.slice(0, 2).toUpperCase();
+      }
     }
   }
 
