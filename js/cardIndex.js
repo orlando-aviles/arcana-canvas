@@ -299,12 +299,8 @@ window.CardIndex = (() => {
     renderDetailInfo(card);
     renderNavDots();
     updateSwipeHint();
-    // Defer scroll reset — layout must be painted before scrollTop works
-    requestAnimationFrame(() => {
-      ciDetailView.scrollTop = 0;
-      const scrollZone = ciDetailView.querySelector(".ci-detail-scroll");
-      if (scrollZone) scrollZone.scrollTop = 0;
-    });
+    // Scroll to top — single container, no split
+    requestAnimationFrame(() => { ciDetailView.scrollTop = 0; });
   }
 
   function getImgSrc(card) {

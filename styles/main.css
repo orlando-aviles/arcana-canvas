@@ -427,7 +427,9 @@ select option {
 }
 .ci-detail-view.ci-active {
   display: flex;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* ── Search + deck toggle ─────────────────────────── */
@@ -555,19 +557,10 @@ select option {
 /* Sticky top: deck select + image + card name */
 .ci-detail-sticky {
   flex-shrink: 0;
-  background: rgba(6,7,16,0.98);
-  z-index: 2;
-  overflow: hidden;
-  max-height: 75vh; /* never crush the scroll zone */
+  /* no sticky, no overflow tricks — just a normal block */
 }
 /* Scrollable bottom: meta, meanings, lore */
-.ci-detail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding-bottom: 20px;
-}
+.ci-detail-scroll { /* parent scrolls */ }
 .ci-detail-deck {
   padding: 10px 16px 0;
   flex-shrink: 0;
@@ -618,20 +611,25 @@ select option {
   color: var(--auraColor);
   text-shadow: 0 0 24px var(--auraColor);
 }
+/* ci-card-info styling moved to single-panel rule above */
+/* Single panel wraps whole info block — applied to ci-card-info */
 .ci-card-info {
-  padding: 6px 10px 32px;
-}
-/* Translucent panel — lore sections only */
-.ci-content-panel {
+  margin: 0 10px 24px;
   background: rgba(20, 15, 45, 0.55);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 12px;
-  padding: 10px 14px;
-  margin: 0 0 6px;
+  border-radius: 16px;
+  padding: 16px 16px 20px;
   backdrop-filter: blur(8px);
 }
-/* Upright/reversed blocks — no panel, just flat */
-/* Meaning blocks get same panel as lore */
+/* Individual section panels removed — sections use divider lines */
+.ci-content-panel {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  backdrop-filter: none !important;
+}
 .ci-detail-name {
   font-size: 28px;
   font-weight: 700;
@@ -665,7 +663,14 @@ select option {
   font-style: italic;
 }
 .ci-meaning-block {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ci-meaning-block:last-of-type {
+  border-bottom: none;
   margin-bottom: 0;
+  padding-bottom: 0;
 }
 .ci-meaning-label {
   font-size: 10px;
@@ -1545,7 +1550,9 @@ body.aura-off {
 
 /* ── Card lore (extended index descriptions) ─────── */
 .ci-lore-block {
-  margin-top: 0; /* panel gap handles spacing */
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 .ci-lore-label {
   font-size: 10px;
@@ -1875,17 +1882,9 @@ body.aura-off {
 /* ── Index detail: sticky top / scroll bottom ────── */
 .ci-detail-sticky {
   flex-shrink: 0;
-  background: rgba(6,7,16,0.98);
-  z-index: 2;
-  overflow: hidden;
 }
 .ci-detail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 4px 0 0;
-  /* Bottom space comes from ci-card-info padding only */
+  /* No independent scroll — parent ci-detail-view scrolls */
 }
 /* ── Name bar: title + ornament + nav row ─────────── */
 .ci-detail-name-bar {
