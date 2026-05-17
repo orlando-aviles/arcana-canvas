@@ -291,11 +291,22 @@ window.Journal = (() => {
       const filename = thumb.dataset.filename;
       const reversed = thumb.dataset.reversed === "1";
       const rect     = thumb.getBoundingClientRect();
-      const cx       = rect.left + rect.width / 2;
-      const cy       = rect.bottom + 10;
+      const cx = isFirst  ? rect.right  - 8
+               : isLast   ? rect.left   + 8
+               : rect.left + rect.width / 2;
+      const cy = isFirst || isLast
+               ? rect.top + rect.height / 2
+               : rect.bottom + 10;
 
-      // 4 buttons in 120° downward arc: 210°, 250°, 290°, 330°
-      const angles  = [210, 250, 290, 330];
+      // 4 buttons in 120° arc — direction based on position in strip
+      const totalCards = joCardsStrip.querySelectorAll(".jo-card-thumb").length;
+      const isFirst = idx === 0;
+      const isLast  = idx === totalCards - 1;
+      // Center angles: right=0°, down=90°, left=180°
+      const centerAngle = isFirst ? 0 : isLast ? 180 : 90;
+      // Spread ±60° around center in 4 steps (-45°,-15°,+15°,+45°)
+      const offsets = [-45, -15, 15, 45];
+      const angles  = offsets.map(o => (centerAngle + o + 360) % 360);
       const radius  = 54;
       const defs = [
         { cls: "jo-radial-expand",  icon: "&#x2922;", label: "Expand"                         },
