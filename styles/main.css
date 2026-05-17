@@ -397,13 +397,7 @@ select option {
   position: fixed;
   inset: 0;
   z-index: 50;
-  /* Top-to-bottom linear gradient — simple, consistent in all views */
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--auraColor) 55%, black) 0%,
-    color-mix(in srgb, var(--auraColor) 15%, black) 30%,
-    rgb(6, 7, 16) 70%
-  );
+  background: rgb(6, 7, 16);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
@@ -415,6 +409,25 @@ select option {
 #cardIndexOverlay.ci-open {
   opacity: 1;
   pointer-events: auto;
+}
+/* Gradient layer — fixed so it doesn't scroll with content */
+#cardIndexOverlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--auraColor) 40%, black) 0%,
+    color-mix(in srgb, var(--auraColor) 15%, transparent) 40%,
+    transparent 70%
+  );
+}
+/* All children sit above the gradient */
+#cardIndexOverlay > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Views fill the overlay, only one shown at a time */
