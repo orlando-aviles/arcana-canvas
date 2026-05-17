@@ -1,4 +1,4 @@
-const CACHE_NAME  = 'arcana-cache-v65';
+const CACHE_NAME  = 'arcana-cache-v66';
 const IMAGE_CACHE = 'arcana-images-v5'; // separate — survives core cache bumps
 
 const CORE_FILES = [
@@ -111,7 +111,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: check image cache first, then core cache, then network
+// Fetch: images cache-first, CSS/JS network-first, HTML network-first
 self.addEventListener('fetch', event => {
   const url = event.request.url;
   const isImage = event.request.destination === 'image' ||
@@ -128,8 +128,19 @@ self.addEventListener('fetch', event => {
             }).catch(() => caches.match(event.request)); // fallback to any cache
           })
         )
-      : caches.match(event.request).then(cached =>
-          cached || fetch(event.request)
+      : (event.request.url.includes('.css') || event.request.url.includes('.js')
+          // CSS and JS: network-first so updates always apply
+          ? fetch(event.request)
+              .then(response => {
+                const clone = response.clone();
+                caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                return response;
+              })
+              .catch(() => caches.match(event.request))
+          // Everything else: cache-first
+          : caches.match(event.request).then(cached =>
+              cached || fetch(event.request)
+            )
         )
   );
 });
