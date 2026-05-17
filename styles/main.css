@@ -397,20 +397,13 @@ select option {
   position: fixed;
   inset: 0;
   z-index: 50;
-  /* Radial gradient — vivid aura atmosphere */
-  background:
-    radial-gradient(
-      ellipse 120% 55% at 50% 0%,
-      color-mix(in srgb, var(--auraColor) 80%, black) 0%,
-      color-mix(in srgb, var(--auraColor) 30%, black) 35%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 80% 45% at 50% 52%,
-      color-mix(in srgb, var(--auraColor) 20%, black) 0%,
-      transparent 100%
-    ),
-    rgb(6, 7, 16);
+  /* Top-to-bottom linear gradient — simple, consistent in all views */
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--auraColor) 55%, black) 0%,
+    color-mix(in srgb, var(--auraColor) 15%, black) 30%,
+    rgb(6, 7, 16) 70%
+  );
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;

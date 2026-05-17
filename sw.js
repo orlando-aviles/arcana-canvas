@@ -1,5 +1,5 @@
-const CACHE_NAME  = 'arcana-cache-v60';
-const IMAGE_CACHE = 'arcana-images-v4'; // separate — survives core cache bumps
+const CACHE_NAME  = 'arcana-cache-v62';
+const IMAGE_CACHE = 'arcana-images-v5'; // separate — survives core cache bumps
 
 const CORE_FILES = [
   './',
