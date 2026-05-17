@@ -63,12 +63,9 @@ window.CardIndex = (() => {
         <input class="ci-search" id="ciSearch" type="search"
                placeholder="Search cards…" autocomplete="off" />
         <select class="ci-deck-select" id="ciDeckSelectList">
-          <option value="all">All Decks</option>
-          <option value="LuminousArc">Luminous Arc</option>
-          <option value="RiderWaite">Rider-Waite</option>
-          <option value="Gilded">Gilded Minima</option>
-          <option value="Runes">Runes</option>
-          <option value="Playing">Playing Cards</option>
+          <option value="all">All</option>
+          <option value="Tarot">Tarot</option>
+          <option value="Oracle">Oracle</option>
         </select>
       </div>
       <div class="ci-list" id="ciList"></div>
@@ -107,6 +104,70 @@ window.CardIndex = (() => {
   document.body.appendChild(overlay);
   if (window.Tooltips) Tooltips.wire(overlay);
 
+  // ── Canvas thumb generator — for decks without image files ───────────
+  const _thumbCache = new Map(); // key: cardName+deck → dataURL
+
+  function generateCanvasThumb(card) {
+    const key = card.name + "|" + activeDeck;
+    if (_thumbCache.has(key)) return _thumbCache.get(key);
+
+    const TW = 60, TH = 90;
+    const tc = document.createElement("canvas");
+    tc.width = TW; tc.height = TH;
+    const ctx = tc.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+
+    let drawn = false;
+
+    // Gilded Minima
+    if (window.GildedMinima && activeDeck === "Gilded") {
+      const isMajor = card.section === "Major Arcana";
+      let tempCard = null;
+      if (isMajor) {
+        const majorIdx = GildedMinima.MAJORS.findIndex(m => m.name === card.name);
+        if (majorIdx >= 0) tempCard = { type:"gilded", isMajor:true, majorIdx, auraH: FX.hueA };
+      } else {
+        const suitMap = { Wands:0, Cups:1, Swords:2, Pentacles:3 };
+        const parts = card.name.split(" of ");
+        if (parts.length === 2) {
+          const suitIdx = suitMap[parts[1]];
+          const rankIdx = GildedMinima.MINOR_RANKS.indexOf(parts[0]);
+          if (suitIdx !== undefined && rankIdx >= 0) {
+            tempCard = { type:"gilded", isMajor:false,
+              rank: GildedMinima.MINOR_RANKS[rankIdx], suitIdx, auraH: FX.hueA };
+          }
+        }
+      }
+      if (tempCard) {
+        GildedMinima.draw(ctx, tempCard, TW/2, TH/2, TW*0.92, TH*0.94, 0, 0.48);
+        drawn = true;
+      }
+    }
+
+    // Playing Cards — draw via tarot draw system if available
+    if (!drawn && activeDeck === "Playing" && window.draws !== undefined) {
+      // Use a simple pip preview
+      ctx.fillStyle = "#1a1a2e";
+      ctx.fillRect(0, 0, TW, TH);
+      ctx.fillStyle = "rgba(255,255,255,0.8)";
+      ctx.font = "bold 14px serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const label = card.name.split(" of ")[0]?.slice(0, 3) || "?";
+      ctx.fillText(label, TW/2, TH/2);
+      drawn = true;
+    }
+
+    if (!drawn) return null;
+    const url = tc.toDataURL();
+    _thumbCache.set(key, url);
+    return url;
+  }
+
+  function needsCanvasThumb(card) {
+    return !card.imageName || activeDeck === "Gilded" || activeDeck === "Playing";
+  }
+
   // Lightbox lives on body — works from journal and index
   const lbEl = document.createElement("div");
   lbEl.id = "ciLightbox";
@@ -132,29 +193,46 @@ window.CardIndex = (() => {
   const ciLightboxImg = document.getElementById("ciLightboxImg");
   // Save card in bottom bar
   // Deck cycle button — tapping steps through all deck options
-  const _deckCycle = [
-    { val: "all",         label: "All" },
+  // Decks organized by category
+  const _tarotDecks  = [
     { val: "LuminousArc", label: "Luminous" },
     { val: "RiderWaite",  label: "Rider-Waite" },
-    { val: "Gilded",      label: "Gilded" },
-    { val: "Runes",       label: "Runes" },
-    { val: "Playing",     label: "Playing" },
   ];
+  const _oracleDecks = [
+    { val: "Runes",   label: "Runes"   },
+    { val: "Gilded",  label: "Gilded"  },
+    { val: "Playing", label: "Playing" },
+  ];
+  const _deckCycle = [..._tarotDecks, ..._oracleDecks]; // for cycling
   const ciDeckCycleBtn  = overlay.querySelector("#ciDeckCycleBtn");
   const ciDeckCycleName = overlay.querySelector("#ciDeckCycleName");
 
   function syncDeckCycleLabel() {
-    const entry = _deckCycle.find(d => d.val === deckFilter) || _deckCycle[0];
+    const entry = _deckCycle.find(d => d.val === activeDeck)
+               || _deckCycle.find(d => d.val === deckFilter)
+               || { label: "All" };
     if (ciDeckCycleName) ciDeckCycleName.textContent = entry.label;
-    // Sync list select
-    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
   }
 
   ciDeckCycleBtn.addEventListener("click", () => {
-    const idx     = _deckCycle.findIndex(d => d.val === deckFilter);
-    const nextIdx = (idx + 1) % _deckCycle.length;
-    const next    = _deckCycle[nextIdx];
-    onDeckSelectChange({ value: next.val });
+    // Cycle within current category, or all if no category
+    const isTarot  = deckFilter === "Tarot"  || _tarotDecks.some(d => d.val === deckFilter);
+    const isOracle = deckFilter === "Oracle" || _oracleDecks.some(d => d.val === deckFilter);
+    const pool = isTarot ? _tarotDecks : isOracle ? _oracleDecks : _deckCycle;
+    const curIdx  = pool.findIndex(d => d.val === deckFilter || d.val === activeDeck);
+    const nextIdx = (curIdx + 1) % pool.length;
+    const next    = pool[nextIdx];
+    deckFilter  = next.val;
+    activeDeck  = next.val;
+    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value =
+      isTarot ? "Tarot" : isOracle ? "Oracle" : "all");
+    _thumbCache?.clear(); // clear thumb cache on deck change
+    navList = buildFullNavList();
+    if (ciDetailView.classList.contains("ci-active") && currentCard) {
+      renderDetailImage(currentCard);
+    } else {
+      renderList();
+    }
     syncDeckCycleLabel();
   });
 
@@ -181,12 +259,11 @@ window.CardIndex = (() => {
     const q = searchQuery.toLowerCase();
     return CardData.getAll().filter(card => {
       if (q && !card.name.toLowerCase().includes(q)) return false;
-      if (deckFilter === "all") return true;
-      if (deckFilter === "Runes")   return card.section === "Runes";
-      if (deckFilter === "LuminousArc" || deckFilter === "RiderWaite") {
-        return card.section !== "Runes"; // tarot cards for image decks
-      }
-      // Gilded and Playing — show all non-rune cards (they share the tarot structure)
+      if (deckFilter === "all")    return true;
+      if (deckFilter === "Tarot")  return card.section !== "Runes";
+      if (deckFilter === "Oracle") return card.section === "Runes"; // expand as oracle decks added
+      // Specific deck selected via cycle button
+      if (deckFilter === "Runes")  return card.section === "Runes";
       return card.section !== "Runes";
     });
   }
@@ -237,13 +314,16 @@ window.CardIndex = (() => {
         const imgSrc = card.imageName
           ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
           : "";
+        const needsCanvas = needsCanvasThumb(card);
         const revBadge = card.isReversedOrientation ? `<span class="ci-rev-badge">R</span>` : "";
         html += `
           <div class="ci-row" data-idx="${i}">
             <div class="ci-thumb-wrap">
-              ${imgSrc
+              ${imgSrc && !needsCanvas
                 ? `<img class="ci-thumb" src="${imgSrc}" alt="" loading="lazy" />`
-                : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
+                : needsCanvas
+                  ? `<canvas class="ci-thumb ci-canvas-thumb" data-card="${card.name}" width="60" height="90"></canvas>`
+                  : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
             </div>
             <div class="ci-row-info">
               <span class="ci-row-name">${card.name} ${revBadge}</span>
@@ -257,15 +337,18 @@ window.CardIndex = (() => {
         html += `<div class="ci-section-header">${sec}</div>`;
         groups[sec].forEach(card => {
           const imgSrc = card.imageName
-          ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
-          : "";
+            ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
+            : "";
+          const needsCanvas = needsCanvasThumb(card);
           const idx = navList.indexOf(card);
           html += `
             <div class="ci-row" data-idx="${idx}">
               <div class="ci-thumb-wrap">
-                ${imgSrc
+                ${imgSrc && !needsCanvas
                   ? `<img class="ci-thumb" src="${imgSrc}" alt="" loading="lazy" />`
-                  : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
+                  : needsCanvas
+                    ? `<canvas class="ci-thumb ci-canvas-thumb" data-card="${card.name}" width="60" height="90"></canvas>`
+                    : `<div class="ci-thumb-glyph">${runeGlyph(card.name)}</div>`}
               </div>
               <div class="ci-row-info">
                 <span class="ci-row-name">${card.name}</span>
@@ -283,6 +366,29 @@ window.CardIndex = (() => {
         showDetailAtIdx(navIdx);
       });
     });
+
+    // Lazy-render canvas thumbs via IntersectionObserver
+    const canvasThumbs = ciList.querySelectorAll(".ci-canvas-thumb");
+    if (canvasThumbs.length > 0) {
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const tc = entry.target;
+          const card = CardData.getByNameOrFile(tc.dataset.card);
+          if (!card) return;
+          const url = generateCanvasThumb(card);
+          if (url) {
+            const img = document.createElement("img");
+            img.src = url;
+            img.className = "ci-thumb";
+            img.alt = tc.dataset.card;
+            tc.replaceWith(img);
+          }
+          obs.unobserve(tc);
+        });
+      }, { root: ciList, rootMargin: "60px" });
+      canvasThumbs.forEach(tc => obs.observe(tc));
+    }
   }
 
   // ── Detail view ───────────────────────────────────────
@@ -629,14 +735,15 @@ window.CardIndex = (() => {
   // Wire deck dropdowns
   function onDeckSelectChange(sel) {
     const val = sel.value;
-    // Sync list select only (detail select removed)
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = val);
     deckFilter = val;
     if (window.App) { App.indexDeckFilter = val; if (window.saveSettings) saveSettings(); }
-    // activeDeck for image rendering — map to image folder
-    if (val === "RiderWaite") activeDeck = "RiderWaite";
-    else if (val === "Runes") activeDeck = "Runes";
-    else activeDeck = "LuminousArc";
+    // activeDeck — maps category/deck to image folder
+    if (val === "RiderWaite" || val === "Tarot") activeDeck = "RiderWaite";
+    else if (val === "Runes"  || val === "Oracle") activeDeck = "Runes";
+    else if (val === "Gilded")  activeDeck = "Gilded";
+    else if (val === "Playing") activeDeck = "Playing";
+    else activeDeck = defaultDeck();
     navList = buildFullNavList();
     if (ciDetailView.classList.contains("ci-active") && currentCard) {
       renderDetailImage(currentCard);
