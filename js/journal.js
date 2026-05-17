@@ -378,10 +378,11 @@ window.Journal = (() => {
     });
 
     document.addEventListener("click", (e) => {
-      if (_radialEl && !e.target.closest(".jo-radial-menu") && !e.target.closest(".jo-card-thumb")) {
+      if (!_radialEl) return;
+      if (!e.target.closest(".jo-radial-menu") && !e.target.closest(".jo-card-thumb")) {
         closeRadial();
       }
-    }, { capture: true });
+    });
   }
 
   // ── Auto-save textarea ────────────────────────────────
