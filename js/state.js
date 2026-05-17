@@ -93,6 +93,7 @@ window.applyAuras = function applyAuras() {
     `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
   );
   document.documentElement.style.setProperty("--auraRGB", `${r},${g},${b}`);
+  document.documentElement.style.setProperty("--auraHue", FX.hueA);
   document.documentElement.style.setProperty(
     "--cardStroke",
     `hsla(${FX.hueA} 92% 70% / 0.50)`,
