@@ -397,12 +397,17 @@ select option {
   position: fixed;
   inset: 0;
   z-index: 50;
-  /* Radial gradient — deep aura-tinted atmosphere, nearly black at edges */
+  /* Radial gradient — aura atmosphere, blooms from top center */
   background:
     radial-gradient(
-      ellipse 80% 60% at 50% 30%,
-      rgba(var(--auraRGB), 0.12) 0%,
-      rgba(var(--auraRGB), 0.04) 45%,
+      ellipse 100% 55% at 50% 0%,
+      rgba(var(--auraRGB), 0.22) 0%,
+      rgba(var(--auraRGB), 0.10) 40%,
+      rgba(6,7,16,0) 100%
+    ),
+    radial-gradient(
+      ellipse 60% 35% at 50% 50%,
+      rgba(var(--auraRGB), 0.08) 0%,
       rgba(6,7,16,0) 100%
     ),
     rgba(6, 7, 16, 0.98);
