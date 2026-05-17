@@ -552,9 +552,9 @@ window.CardIndex = (() => {
 
     ciCardInfo.innerHTML =
       '<div class="ci-detail-meta-row" style="padding-top:4px">' +
-        '<span class="ci-meta-pill">' + (ELEMENT_GLYPH[card.element]||"") + " " + card.element + '</span>' +
-        '<span class="ci-meta-pill">' + astroGlyph(card.astro) + " " + card.astro + '</span>' +
-        '<span class="ci-meta-pill"># ' + card.number + '</span>' +
+        '<span class="ci-meta-pill" title="' + card.element + '">' + (ELEMENT_GLYPH[card.element]||"") + '<span class="ci-pill-text"> ' + card.element + '</span></span>' +
+        '<span class="ci-meta-pill" title="' + card.astro + '">' + astroGlyph(card.astro) + '<span class="ci-pill-text"> ' + card.astro + '</span></span>' +
+        '<span class="ci-meta-pill" title="' + card.number + '">#<span class="ci-pill-text"> ' + card.number + '</span></span>' +
       '</div>' +
       (card.numNote ? '<div class="ci-numerology">' + card.number + " — " + card.numNote + '</div>' : "") +
       '<div class="ci-content-panel ci-meaning-block ' + uprightClass + '">' +
@@ -726,9 +726,9 @@ window.CardIndex = (() => {
   ciImgWrap.addEventListener("touchstart", () => { _imgTouchMoved = false; }, { passive: true });
   ciImgWrap.addEventListener("touchmove",  () => { _imgTouchMoved = true;  }, { passive: true });
   ciImgWrap.addEventListener("touchend",   (e) => {
-    if (!_imgTouchMoved) { e.preventDefault(); tryOpenLightbox(); }
+    if (!_imgTouchMoved && isOpen) { e.preventDefault(); tryOpenLightbox(); }
   });
-  ciImgWrap.addEventListener("click", tryOpenLightbox);
+  ciImgWrap.addEventListener("click", () => { if (isOpen) tryOpenLightbox(); });
 
   // ── Deck toggle ───────────────────────────────────────
 

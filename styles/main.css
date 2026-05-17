@@ -644,13 +644,16 @@ select option {
   backdrop-filter: none;
 }
 .ci-detail-name {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: rgba(255,255,255,0.97);
   text-align: center;
   margin-bottom: 2px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ci-detail-meta-row {
   display: flex;
@@ -663,11 +666,17 @@ select option {
   background: rgba(100,80,200,0.18);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.65);
-  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  font-size: 15px; /* glyph/emoji size */
+  color: rgba(255,255,255,0.75);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 36px;
+  justify-content: center;
 }
+/* Pill text hidden — icon only */
+.ci-pill-text { display: none; }
 .ci-numerology {
   font-size: 12px;
   color: rgba(255,255,255,0.35);
@@ -1306,10 +1315,7 @@ select option {
 
 /* ── Sticky bottom nav bars (index + journal) ────── */
 .ci-bottom-bar, .jo-bottom-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   height: 60px;
   display: flex;
   align-items: center;
@@ -1319,10 +1325,11 @@ select option {
   border-top: 1px solid rgba(255,255,255,0.08);
   backdrop-filter: blur(16px);
   z-index: 5;
-  flex-shrink: 0;
+  flex-shrink: 0; /* never collapses — always visible at bottom of overlay */
 }
+/* No padding-bottom needed — bar is a flex child */
 #cardIndexOverlay, #journalOverlay {
-  padding-bottom: 60px;
+  padding-bottom: 0;
 }
 .ci-bottom-btn, .jo-bottom-btn {
   width: 44px;
