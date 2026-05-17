@@ -14,6 +14,14 @@
  * but "Save to Journal" always targets today.
  *********************************************************/
 window.Journal = (() => {
+  // Radial menu state — module level so close() can access it
+  let _radialThumb = null;
+  let _radialEl    = null;
+
+  function closeRadial() {
+    if (_radialEl)    { _radialEl.remove(); _radialEl = null; }
+    if (_radialThumb) { _radialThumb.classList.remove("jo-thumb-selected"); _radialThumb = null; }
+  }
 
   const STORAGE_PREFIX = "arcana_journal_";
   const WORD_TARGET    = 1000;
@@ -273,13 +281,6 @@ window.Journal = (() => {
     });
 
     // ── Radial menu — fans below strip, hovers over journal entry ───────
-    let _radialThumb = null;
-    let _radialEl    = null;
-
-    function closeRadial() {
-      if (_radialEl)    { _radialEl.remove(); _radialEl = null; }
-      if (_radialThumb) { _radialThumb.classList.remove("jo-thumb-selected"); _radialThumb = null; }
-    }
 
     function openRadial(thumb) {
       closeRadial();
