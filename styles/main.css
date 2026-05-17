@@ -574,7 +574,7 @@ select option {
 /* Sticky top: deck select + image + card name */
 .ci-detail-sticky {
   flex-shrink: 0;
-  background: rgba(6,7,16,0.98);
+  background: transparent;
   z-index: 2;
 }
 /* Scrollable bottom: meta, meanings, lore */
@@ -1913,7 +1913,7 @@ body.aura-off {
 /* ── Index detail: sticky top / scroll bottom ────── */
 .ci-detail-sticky {
   flex-shrink: 0;
-  background: rgba(6,7,16,0.98);
+  background: transparent;
   z-index: 2;
 }
 .ci-detail-scroll {
