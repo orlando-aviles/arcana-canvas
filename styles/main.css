@@ -397,7 +397,15 @@ select option {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(6, 7, 16, 0.97);
+  /* Radial gradient — deep aura-tinted atmosphere, nearly black at edges */
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 50% 30%,
+      rgba(var(--auraRGB), 0.12) 0%,
+      rgba(var(--auraRGB), 0.04) 45%,
+      rgba(6,7,16,0) 100%
+    ),
+    rgba(6, 7, 16, 0.98);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
@@ -577,9 +585,9 @@ select option {
   object-fit: cover;
   object-position: center;
   border-radius: 12px;
-  /* Flat frame — thin border + drop shadow, no color glow */
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.08) inset;
+  /* Frame — reads against the tinted background */
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.65);
   display: block;
   background: transparent;
   -webkit-touch-callout: none;
