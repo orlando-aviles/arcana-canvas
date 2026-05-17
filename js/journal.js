@@ -263,12 +263,6 @@ window.Journal = (() => {
         ${imgSrc
           ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy" />`
           : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
-        <div class="jo-thumb-popup">
-          <button class="jo-popup-btn jo-popup-expand">Expand</button>
-          <button class="jo-popup-btn jo-popup-index">Index</button>
-          <button class="jo-popup-btn jo-popup-reverse">${reversed ? "Upright" : "Reverse"}</button>
-          <button class="jo-popup-btn jo-popup-remove">Remove</button>
-        </div>
       </div>`;
     }).join("");
 
@@ -278,97 +272,116 @@ window.Journal = (() => {
       img.draggable = false;
     });
 
-    // Tap → popup menu with Expand / Index / Remove
-    function closeAllPopups() {
-      joCardsStrip.querySelectorAll(".jo-thumb-popup.visible")
-        .forEach(el => el.classList.remove("visible"));
+    // ── Radial menu — fans below strip, hovers over journal entry ───────
+    let _radialThumb = null;
+    let _radialEl    = null;
+
+    function closeRadial() {
+      if (_radialEl)    { _radialEl.remove(); _radialEl = null; }
+      if (_radialThumb) { _radialThumb.classList.remove("jo-thumb-selected"); _radialThumb = null; }
     }
 
-    joCardsStrip.querySelectorAll(".jo-card-thumb").forEach(thumb => {
-      thumb.addEventListener("click", (e) => {
-        if (e.target.closest(".jo-thumb-popup")) return; // handled by popup buttons
-        closeAllPopups();
-        const popup = thumb.querySelector(".jo-thumb-popup");
-        if (popup) popup.classList.add("visible");
-      });
-    });
+    function openRadial(thumb) {
+      closeRadial();
+      _radialThumb = thumb;
+      thumb.classList.add("jo-thumb-selected");
 
-    // Expand — open card image in CardIndex lightbox
-    joCardsStrip.querySelectorAll(".jo-popup-expand").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        const filename = btn.closest(".jo-card-thumb").dataset.filename;
+      const idx      = parseInt(thumb.dataset.idx);
+      const filename = thumb.dataset.filename;
+      const reversed = thumb.dataset.reversed === "1";
+      const rect     = thumb.getBoundingClientRect();
+      const cx       = rect.left + rect.width / 2;
+      const cy       = rect.bottom + 10;
+
+      // 4 buttons in 120° downward arc: 210°, 250°, 290°, 330°
+      const angles  = [210, 250, 290, 330];
+      const radius  = 54;
+      const defs = [
+        { cls: "jo-radial-expand",  icon: "&#x2922;", label: "Expand"                         },
+        { cls: "jo-radial-index",   icon: "&#x26B7;", label: "Index"                           },
+        { cls: "jo-radial-reverse", icon: reversed ? "&#x21BA;" : "&#x21BB;",
+                                          label: reversed ? "Upright" : "Reverse"              },
+        { cls: "jo-radial-remove",  icon: "&#x2715;", label: "Remove"                         },
+      ];
+
+      const wrap = document.createElement("div");
+      wrap.className = "jo-radial-menu";
+      wrap.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;z-index:200;pointer-events:none;width:0;height:0;`;
+
+      defs.forEach((d, i) => {
+        const angle = angles[i] * Math.PI / 180;
+        const bx = Math.round(Math.cos(angle) * radius);
+        const by = Math.round(Math.sin(angle) * radius);
+        const btn = document.createElement("button");
+        btn.className = `jo-radial-btn ${d.cls}`;
+        btn.innerHTML = d.icon;
+        btn.setAttribute("data-tooltip", d.label);
+        btn.style.cssText = `left:${bx}px;top:${by}px;transition-delay:${i*40}ms;`;
+        wrap.appendChild(btn);
+      });
+
+      document.body.appendChild(wrap);
+      _radialEl = wrap;
+
+      requestAnimationFrame(() => {
+        wrap.style.pointerEvents = "auto";
+        wrap.querySelectorAll(".jo-radial-btn").forEach(b => b.classList.add("jo-radial-visible"));
+      });
+
+      wrap.querySelector(".jo-radial-expand").addEventListener("click", (e) => {
+        e.stopPropagation(); closeRadial();
         const card = CardData.getByNameOrFile(filename);
         if (!card?.imageName) return;
-        const deckFolder = card.section === "Runes" ? "Runes"
+        const folder = card.section === "Runes" ? "Runes"
           : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
-        const imgPath = `./${deckFolder}/${card.imageName}.png`;
-        if (window.CardIndex && CardIndex._openLightbox) {
-          CardIndex._openLightbox(imgPath);
-        } else {
-          // Fallback — open in new tab
-          window.open(imgPath, "_blank");
-        }
+        if (window.CardIndex) CardIndex._openLightbox(`./${folder}/${card.imageName}.png`);
       });
-    });
 
-    // Index
-    joCardsStrip.querySelectorAll(".jo-popup-index").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        const filename = btn.closest(".jo-card-thumb").dataset.filename;
+      wrap.querySelector(".jo-radial-index").addEventListener("click", (e) => {
+        e.stopPropagation(); closeRadial();
         const card = CardData.getByNameOrFile(filename);
         if (card) {
           close();
           CardIndex.open();
           setTimeout(() => {
-            const idx = CardData.getAll().findIndex(c => c.name === card.name);
-            if (idx >= 0) CardIndex._showDetailAtIdx(idx);
+            const i = CardData.getAll().findIndex(c => c.name === card.name);
+            if (i >= 0) CardIndex._showDetailAtIdx(i);
           }, 50);
         }
       });
-    });
 
-    // Reverse
-    joCardsStrip.querySelectorAll(".jo-popup-reverse").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        const thumb = btn.closest(".jo-card-thumb");
-        const cardIdx = parseInt(thumb.dataset.idx);
+      wrap.querySelector(".jo-radial-reverse").addEventListener("click", (e) => {
+        e.stopPropagation(); closeRadial();
         const entry = getEntry(currentDay);
-        const cur = cardEntry(entry.cards[cardIdx]);
+        const cur = cardEntry(entry.cards[idx]);
         cur.reversed = !cur.reversed;
-        entry.cards[cardIdx] = cur;
+        entry.cards[idx] = cur;
         entry.updatedAt = Date.now();
         saveEntry(currentDay, entry);
         renderCardsStrip(entry.cards);
       });
-    });
 
-    // Remove
-    joCardsStrip.querySelectorAll(".jo-popup-remove").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        closeAllPopups();
-        const cardIdx = parseInt(btn.closest(".jo-card-thumb").dataset.idx);
+      wrap.querySelector(".jo-radial-remove").addEventListener("click", (e) => {
+        e.stopPropagation(); closeRadial();
         const entry = getEntry(currentDay);
-        entry.cards.splice(cardIdx, 1);
+        entry.cards.splice(idx, 1);
         entry.updatedAt = Date.now();
         saveEntry(currentDay, entry);
         renderCardsStrip(entry.cards);
       });
+    }
+
+    joCardsStrip.querySelectorAll(".jo-card-thumb").forEach(thumb => {
+      thumb.addEventListener("click", () => {
+        _radialThumb === thumb ? closeRadial() : openRadial(thumb);
+      });
     });
 
-    // Close popups on tap outside
-    joCardsStrip.addEventListener("click", (e) => {
-      if (!e.target.closest(".jo-card-thumb")) closeAllPopups();
-    });
-    joDayView.addEventListener("click", (e) => {
-      if (!e.target.closest(".jo-cards-strip")) closeAllPopups();
-    });
+    document.addEventListener("click", (e) => {
+      if (_radialEl && !e.target.closest(".jo-radial-menu") && !e.target.closest(".jo-card-thumb")) {
+        closeRadial();
+      }
+    }, { capture: true });
   }
 
   // ── Auto-save textarea ────────────────────────────────
@@ -444,6 +457,7 @@ window.Journal = (() => {
   function close() {
     isOpen = false;
     overlay.classList.remove("jo-open");
+    closeRadial();
     // Reset day-view height on close
     const dayView = overlay.querySelector("#joDayView");
     if (dayView) dayView.style.maxHeight = "";
