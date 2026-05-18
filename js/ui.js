@@ -104,7 +104,7 @@ function tickLerp() {
     if (hAv) hAv.textContent = Math.round(FX.hueA) + "°";
     if (hBv) hBv.textContent = Math.round(FX.hueB) + "°";
     // Redraw cards with settled color
-    if (window.redrawAll && window.draws && draws.length > 0) redrawAll();
+    if (window.redrawAll) { const _d = window.getDraws ? window.getDraws() : []; if (_d.length > 0) redrawAll(); }
     _lerpRafId = null;
     return;
   }
@@ -114,9 +114,9 @@ function tickLerp() {
   applyAuras();
   // In dynamic mode, update cards every N lerp frames (not every frame — too expensive)
   if (window.App && App.cardAuraMode === "dynamic" &&
-      window.draws && draws.length > 0 &&
       window.redrawAll && !(tickLerp._frame % 6)) {
-    redrawAll();
+    const _d = window.getDraws ? window.getDraws() : [];
+    if (_d.length > 0) redrawAll();
   }
   tickLerp._frame = ((tickLerp._frame || 0) + 1) % 60;
   _lerpRafId = requestAnimationFrame(tickLerp);

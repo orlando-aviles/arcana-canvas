@@ -201,7 +201,16 @@ function cardAt(x, y) {
 /**** Card name for description overlay ****/
 function cardDisplayName(card) {
   if (card.type === "text")    return card.name;
-  if (card.type === "playing") return `${card.rank}${card.suit}`;
+  if (card.type === "playing") {
+    // Map rank+suit to proper name e.g. "A♠" → "Ace of Spades"
+    const RANK_NAMES = { A:"Ace", "2":"Two", "3":"Three", "4":"Four", "5":"Five",
+      "6":"Six", "7":"Seven", "8":"Eight", "9":"Nine", "10":"Ten",
+      J:"Jack", Q:"Queen", K:"King" };
+    const SUIT_NAMES = { "♠":"Spades", "♥":"Hearts", "♦":"Diamonds", "♣":"Clubs" };
+    const r = RANK_NAMES[card.rank] || card.rank;
+    const s = SUIT_NAMES[card.suit] || card.suit;
+    return `${r} of ${s}`;
+  }
   if (card.type === "tarot" || card.type === "luminous") return card.name;
   if (card.type === "gilded")  return card.isMajor
     ? GildedMinima.MAJORS[card.majorIdx]?.name || "Unknown"
@@ -257,17 +266,22 @@ function showDesc(card) {
       "8":"Eight","9":"Nine","10":"Ten","J":"Page","Q":"Queen","K":"King"
     };
     const tarotRank = RANK_TO_TAROT[card.rank] || card.rank;
-    const tarotSuit = SUIT_TO_TAROT[card.suit] || card.suit;
-    displayName = `${card.rank}${card.suit}`;
-    const tarotName = `${tarotRank} of ${tarotSuit}`;
-    const tarotCard = CardData.get(tarotName);
-    meaning = tarotCard
-      ? `${tarotName} — ${isReversed ? tarotCard.reversed : tarotCard.upright}`
+    const RANK_NAMES = { A:"Ace", "2":"Two", "3":"Three", "4":"Four", "5":"Five",
+      "6":"Six", "7":"Seven", "8":"Eight", "9":"Nine", "10":"Ten",
+      J:"Jack", Q:"Queen", K:"King" };
+    const SUIT_NAMES_P = { "♠":"Spades", "♥":"Hearts", "♦":"Diamonds", "♣":"Clubs" };
+    const pr = RANK_NAMES[card.rank] || card.rank;
+    const ps = SUIT_NAMES_P[card.suit] || card.suit;
+    displayName = `${pr} of ${ps}`;
+    // Look up meaning from playing card dataset
+    const playingCard = CardData.getByNameOrFile(displayName);
+    meaning = playingCard
+      ? (isReversed ? playingCard.reversed : playingCard.upright)
       : "A card of fortune.";
   } else if (card.type === "gilded") {
-    // Gilded: resolve to standard tarot name for meaning
-    displayName = cleanFile;
-    const tarotCard = CardData.get(cleanFile);
+    // Gilded: use cardDisplayName for proper tarot name
+    displayName = cardDisplayName(card);
+    const tarotCard = CardData.getByNameOrFile(displayName);
     meaning = tarotCard
       ? (isReversed ? tarotCard.reversed : tarotCard.upright)
       : "A gilded mystery.";
