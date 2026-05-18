@@ -72,6 +72,10 @@ window.Snowfall = (() => {
     // Clamp dt tightly — interaction events can cause long frames
     // that make flakes jump. Cap at 33ms (30fps equivalent).
     const dt = Math.min(0.033, (now - last) / 1000);
+    // Balanced mode — skip every other frame (30fps cap)
+    if (window.App?.perfMode === "balanced" && (now % 66) < 33) {
+      requestAnimationFrame(tick); return;
+    }
     last = now;
     ctx.clearRect(0, 0, W, H);
     const mult = FX.intensity;

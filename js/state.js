@@ -87,22 +87,18 @@ window.applyAuras = function applyAuras() {
   const g = Math.round(hue2rgb(h) * 255);
   const b = Math.round(hue2rgb(h - 1/3) * 255);
   const opacity = (window.App && App.auraOn !== false)
-    ? (App.auraOpacity || 0.72) : 0.15;
-  document.documentElement.style.setProperty(
-    "--auraColor",
-    `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
-  );
+    ? (App.auraOpacity || 0.72) : 1.0;
+  // Single source of truth for --auraColor
+  const auraColor = App.auraOn !== false
+    ? `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
+    : "rgba(255,255,255,0.88)"; // aura off → white
+  document.documentElement.style.setProperty("--auraColor", auraColor);
   document.documentElement.style.setProperty("--auraRGB", `${r},${g},${b}`);
   document.documentElement.style.setProperty("--auraHue", FX.hueA);
   document.documentElement.style.setProperty(
     "--cardStroke",
     `hsla(${FX.hueA} 92% 70% / 0.50)`,
   );
-  // Menu button border + bar color track the aura
-  const auraColor = App.auraOn !== false
-    ? `hsla(${FX.hueA}, 85%, 72%, ${opacity})`
-    : "rgba(255,255,255,0.85)";
-  document.documentElement.style.setProperty("--auraColor", auraColor);
   // Toggle body class so CSS can flip aura text to white when off
   document.body.classList.toggle("aura-off", App.auraOn === false);
 };

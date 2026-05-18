@@ -216,6 +216,10 @@ window.Starfield = (() => {
     if (!running) return;
     if (window._appHidden) { requestAnimationFrame(tick); return; }
     const dt = Math.min(.033, (now - last) / 1000);
+    // Balanced mode — skip every other frame (30fps cap)
+    if (window.App?.perfMode === "balanced" && (now % 66) < 33) {
+      requestAnimationFrame(tick); return;
+    }
     last = now;
 
     updateMorph(now);

@@ -165,7 +165,8 @@ window.CardIndex = (() => {
   }
 
   function needsCanvasThumb(card) {
-    return !card.imageName || activeDeck === "Gilded" || activeDeck === "Playing";
+    // Playing has PNGs now — no canvas thumb needed for any deck
+    return false;
   }
 
   // Lightbox lives on body — works from journal and index
@@ -195,12 +196,12 @@ window.CardIndex = (() => {
   // Deck cycle button — tapping steps through all deck options
   // Decks organized by category
   const _tarotDecks  = [
-    { val: "LuminousArc", label: "Luminous" },
-    { val: "RiderWaite",  label: "Rider-Waite" },
+    { val: "LuminousArc", label: "Luminous"   },
+    { val: "RiderWaite",  label: "Rider-Waite"},
+    { val: "Gilded",      label: "Gilded"     },
   ];
   const _oracleDecks = [
     { val: "Runes",   label: "Runes"   },
-    { val: "Gilded",  label: "Gilded"  },
     { val: "Playing", label: "Playing" },
   ];
   const _deckCycle = [..._tarotDecks, ..._oracleDecks]; // for cycling
