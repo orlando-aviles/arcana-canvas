@@ -317,11 +317,11 @@ window.Journal = (() => {
       defs.forEach((d, i) => {
         const btn = document.createElement("button");
         btn.className = `jo-radial-btn ${d.cls}`;
-        btn.innerHTML = d.icon;
-        btn.setAttribute("data-tooltip", d.label);
+        // Icon + label inside button
+        btn.innerHTML = `<span class="lmb-icon">${d.icon}</span><span class="lmb-text">${d.label}</span>`;
         btn.style.cssText = `
           position:fixed;
-          left:${Math.round(cx - BTN_SIZE/2)}px;
+          left:${Math.round(cx - BTN_WIDTH/2)}px;
           top:${Math.round(topStart + i * (BTN_SIZE + BTN_GAP))}px;
           transition-delay:${i * 35}ms;
         `;
