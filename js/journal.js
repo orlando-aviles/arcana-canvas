@@ -294,43 +294,37 @@ window.Journal = (() => {
       const idx      = parseInt(thumb.dataset.idx);
       const filename = thumb.dataset.filename;
       const reversed = thumb.dataset.reversed === "1";
-      const rect       = thumb.getBoundingClientRect();
-      const totalCards = joCardsStrip.querySelectorAll(".jo-card-thumb").length;
-      const isFirst    = idx === 0;
-      const isLast     = idx === totalCards - 1;
-      const cx = isFirst ? rect.right  - 8
-               : isLast  ? rect.left   + 8
-               : rect.left + rect.width / 2;
-      const cy = isFirst || isLast
-               ? rect.top + rect.height / 2
-               : rect.bottom + 10;
-      // Center angles: right=0°, down=90°, left=180°
-      const centerAngle = isFirst ? 0 : isLast ? 180 : 90;
-      // Spread ±60° around center in 4 steps (-45°,-15°,+15°,+45°)
-      const offsets = [-45, -15, 15, 45];
-      const angles  = offsets.map(o => (centerAngle + o + 360) % 360);
-      const radius  = 54;
+      const rect     = thumb.getBoundingClientRect();
+
+      // Linear dropdown — buttons fall straight down from card center
+      const BTN_SIZE = 44;
+      const BTN_GAP  = 6;
+      const cx = rect.left + rect.width / 2;
+      const topStart = rect.bottom + 6;
+
       const defs = [
-        { cls: "jo-radial-expand",  icon: "&#x2922;", label: "Expand"                         },
-        { cls: "jo-radial-index",   icon: "&#x26B7;", label: "Index"                           },
+        { cls: "jo-radial-expand",  icon: "&#x2922;", label: "Expand"                  },
+        { cls: "jo-radial-index",   icon: "&#x26B7;", label: "Index"                   },
         { cls: "jo-radial-reverse", icon: reversed ? "&#x21BA;" : "&#x21BB;",
-                                          label: reversed ? "Upright" : "Reverse"              },
-        { cls: "jo-radial-remove",  icon: "&#x2715;", label: "Remove"                         },
+                                    label: reversed ? "Upright" : "Reverse"             },
+        { cls: "jo-radial-remove",  icon: "&#x2715;", label: "Remove"                  },
       ];
 
       const wrap = document.createElement("div");
       wrap.className = "jo-radial-menu";
-      wrap.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;z-index:200;pointer-events:none;width:0;height:0;`;
+      wrap.style.cssText = "position:fixed;left:0;top:0;z-index:200;pointer-events:none;";
 
       defs.forEach((d, i) => {
-        const angle = angles[i] * Math.PI / 180;
-        const bx = Math.round(Math.cos(angle) * radius);
-        const by = Math.round(Math.sin(angle) * radius);
         const btn = document.createElement("button");
         btn.className = `jo-radial-btn ${d.cls}`;
         btn.innerHTML = d.icon;
         btn.setAttribute("data-tooltip", d.label);
-        btn.style.cssText = `left:${bx}px;top:${by}px;transition-delay:${i*40}ms;`;
+        btn.style.cssText = `
+          position:fixed;
+          left:${Math.round(cx - BTN_SIZE/2)}px;
+          top:${Math.round(topStart + i * (BTN_SIZE + BTN_GAP))}px;
+          transition-delay:${i * 35}ms;
+        `;
         wrap.appendChild(btn);
       });
 
