@@ -234,6 +234,42 @@ if (navigator.getBattery) {
   }).catch(() => {});
 }
 
+// ── Deck equip toggles ───────────────────────────────────────────────
+document.querySelectorAll(".deckEquipToggle").forEach(toggle => {
+  const deck = toggle.dataset.deck;
+  // Restore state
+  toggle.checked = App.equippedDecks.includes(deck);
+  toggle.addEventListener("change", () => {
+    if (toggle.checked) {
+      if (!App.equippedDecks.includes(deck)) App.equippedDecks.push(deck);
+    } else {
+      // Always keep at least one deck equipped
+      if (App.equippedDecks.length <= 1) { toggle.checked = true; return; }
+      App.equippedDecks = App.equippedDecks.filter(d => d !== deck);
+      // If active deck was unequipped, switch to first equipped
+      if (!App.equippedDecks.includes(App.activeDeck)) {
+        App.activeDeck = App.equippedDecks[0];
+        syncDeckUI();
+        redrawAll();
+      }
+    }
+    saveSettings();
+  });
+});
+
+// ── Reversals toggle in settings (mirrors main toggle) ────────────────
+const reversalsToggleSettings = document.getElementById("reversalsToggleSettings");
+if (reversalsToggleSettings) {
+  reversalsToggleSettings.checked = App.reversals;
+  reversalsToggleSettings.addEventListener("change", () => {
+    App.reversals = reversalsToggleSettings.checked;
+    // Sync old toggle if still present
+    const old = document.getElementById("reversalsToggle");
+    if (old) old.checked = App.reversals;
+    saveSettings();
+  });
+}
+
 // Reversal display mode
 const reversalDisplaySelect = document.getElementById("reversalDisplaySelect");
 if (reversalDisplaySelect) {
@@ -361,6 +397,16 @@ deckSelect.addEventListener("change", () => {
   App.activeDeck = deckSelect.value;
   syncDeckUI(); saveSettings();
 });
+
+// Cycle through equipped decks only (for shortcuts later)
+window.cycleEquippedDeck = function() {
+  const equipped = App.equippedDecks;
+  if (!equipped.length) return;
+  const cur = equipped.indexOf(App.activeDeck);
+  App.activeDeck = equipped[(cur + 1) % equipped.length];
+  syncDeckUI(); saveSettings();
+  if (window.redrawAll) redrawAll();
+};
 
 
 /*********************************************************

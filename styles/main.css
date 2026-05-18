@@ -2101,3 +2101,29 @@ body.aura-off {
   flex: 1;
   min-width: 0;
 }
+/* ── Settings: deck equip rows ──────────────────── */
+.deck-equip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.deck-equip-row:last-of-type { border-bottom: none; }
+.deck-equip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.deck-equip-label {
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+.deck-equip-cat {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--auraColor);
+  opacity: 0.7;
+}

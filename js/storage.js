@@ -21,6 +21,7 @@ function saveSettings() {
       headerTitle:      App.headerTitle,
       headerSub:        App.headerSub,
       reversalDisplay:  App.reversalDisplay,
+      equippedDecks:    App.equippedDecks,
       indexDeckFilter: App.indexDeckFilter,
     },
   };
@@ -54,6 +55,7 @@ function loadSettings() {
       if (typeof data.app.headerTitle === "string") App.headerTitle = data.app.headerTitle;
       if (typeof data.app.headerSub   === "string") App.headerSub   = data.app.headerSub;
       if (["glow","flip"].includes(data.app.reversalDisplay)) App.reversalDisplay = data.app.reversalDisplay;
+      if (Array.isArray(data.app.equippedDecks)) App.equippedDecks = data.app.equippedDecks;
       if (typeof data.app.indexDeckFilter === "string") App.indexDeckFilter = data.app.indexDeckFilter;
     }
     return true;

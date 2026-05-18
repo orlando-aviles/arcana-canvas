@@ -70,6 +70,58 @@
       </div>
       <div class="atmo-body">
 
+        <div class="atmo-section-title">Decks</div>
+        <div class="sliderRow deck-equip-row" data-deck="luminousarc">
+          <div class="deck-equip-info">
+            <span class="deck-equip-label">Luminous Arc</span>
+            <span class="deck-equip-cat">Tarot</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" class="deckEquipToggle" data-deck="luminousarc" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow deck-equip-row" data-deck="riderwaite">
+          <div class="deck-equip-info">
+            <span class="deck-equip-label">Rider-Waite</span>
+            <span class="deck-equip-cat">Tarot</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" class="deckEquipToggle" data-deck="riderwaite" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow deck-equip-row" data-deck="gilded">
+          <div class="deck-equip-info">
+            <span class="deck-equip-label">Gilded Minima</span>
+            <span class="deck-equip-cat">Tarot</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" class="deckEquipToggle" data-deck="gilded" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow deck-equip-row" data-deck="runes">
+          <div class="deck-equip-info">
+            <span class="deck-equip-label">Runes</span>
+            <span class="deck-equip-cat">Oracle</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" class="deckEquipToggle" data-deck="runes" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+        <div class="sliderRow deck-equip-row" data-deck="playing">
+          <div class="deck-equip-info">
+            <span class="deck-equip-label">Playing Cards</span>
+            <span class="deck-equip-cat">Oracle</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" class="deckEquipToggle" data-deck="playing" checked />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
+
         <div class="atmo-section-title">Background</div>
         <div class="sliderRow">
           <select id="bgSelect">
@@ -120,8 +172,15 @@
         </div>
 
         <div class="atmo-section-title">Journal</div>
+        <div class="sliderRow toggleRow">
+          <span class="toggleLabel">Enable Reversals</span>
+          <label class="toggle">
+            <input type="checkbox" id="reversalsToggleSettings" />
+            <span class="toggleTrack"><span class="toggleThumb"></span></span>
+          </label>
+        </div>
         <div class="sliderRow">
-          <div class="sliderLabelRow"><span>Reversed Cards</span></div>
+          <div class="sliderLabelRow"><span>Reversed Cards Display</span></div>
           <select id="reversalDisplaySelect">
             <option value="glow">Red glow indicator</option>
             <option value="flip">Flip image upside down</option>
@@ -167,28 +226,6 @@
 
     <!-- Menu panel — reorganized into 4 sections -->
     <div id="menuPanel" class="panel" aria-hidden="true">
-
-      <!-- DRAW -->
-      <div class="sectionTitle">Draw</div>
-      <div class="sliderRow">
-        <select id="deckSelect">
-          <option value="text">Text</option>
-          <option value="playing">Playing Cards</option>
-          <option value="riderwaite">Rider Waite</option>
-          <option value="luminousarc">Luminous Arc</option>
-          <option value="gilded">Gilded Minima</option>
-          <option value="runes">Runes</option>
-        </select>
-      </div>
-      <div class="sliderRow toggleRow">
-        <span class="toggleLabel">Reversals</span>
-        <label class="toggle">
-          <input type="checkbox" id="reversalsToggle" />
-          <span class="toggleTrack"><span class="toggleThumb"></span></span>
-        </label>
-      </div>
-
-      <div class="divider"></div>
 
       <!-- CANVAS -->
       <div class="sectionTitle">Canvas</div>

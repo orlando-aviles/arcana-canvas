@@ -22,7 +22,8 @@ window.App = {
   indexDeckFilter: "all",
   headerTitle:    "",
   headerSub:      "",
-  reversalDisplay: "glow", // "glow" | "flip"
+  reversalDisplay:  "glow",       // "glow" | "flip"
+  equippedDecks:    ["luminousarc","riderwaite","gilded","runes","playing"],
 };
 
 window.clamp = function clamp(v, a, b) {
