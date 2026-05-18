@@ -22,6 +22,7 @@ function saveSettings() {
       headerSub:        App.headerSub,
       reversalDisplay:  App.reversalDisplay,
       equippedDecks:    App.equippedDecks,
+      shortcuts:        App.shortcuts,
       indexDeckFilter: App.indexDeckFilter,
     },
   };
@@ -56,6 +57,7 @@ function loadSettings() {
       if (typeof data.app.headerSub   === "string") App.headerSub   = data.app.headerSub;
       if (["glow","flip"].includes(data.app.reversalDisplay)) App.reversalDisplay = data.app.reversalDisplay;
       if (Array.isArray(data.app.equippedDecks)) App.equippedDecks = data.app.equippedDecks;
+      if (Array.isArray(data.app.shortcuts) && data.app.shortcuts.length === 4) App.shortcuts = data.app.shortcuts;
       if (typeof data.app.indexDeckFilter === "string") App.indexDeckFilter = data.app.indexDeckFilter;
     }
     return true;

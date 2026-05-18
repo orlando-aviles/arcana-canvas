@@ -234,6 +234,74 @@ if (navigator.getBattery) {
   }).catch(() => {});
 }
 
+// ── Shortcut slot selects ────────────────────────────────────────────
+const SHORTCUT_LABELS = {
+  deck:     "Deck",
+  size:     "Size",
+  reversals:"Rev",
+  perf:     "Perf",
+  none:     "",
+};
+const SHORTCUT_ICONS = {
+  deck:      "&#x25A3;",  // deck symbol
+  size:      "&#x2922;",  // resize
+  reversals: "&#x25BD;",  // reversed triangle
+  perf:      "&#x26A1;",  // lightning
+  none:      "",
+};
+
+// Card size presets
+const SIZE_PRESETS = [60, 80, 100, 120, 140, 160];
+window.cycleCardSize = function() {
+  const slider = document.getElementById("cardSizeSlider");
+  if (!slider) return;
+  const cur = parseInt(slider.value);
+  const idx = SIZE_PRESETS.indexOf(cur);
+  const next = SIZE_PRESETS[(idx + 1) % SIZE_PRESETS.length];
+  slider.value = next;
+  slider.dispatchEvent(new Event("input"));
+};
+
+window.cyclePerf = function() {
+  const modes = ["full", "balanced", "saver"];
+  const cur = modes.indexOf(App.perfMode || "full");
+  App.perfMode = modes[(cur + 1) % modes.length];
+  const sel = document.getElementById("perfModeSelect");
+  if (sel) sel.value = App.perfMode;
+  saveSettings();
+  updatePerfLabel();
+};
+
+window.toggleReversals = function() {
+  App.reversals = !App.reversals;
+  const t1 = document.getElementById("reversalsToggle");
+  const t2 = document.getElementById("reversalsToggleSettings");
+  if (t1) t1.checked = App.reversals;
+  if (t2) t2.checked = App.reversals;
+  saveSettings();
+};
+
+// Fire a shortcut action by key
+window.fireShortcut = function(key) {
+  if (key === "deck")     cycleEquippedDeck();
+  if (key === "size")     cycleCardSize();
+  if (key === "reversals") toggleReversals();
+  if (key === "perf")     cyclePerf();
+};
+
+// Wire shortcut selects — restore saved values and listen for changes
+for (let i = 0; i < 4; i++) {
+  const sel = document.getElementById(`shortcut${i}`);
+  if (!sel) continue;
+  // Restore saved value
+  sel.value = App.shortcuts[i] || "none";
+  sel.addEventListener("change", () => {
+    App.shortcuts[i] = sel.value;
+    saveSettings();
+    // Radial will re-read App.shortcuts when next opened
+  });
+}
+
 // ── Deck equip toggles ───────────────────────────────────────────────
 document.querySelectorAll(".deckEquipToggle").forEach(toggle => {
   const deck = toggle.dataset.deck;

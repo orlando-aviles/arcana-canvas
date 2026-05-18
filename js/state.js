@@ -24,6 +24,7 @@ window.App = {
   headerSub:      "",
   reversalDisplay:  "glow",       // "glow" | "flip"
   equippedDecks:    ["luminousarc","riderwaite","gilded","runes","playing"],
+  shortcuts:        ["deck","size","reversals","perf"], // outer ring slots
 };
 
 window.clamp = function clamp(v, a, b) {
