@@ -262,8 +262,10 @@ window.Journal = (() => {
     joCardsStrip.innerHTML = cards.map((raw, i) => {
       const { filename, reversed } = cardEntry(raw);
       const card = CardData.getByNameOrFile(filename);
-      const deckFolder = (card?.section === "Runes") ? "Runes"
-        : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
+      const deckFolder = (card?.section === "Runes") ? "decks/Runes"
+        : (window.App?.activeDeck === "riderwaite" ? "decks/RiderWaite"
+        : (window.App?.activeDeck === "Gilded" ? "decks/GildedMinima"
+        : (card?.section === "Playing" ? "decks/Playing" : "decks/LuminousArc")));
       const imgSrc = card?.imageName ? `./${deckFolder}/${card.imageName}.png` : "";
       const displayName = card?.name || filename;
       const revClass = reversed ? " jo-thumb-reversed" : "";
@@ -345,7 +347,9 @@ window.Journal = (() => {
         const card = CardData.getByNameOrFile(filename);
         if (!card?.imageName) return;
         const folder = card.section === "Runes" ? "decks/Runes"
-          : (window.App?.activeDeck === "riderwaite" ? "decks/RiderWaite" : "decks/LuminousArc");
+          : (window.App?.activeDeck === "riderwaite" ? "decks/RiderWaite"
+          : (window.App?.activeDeck === "Gilded" ? "decks/GildedMinima"
+          : (card.section === "Playing" ? "decks/Playing" : "decks/LuminousArc")));
         if (window.CardIndex) CardIndex._openLightbox(`./${folder}/${card.imageName}.png`);
       });
 

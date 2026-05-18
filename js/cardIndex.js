@@ -89,10 +89,9 @@ window.CardIndex = (() => {
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal" data-tooltip="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" data-tooltip="Save to Journal" style="display:none">&#x2B;</button>
       <div class="ci-bottom-center">
-        <div class="ci-category-toggle">
-          <button class="ci-cat-btn ci-cat-active" id="ciCatTarot" data-cat="Tarot">Tarot</button>
-          <button class="ci-cat-btn" id="ciCatOracle" data-cat="Oracle">Oracle</button>
-        </div>
+        <button class="ci-bottom-deck-btn" id="ciCatCycleBtn" title="Switch category">
+          <span id="ciCatCycleName">Tarot</span>
+        </button>
         <button class="ci-bottom-deck-btn" id="ciDeckCycleBtn" title="Switch deck">
           <span id="ciDeckCycleName">Luminous</span>
         </button>
@@ -214,12 +213,7 @@ window.CardIndex = (() => {
                || _deckCycle.find(d => d.val === deckFilter)
                || { label: "All" };
     if (ciDeckCycleName) ciDeckCycleName.textContent = entry.label;
-    // Sync category toggle highlight
-    const isOracle = _oracleDecks.some(d => d.val === activeDeck || d.val === deckFilter);
-    overlay.querySelectorAll(".ci-cat-btn").forEach(b => {
-      b.classList.toggle("ci-cat-active",
-        isOracle ? b.dataset.cat === "Oracle" : b.dataset.cat === "Tarot");
-    });
+    if (ciCatCycleName) ciCatCycleName.textContent = _activeCategory || "Tarot";
   }
 
   ciDeckCycleBtn.addEventListener("click", () => {
@@ -244,22 +238,30 @@ window.CardIndex = (() => {
     syncDeckCycleLabel();
   });
 
-  // Category toggle buttons
-  const ciCatBtns = overlay.querySelectorAll(".ci-cat-btn");
-  ciCatBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      ciCatBtns.forEach(b => b.classList.remove("ci-cat-active"));
-      btn.classList.add("ci-cat-active");
-      const cat = btn.dataset.cat;
-      deckFilter = cat;
-      // Default deck for category
-      if (cat === "Tarot") activeDeck = "LuminousArc";
-      else activeDeck = "Runes";
-      if (window.App) { App.indexDeckFilter = cat; if (window.saveSettings) saveSettings(); }
-      syncDeckCycleLabel();
-      navList = buildFullNavList();
-      renderList();
-    });
+  // Category cycle button — cycles Tarot / Oracle
+  const ciCatCycleBtn  = overlay.querySelector("#ciCatCycleBtn");
+  const ciCatCycleName = overlay.querySelector("#ciCatCycleName");
+  const _categories = ["Tarot", "Oracle"];
+  let _activeCategory = "Tarot";
+
+  function syncCatLabel() {
+    if (ciCatCycleName) ciCatCycleName.textContent = _activeCategory;
+  }
+
+  function setCategory(cat) {
+    _activeCategory = cat;
+    deckFilter = cat;
+    activeDeck = cat === "Oracle" ? "Runes" : "LuminousArc";
+    if (window.App) { App.indexDeckFilter = cat; if (window.saveSettings) saveSettings(); }
+    syncCatLabel();
+    syncDeckCycleLabel();
+    navList = buildFullNavList();
+    renderList();
+  }
+
+  ciCatCycleBtn.addEventListener("click", () => {
+    const next = _activeCategory === "Tarot" ? "Oracle" : "Tarot";
+    setCategory(next);
   });
 
   // Bottom bar nav
@@ -844,12 +846,9 @@ window.CardIndex = (() => {
     if (window.Tooltips) Tooltips.wire(overlay);
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
     if (typeof syncDeckCycleLabel === "function") syncDeckCycleLabel();
-    // Sync category buttons
-    const _isOracle = _oracleDecks.some(d => d.val === deckFilter);
-    overlay.querySelectorAll(".ci-cat-btn").forEach(b => {
-      b.classList.toggle("ci-cat-active",
-        _isOracle ? b.dataset.cat === "Oracle" : b.dataset.cat === "Tarot");
-    });
+    // Sync category label
+    _activeCategory = _oracleDecks.some(d => d.val === deckFilter) ? "Oracle" : "Tarot";
+    syncCatLabel();
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";

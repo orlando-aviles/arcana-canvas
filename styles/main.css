@@ -1093,19 +1093,20 @@ select option {
 .jo-cards-strip {
   display: flex;
   gap: 0;
-  padding: 0;
+  padding: 6px 0; /* room for glow to breathe top and bottom */
   flex-shrink: 0;
-  overflow-x: hidden;
+  overflow-x: clip; /* clips horizontal only — vertical glow shows */
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   background: rgba(6,7,16,0.97);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   position: sticky;
-  top: var(--jo-header-h, 56px); /* sticks below the day header */
+  top: var(--jo-header-h, 56px);
   z-index: 4;
 }
 .jo-cards-strip.scrollable {
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   scrollbar-width: none;
 }
 .jo-cards-strip.scrollable::-webkit-scrollbar { display: none; }
@@ -1116,12 +1117,12 @@ select option {
   font-style: italic;
 }
 .jo-card-thumb {
-  flex: 0 0 20%; /* exactly 5 across, no shrink/grow */
+  flex: 0 0 20%;
   min-width: 0;
   height: 0;
-  padding-bottom: 33.3%; /* aspect ratio trick: 20% wide × 5/3 = portrait */
+  padding-bottom: 33.3%;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* allow glow to radiate outside card bounds */
   border-right: 1px solid rgba(255,255,255,0.06);
   cursor: pointer;
   background: rgba(255,255,255,0.04);
@@ -1143,6 +1144,7 @@ select option {
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
+  clip-path: inset(0); /* clips image to card bounds without clipping the thumb's glow */
   touch-action: none;
   draggable: false;
 }
@@ -2084,41 +2086,18 @@ body.aura-off {
   border-color: var(--auraColor);
 }
 
-/* ── Index category toggle (Tarot / Oracle) ──────── */
-.ci-category-toggle {
-  display: flex;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.12);
-  flex-shrink: 0;
-}
-.ci-cat-btn {
-  flex: 1;
-  padding: 8px 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  color: rgba(255,255,255,0.45);
-  cursor: pointer;
-  transition: background 150ms ease, color 150ms ease;
-}
-.ci-cat-btn.ci-cat-active {
-  background: rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.9);
-}
-/* Bottom bar: category toggle + deck cycle share center space */
+/* category toggle removed — now a cycle button */
+/* Bottom bar: category + deck cycle side by side */
 .ci-bottom-center {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
+  gap: 6px;
+  padding: 0 6px;
   min-width: 0;
 }
-.ci-bottom-deck-btn {
-  width: 100%;
+.ci-bottom-center .ci-bottom-deck-btn {
+  flex: 1;
+  min-width: 0;
 }
