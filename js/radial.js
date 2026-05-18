@@ -58,14 +58,12 @@
   // from bottom-right anchor
   function polarToFixed(angleDeg, radius) {
     const rad = angleDeg * Math.PI / 180;
-    // From bottom-right anchor:
-    // cos(angle): positive = left (increases right offset)
-    // sin(angle): positive = up (increases bottom offset)
-    const dx = Math.cos(rad) * radius; // leftward from anchor center
-    const dy = Math.sin(rad) * radius; // upward from anchor center
+    // Bottom-right anchor. For angle in [90°,180°]:
+    // cos goes 0 → -1: subtract cos → right offset grows (button moves left)
+    // sin goes 1 → 0: add sin → bottom offset grows (button moves up)
     return {
-      right:  Math.round(ANCHOR_R - 22 + dx), // button is dx px left of anchor
-      bottom: Math.round(ANCHOR_B - 22 + dy), // button is dy px above anchor
+      right:  Math.round(ANCHOR_R - Math.cos(rad) * radius),
+      bottom: Math.round(ANCHOR_B + Math.sin(rad) * radius),
     };
   }
 
