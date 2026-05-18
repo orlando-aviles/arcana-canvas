@@ -267,10 +267,12 @@ window.Journal = (() => {
       const imgSrc = card?.imageName ? `./${deckFolder}/${card.imageName}.png` : "";
       const displayName = card?.name || filename;
       const revClass = reversed ? " jo-thumb-reversed" : "";
+      const flipMode = window.App?.reversalDisplay === "flip";
+      const imgStyle = (reversed && flipMode) ? ' style="transform:rotate(180deg)"' : '';
       return `<div class="jo-card-thumb${revClass}" data-filename="${filename}" data-idx="${i}" data-reversed="${reversed ? '1' : '0'}" title="${displayName}">
         ${imgSrc
-          ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy" />`
-          : `<div class="jo-card-glyph">${filename.slice(0,2)}</div>`}
+          ? `<img src="${imgSrc}" alt="${displayName}" loading="lazy"${imgStyle} />`
+          : `<div class="jo-card-glyph"${imgStyle}>${filename.slice(0,2)}</div>`}
       </div>`;
     }).join("");
 

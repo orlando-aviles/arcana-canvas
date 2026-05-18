@@ -20,8 +20,9 @@ window.App = {
   perfMode:     "full",
   maxCards:     40,
   indexDeckFilter: "all",
-  headerTitle:  "",
-  headerSub:    "",
+  headerTitle:    "",
+  headerSub:      "",
+  reversalDisplay: "glow", // "glow" | "flip"
 };
 
 window.clamp = function clamp(v, a, b) {

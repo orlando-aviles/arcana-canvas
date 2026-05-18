@@ -260,12 +260,13 @@ window.CardIndex = (() => {
     const q = searchQuery.toLowerCase();
     return CardData.getAll().filter(card => {
       if (q && !card.name.toLowerCase().includes(q)) return false;
-      if (deckFilter === "all")    return true;
-      if (deckFilter === "Tarot")  return card.section !== "Runes";
-      if (deckFilter === "Oracle") return card.section === "Runes"; // expand as oracle decks added
-      // Specific deck selected via cycle button
-      if (deckFilter === "Runes")  return card.section === "Runes";
-      return card.section !== "Runes";
+      if (deckFilter === "all")     return true;
+      if (deckFilter === "Tarot")   return card.section !== "Runes" && card.section !== "Playing";
+      if (deckFilter === "Oracle")  return card.section === "Runes" || card.section === "Playing";
+      if (deckFilter === "Runes")   return card.section === "Runes";
+      if (deckFilter === "Playing") return card.section === "Playing";
+      // Specific tarot deck selected — show tarot cards only
+      return card.section !== "Runes" && card.section !== "Playing";
     });
   }
 
@@ -423,25 +424,10 @@ window.CardIndex = (() => {
   const SUIT_LETTER = { "♠":"S","♥":"H","♦":"D","♣":"C" };
 
   function getImgSrc(card) {
-    if (activeDeck === "Playing") {
-      // Playing cards: map from Minor Arcana name to rank+suitLetter
-      // e.g. "Ace of Swords" → "AceS", "Two of Cups" → "2H"
-      const suitToSymbol = { Swords:"♠", Cups:"♥", Pentacles:"♦", Wands:"♣" };
-      const rankMap = { Ace:"A", Two:"2", Three:"3", Four:"4", Five:"5",
-        Six:"6", Seven:"7", Eight:"8", Nine:"9", Ten:"10",
-        Page:"J", Knight:"Q", Queen:"K", King:"A" }; // note: simplified
-      // Better: use numeric rank directly
-      const rankNum = { Ace:"A", Two:"2", Three:"3", Four:"4", Five:"5",
-        Six:"6", Seven:"7", Eight:"8", Nine:"9", Ten:"10",
-        Page:"J", Knight:"Q", Queen:"K", King:"K" };
-      const parts = card.name.split(" of ");
-      if (parts.length === 2) {
-        const r = rankNum[parts[0]] || parts[0];
-        const sym = suitToSymbol[parts[1]];
-        const sl  = SUIT_LETTER[sym] || "";
-        return `./decks/Playing/${r}${sl}.png`;
-      }
-      return null;
+    if (card.section === "Playing") {
+      // Playing cards have imageName set (e.g. "AS", "2H", "KD")
+      if (!card.imageName) return null;
+      return `./decks/Playing/${card.imageName}.png`;
     }
     if (activeDeck === "Gilded") {
       if (!card.imageName) return null;

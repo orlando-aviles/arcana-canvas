@@ -295,7 +295,50 @@ window.CardData = (() => {
     "8":"Eight","9":"Nine","10":"Ten","J":"Page","Q":"Queen","K":"King"
   };
 
-  const ALL = [...MAJOR, ...WANDS, ...CUPS, ...SWORDS, ...PENTACLES, ...RUNES];
+  // ── Playing Cards — 52 card deck ──────────────────────────────────
+  // Suits map to elements/tarot but with unique names
+  // Jack = combined Page+Knight (messenger/action energy)
+  // No Major Arcana equivalent
+  const PLAYING_SUITS = [
+    { name:"Spades",   sym:"♠", element:"Air",   tarot:"Swords",    astro:"Gemini / Libra / Aquarius" },
+    { name:"Hearts",   sym:"♥", element:"Water",  tarot:"Cups",      astro:"Cancer / Scorpio / Pisces" },
+    { name:"Diamonds", sym:"♦", element:"Earth",  tarot:"Pentacles", astro:"Taurus / Virgo / Capricorn" },
+    { name:"Clubs",    sym:"♣", element:"Fire",   tarot:"Wands",     astro:"Aries / Leo / Sagittarius" },
+  ];
+  const PLAYING_RANKS = [
+    { rank:"A",  name:"Ace",   num:"I",    upright:"New beginnings, opportunity, potential",              reversed:"Missed opportunity, false start, delay" },
+    { rank:"2",  name:"Two",   num:"II",   upright:"Balance, partnership, choice, duality",               reversed:"Imbalance, indecision, disconnection" },
+    { rank:"3",  name:"Three", num:"III",  upright:"Creativity, growth, collaboration, expansion",        reversed:"Stagnation, conflict, lack of cooperation" },
+    { rank:"4",  name:"Four",  num:"IV",   upright:"Stability, structure, consolidation, foundation",     reversed:"Instability, rigidity, stagnation" },
+    { rank:"5",  name:"Five",  num:"V",    upright:"Challenge, conflict, change, disruption",              reversed:"Resolution, peace, avoiding conflict" },
+    { rank:"6",  name:"Six",   num:"VI",   upright:"Harmony, flow, generosity, balance restored",         reversed:"Debt, self-interest, disrupted flow" },
+    { rank:"7",  name:"Seven", num:"VII",  upright:"Strategy, skill, perseverance, wisdom",               reversed:"Deception, shortcuts, lack of discipline" },
+    { rank:"8",  name:"Eight", num:"VIII", upright:"Action, movement, mastery, momentum",                 reversed:"Delays, blocked energy, lack of direction" },
+    { rank:"9",  name:"Nine",  num:"IX",   upright:"Resilience, near-completion, endurance",              reversed:"Exhaustion, giving up, over-extension" },
+    { rank:"10", name:"Ten",   num:"X",    upright:"Completion, culmination, fullness, legacy",            reversed:"Burden, loss, transition, letting go" },
+    { rank:"J",  name:"Jack",  num:"XI",   upright:"Energy, ambition, message, swift action, curiosity",  reversed:"Impulsiveness, scattered energy, unreliability" },
+    { rank:"Q",  name:"Queen", num:"XII",  upright:"Mastery, intuition, authority, nurturing power",      reversed:"Control, manipulation, emotional instability" },
+    { rank:"K",  name:"King",  num:"XIII", upright:"Command, leadership, maturity, established power",    reversed:"Tyranny, rigidity, abuse of power" },
+  ];
+
+  const PLAYING = [];
+  PLAYING_SUITS.forEach(suit => {
+    PLAYING_RANKS.forEach(r => {
+      const filename = r.rank + suit.name[0]; // AS, 2H, KD etc.
+      PLAYING.push({
+        name:      `${r.name} of ${suit.name}`,
+        number:    r.num,
+        element:   suit.element,
+        astro:     suit.astro,
+        upright:   r.upright,
+        reversed:  r.reversed,
+        imageName: filename,
+        section:   "Playing",
+      });
+    });
+  });
+
+  const ALL = [...MAJOR, ...WANDS, ...CUPS, ...SWORDS, ...PENTACLES, ...RUNES, ...PLAYING];
 
   // Lookup map by name
   const byName = {};

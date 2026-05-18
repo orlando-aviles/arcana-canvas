@@ -126,6 +126,15 @@ function setHueTargets(a, b) {
   _targetHueA = ((a % 360) + 360) % 360;
   _targetHueB = ((b % 360) + 360) % 360;
   if (!_lerpRafId) _lerpRafId = requestAnimationFrame(tickLerp);
+  // Burst: redraw cards every 100ms for 1s so they catch the color shift
+  if (window.App?.perfMode !== "balanced" &&
+      window.draws && draws.length > 0 && window.redrawAll) {
+    let burstCount = 0;
+    const burst = setInterval(() => {
+      if (burstCount++ >= 10) { clearInterval(burst); return; }
+      redrawAll();
+    }, 100);
+  }
 }
 
 // ── Auto-cycle — picks new random targets every 8s, lerp does the work ──
@@ -221,6 +230,20 @@ if (navigator.getBattery) {
     battery.addEventListener("levelchange", checkBattery);
     checkBattery();
   }).catch(() => {});
+}
+
+// Reversal display mode
+const reversalDisplaySelect = document.getElementById("reversalDisplaySelect");
+if (reversalDisplaySelect) {
+  reversalDisplaySelect.value = App.reversalDisplay || "glow";
+  reversalDisplaySelect.addEventListener("change", () => {
+    App.reversalDisplay = reversalDisplaySelect.value;
+    saveSettings();
+    // Trigger re-render of journal strip if open
+    if (window.Journal && Journal._getCurrentDay) {
+      // Journal re-renders on next open
+    }
+  });
 }
 
 // Canvas header text editing
