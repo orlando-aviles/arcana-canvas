@@ -301,7 +301,7 @@ window.CardIndex = (() => {
   function renderList() {
     const cards  = navList;
     const groups = {};
-    const sectionOrder = ["Major Arcana","Wands","Cups","Swords","Pentacles","Runes"];
+    const sectionOrder = ["Major Arcana","Wands","Cups","Swords","Pentacles","Runes","Playing"];
 
     cards.forEach(card => {
       const sec = card.section || "Other";
@@ -430,8 +430,21 @@ window.CardIndex = (() => {
       return `./decks/Playing/${card.imageName}.png`;
     }
     if (activeDeck === "Gilded") {
-      if (!card.imageName) return null;
-      return `./decks/GildedMinima/${card.imageName}.png`;
+      // Gilded PNGs use numeric ranks: 2OfCups, TheFool etc.
+      const WORD_TO_NUM = { Ace:"Ace", Two:"2", Three:"3", Four:"4", Five:"5",
+        Six:"6", Seven:"7", Eight:"8", Nine:"9", Ten:"10" };
+      let fname = card.imageName || "";
+      // Convert word ranks to numeric for minor arcana
+      const ofIdx = fname.indexOf("Of");
+      if (ofIdx > 0) {
+        const rank = fname.slice(0, ofIdx);
+        const suit = fname.slice(ofIdx); // "OfCups" etc
+        fname = (WORD_TO_NUM[rank] || rank) + suit;
+      }
+      // Special case: WheelOfFortune → WheelofFortune (lowercase 'o')
+      fname = fname.replace("WheelOfFortune", "WheelofFortune");
+      if (!fname) return null;
+      return `./decks/GildedMinima/${fname}.png`;
     }
     if (!card.imageName) return null;
     return card.section === "Runes"

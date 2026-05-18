@@ -32,6 +32,10 @@ applyBg();
     cycleToggle.checked = !!App.auraCycle;
     if (App.auraCycle && window.startCycle) startCycle();
   }
+  // Reversal display
+  const revSel = document.getElementById("reversalDisplaySelect");
+  if (revSel) revSel.value = App.reversalDisplay || "glow";
+
   // Performance mode
   const perfSel = document.getElementById("perfModeSelect");
   if (perfSel) {

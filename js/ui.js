@@ -127,13 +127,15 @@ function setHueTargets(a, b) {
   _targetHueB = ((b % 360) + 360) % 360;
   if (!_lerpRafId) _lerpRafId = requestAnimationFrame(tickLerp);
   // Burst: redraw cards every 100ms for 1s so they catch the color shift
-  if (window.App?.perfMode !== "balanced" &&
-      window.draws && draws.length > 0 && window.redrawAll) {
-    let burstCount = 0;
-    const burst = setInterval(() => {
-      if (burstCount++ >= 10) { clearInterval(burst); return; }
-      redrawAll();
-    }, 100);
+  if (window.App?.perfMode !== "balanced" && window.redrawAll) {
+    const currentDraws = window.getDraws ? window.getDraws() : [];
+    if (currentDraws.length > 0) {
+      let burstCount = 0;
+      const burst = setInterval(() => {
+        if (burstCount++ >= 10) { clearInterval(burst); return; }
+        redrawAll();
+      }, 100);
+    }
   }
 }
 
