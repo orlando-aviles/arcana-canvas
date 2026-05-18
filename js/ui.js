@@ -452,14 +452,20 @@ randomizeBtn.addEventListener("click", () => { randomizeAuras(); saveSettings();
 /*********************************************************
  * DECK SELECTOR
  *********************************************************/
-const deckSelect = document.getElementById("deckSelect");
+const deckSelect = document.getElementById("deckSelect"); // null when radial is active
 
-function syncDeckUI() { deckSelect.value = App.activeDeck; }
+function syncDeckUI() {
+  if (deckSelect) deckSelect.value = App.activeDeck;
+  // Also update radial outer buttons to reflect deck change
+  if (window.RadialMenu) RadialMenu.update();
+}
 
-deckSelect.addEventListener("change", () => {
-  App.activeDeck = deckSelect.value;
-  syncDeckUI(); saveSettings();
-});
+if (deckSelect) {
+  deckSelect.addEventListener("change", () => {
+    App.activeDeck = deckSelect.value;
+    syncDeckUI(); saveSettings();
+  });
+}
 
 // Cycle through equipped decks only (for shortcuts later)
 window.cycleEquippedDeck = function() {
