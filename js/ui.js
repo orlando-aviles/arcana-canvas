@@ -17,7 +17,7 @@ menuBtn.addEventListener("click", (e) => { e.stopPropagation(); toggleMenu(); })
  *********************************************************/
 const atmospherePanel = document.getElementById("atmospherePanel");
 const atmosphereClose = document.getElementById("atmosphereClose");
-const atmosphereBtn   = document.getElementById("atmosphereBtn");
+const atmosphereBtn   = document.getElementById("atmosphereBtn"); // may be null if radial is active
 
 function openAtmosphere() {
   closeMenu();
@@ -33,7 +33,7 @@ function closeAtmosphere() {
   document.body.style.overflow = "";
 }
 
-atmosphereBtn.addEventListener("click",   () => openAtmosphere());
+if (atmosphereBtn) atmosphereBtn.addEventListener("click", () => openAtmosphere());
 atmosphereClose.addEventListener("click", () => closeAtmosphere());
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && atmospherePanel.classList.contains("atmo-open")) {
@@ -385,20 +385,15 @@ document.addEventListener("click", () => { if (menuPanel.classList.contains("ope
 /*********************************************************
  * CLEAR
  *********************************************************/
-document.getElementById("journalBtn").addEventListener("click", () => {
-  closeMenu();
-  Journal.open();
-});
+// Action buttons — wire if present (may be in radial instead)
+const _journalBtn = document.getElementById("journalBtn");
+if (_journalBtn) _journalBtn.addEventListener("click", () => { closeMenu(); Journal.open(); });
 
-document.getElementById("cardIndexBtn").addEventListener("click", () => {
-  closeMenu();
-  CardIndex.open();
-});
+const _cardIndexBtn = document.getElementById("cardIndexBtn");
+if (_cardIndexBtn) _cardIndexBtn.addEventListener("click", () => { closeMenu(); CardIndex.open(); });
 
-document.getElementById("clearBtn").addEventListener("click", () => {
-  clearCanvas();
-  closeMenu();
-});
+const _clearBtn = document.getElementById("clearBtn");
+if (_clearBtn) _clearBtn.addEventListener("click", () => { clearCanvas(); closeMenu(); });
 
 /*********************************************************
  * VISUAL CONTROLS

@@ -2147,3 +2147,111 @@ body.aura-off {
   flex-shrink: 0;
   width: 40px;
 }
+
+/* ══════════════════════════════════════════════════
+   RADIAL MENU
+   ══════════════════════════════════════════════════ */
+
+/* Backdrop — dim canvas when radial is open */
+#radialBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 38;
+  background: rgba(0,0,0,0);
+  pointer-events: none;
+  transition: background 250ms ease;
+}
+#radialBackdrop.open {
+  background: rgba(0,0,0,0.35);
+  pointer-events: auto;
+}
+
+/* Radial button base */
+.radial-btn {
+  position: fixed;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(14, 12, 32, 0.88);
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.55);
+  color: rgba(255,255,255,0.88);
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 41;
+  /* Start at hamburger position, invisible */
+  bottom: 16px;
+  right: 16px;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 280ms cubic-bezier(0.34, 1.4, 0.64, 1),
+              opacity 200ms ease,
+              background 120ms ease,
+              box-shadow 200ms ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: none;
+}
+.radial-btn.open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+.radial-btn:active {
+  transform: scale(0.92) !important;
+  background: rgba(255,255,255,0.12);
+}
+
+/* Inner ring — action buttons */
+.radial-btn.inner {
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+  border-color: rgba(255,255,255,0.18);
+}
+
+/* Outer ring — shortcut buttons */
+.radial-btn.outer {
+  width: 44px;
+  height: 44px;
+  font-size: 15px;
+  border-color: var(--auraColor);
+  box-shadow: 0 0 8px var(--auraColor), 0 4px 16px rgba(0,0,0,0.5);
+}
+.radial-btn.outer.active {
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 0 16px var(--auraColor), 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* Shortcut label below outer button */
+.radial-btn-label {
+  position: fixed;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  pointer-events: none;
+  z-index: 41;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  white-space: nowrap;
+}
+.radial-btn-label.open { opacity: 1; }
+
+/* Hamburger open state — X */
+.menuBtn.radial-open .bar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menuBtn.radial-open .bar:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.menuBtn.radial-open .bar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
