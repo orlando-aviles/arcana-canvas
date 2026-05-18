@@ -312,7 +312,7 @@ window.CardIndex = (() => {
       // Flat list for spread mode — no section headers
       cards.forEach((card, i) => {
         const imgSrc = card.imageName
-          ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
+          ? (getImgSrc(card) || "")
           : "";
         const needsCanvas = needsCanvasThumb(card);
         const revBadge = card.isReversedOrientation ? `<span class="ci-rev-badge">R</span>` : "";
@@ -337,7 +337,7 @@ window.CardIndex = (() => {
         html += `<div class="ci-section-header">${sec}</div>`;
         groups[sec].forEach(card => {
           const imgSrc = card.imageName
-            ? (card.section === "Runes" ? `./Runes/${card.imageName}.png` : `./${activeDeck}/${card.imageName}.png`)
+            ? (getImgSrc(card) || "")
             : "";
           const needsCanvas = needsCanvasThumb(card);
           const idx = navList.indexOf(card);
@@ -418,11 +418,38 @@ window.CardIndex = (() => {
     });
   }
 
+  // Suit letter map for playing card filenames (A♠→AS, 2♥→2H etc.)
+  const SUIT_LETTER = { "♠":"S","♥":"H","♦":"D","♣":"C" };
+
   function getImgSrc(card) {
+    if (activeDeck === "Playing") {
+      // Playing cards: map from Minor Arcana name to rank+suitLetter
+      // e.g. "Ace of Swords" → "AceS", "Two of Cups" → "2H"
+      const suitToSymbol = { Swords:"♠", Cups:"♥", Pentacles:"♦", Wands:"♣" };
+      const rankMap = { Ace:"A", Two:"2", Three:"3", Four:"4", Five:"5",
+        Six:"6", Seven:"7", Eight:"8", Nine:"9", Ten:"10",
+        Page:"J", Knight:"Q", Queen:"K", King:"A" }; // note: simplified
+      // Better: use numeric rank directly
+      const rankNum = { Ace:"A", Two:"2", Three:"3", Four:"4", Five:"5",
+        Six:"6", Seven:"7", Eight:"8", Nine:"9", Ten:"10",
+        Page:"J", Knight:"Q", Queen:"K", King:"K" };
+      const parts = card.name.split(" of ");
+      if (parts.length === 2) {
+        const r = rankNum[parts[0]] || parts[0];
+        const sym = suitToSymbol[parts[1]];
+        const sl  = SUIT_LETTER[sym] || "";
+        return `./decks/Playing/${r}${sl}.png`;
+      }
+      return null;
+    }
+    if (activeDeck === "Gilded") {
+      if (!card.imageName) return null;
+      return `./decks/GildedMinima/${card.imageName}.png`;
+    }
     if (!card.imageName) return null;
     return card.section === "Runes"
-      ? `./Runes/${card.imageName}.png`
-      : `./${activeDeck}/${card.imageName}.png`;
+      ? `./decks/Runes/${card.imageName}.png`
+      : `./decks/${activeDeck}/${card.imageName}.png`;
   }
 
   function renderDetailImage(card) {
@@ -554,7 +581,7 @@ window.CardIndex = (() => {
       '<div class="ci-detail-meta-row" style="padding-top:4px">' +
         '<span class="ci-meta-pill" title="' + card.element + '">' + (ELEMENT_GLYPH[card.element]||"") + '<span class="ci-pill-text"> ' + card.element + '</span></span>' +
         '<span class="ci-meta-pill" title="' + card.astro + '">' + astroGlyph(card.astro) + '<span class="ci-pill-text"> ' + card.astro + '</span></span>' +
-        '<span class="ci-meta-pill" title="' + card.number + '">#<span class="ci-pill-text"> ' + card.number + '</span></span>' +
+        '<span class="ci-meta-pill" title="' + card.number + '">' + (card.number || "") + '</span>' +
       '</div>' +
       (card.numNote ? '<div class="ci-numerology">' + card.number + " — " + card.numNote + '</div>' : "") +
       '<div class="ci-content-panel ci-meaning-block ' + uprightClass + '">' +

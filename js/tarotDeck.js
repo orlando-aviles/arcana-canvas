@@ -71,8 +71,8 @@ window.Tarot = (() => {
   };
 
   const deckPaths = {
-    riderwaite: "./RiderWaite/",
-    luminousarc: "./LuminousArc/",
+    riderwaite: "./decks/RiderWaite/",
+    luminousarc: "./decks/LuminousArc/",
   };
 
   function getPath(deckKey, name) {

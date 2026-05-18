@@ -380,7 +380,7 @@ window.Runes = (() => {
     if (!name) return null;
     if (imgCache.has(name)) return imgCache.get(name);
     const img = new Image();
-    img.src = `./Runes/${name}.png`;
+    img.src = `./decks/Runes/${name}.png`;
     imgCache.set(name, img);
     return img;
   }

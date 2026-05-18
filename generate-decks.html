@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Arcana Canvas — Deck Generator</title>
+<style>
+  body { font-family: system-ui; background: #0d0d1a; color: #fff; padding: 24px; }
+  h1 { color: #c9a84c; }
+  button { background: #c9a84c; color: #000; border: none; padding: 12px 24px;
+           font-size: 16px; border-radius: 8px; cursor: pointer; margin: 8px; }
+  button:disabled { opacity: 0.4; cursor: default; }
+  #log { background: #111; border-radius: 8px; padding: 16px; margin-top: 16px;
+         height: 200px; overflow-y: auto; font-size: 12px; font-family: monospace; }
+  #preview { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 16px; }
+  #preview canvas { border-radius: 6px; }
+  .status { color: #7fbd7f; }
+  .error  { color: #f08080; }
+</style>
+</head>
+<body>
+<h1>Arcana Canvas — Deck Image Generator</h1>
+<p>Renders Gilded Minima (78 cards) and Playing Cards (52 cards) as PNG files.<br>
+   Click Generate, wait for completion, then download the zip.</p>
+
+<button id="btnGenerate">Generate Decks</button>
+<button id="btnDownload" disabled>Download ZIP</button>
+<div id="log"></div>
+<div id="preview"></div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────────────────
+function log(msg, cls) {
+  const d = document.getElementById("log");
+  const line = document.createElement("div");
+  line.className = cls || "";
+  line.textContent = msg;
+  d.appendChild(line);
+  d.scrollTop = d.scrollHeight;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ── Card dimensions ──────────────────────────────────────────────────
+const CW = 344, CH = 560; // 2x the canvas draw size for quality
+
+// ── Playing card renderer ─────────────────────────────────────────────
+const PLAYING_SUITS  = ["♠","♥","♦","♣"];
+const PLAYING_RANKS  = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const SUIT_COLORS    = { "♠":"#1a1a2e","♥":"#8b1a1a","♦":"#8b1a1a","♣":"#1a1a2e" };
+
+function drawPlayingCardToCanvas(rank, suit) {
+  const canvas = document.createElement("canvas");
+  canvas.width = CW; canvas.height = CH;
+  const ctx = canvas.getContext("2d");
+  const s = 2; // scale factor
+  const w = CW, h = CH, r = 20 * s;
+  const ink = SUIT_COLORS[suit];
+
+  // Background
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, "rgba(255,255,255,0.98)");
+  g.addColorStop(1, "rgba(245,245,245,0.96)");
+  ctx.fillStyle = g;
+  roundRect(ctx, 0, 0, w, h, r); ctx.fill();
+
+  // Border
+  ctx.strokeStyle = "rgba(0,0,0,0.12)"; ctx.lineWidth = 2;
+  roundRect(ctx, 0, 0, w, h, r); ctx.stroke();
+  ctx.strokeStyle = "rgba(0,0,0,0.06)"; ctx.lineWidth = 1;
+  roundRect(ctx, 12*s, 12*s, w-24*s, h-24*s, Math.max(4, r-6*s)); ctx.stroke();
+
+  ctx.fillStyle = ink;
+
+  // Corner labels
+  const labelFont = `900 ${28*s}px ui-sans-serif,system-ui,Arial`;
+  const suitFont  = `900 ${22*s}px ui-sans-serif,system-ui,Arial`;
+  ctx.font = labelFont;
+  ctx.textAlign = "left"; ctx.textBaseline = "top";
+  ctx.fillText(rank, 20*s, 18*s);
+  ctx.font = suitFont;
+  ctx.fillText(suit, 20*s, 50*s);
+
+  // Rotated corner
+  ctx.save();
+  ctx.translate(w, h); ctx.rotate(Math.PI);
+  ctx.font = labelFont; ctx.textAlign = "left"; ctx.textBaseline = "top";
+  ctx.fillText(rank, 20*s, 18*s);
+  ctx.font = suitFont;
+  ctx.fillText(suit, 20*s, 50*s);
+  ctx.restore();
+
+  // Center suit
+  ctx.font = `900 ${92*s}px ui-sans-serif,system-ui,Arial`;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(suit, w/2, h/2);
+
+  return canvas;
+}
+
+// ── Gilded Minima renderer ────────────────────────────────────────────
+// Stub App/FX for gildedMinima.js
+window.App = { cardScale: 1, auraOn: true, auraOpacity: 0.72, cardAuraMode: "dynamic" };
+window.FX  = { hueA: 260, hueB: 290, intensity: 0.8 };
+window.getCssVar = () => "";
+window.getCardStroke = () => "hsla(260, 85%, 65%, 0.6)";
+window.getCardShadow = () => "hsla(260, 85%, 65%, 0.4)";
+
+function drawGildedCardToCanvas(card) {
+  const canvas = document.createElement("canvas");
+  canvas.width = CW; canvas.height = CH;
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = true;
+
+  // We need to redirect GildedMinima.draw to use this ctx
+  // Temporarily swap a proxy approach — draw to offscreen matching tarot canvas API
+  // GildedMinima.draw(ctx, card, cx, cy, w, h, rot, s)
+  GildedMinima.draw(ctx, card, CW/2, CH/2, CW * 0.92, CH * 0.94, 0, 1.95);
+
+  return canvas;
+}
+
+// ── Main generator ────────────────────────────────────────────────────
+let _files = []; // { name, blob }
+
+async function generate() {
+  _files = [];
+  document.getElementById("btnGenerate").disabled = true;
+  document.getElementById("btnDownload").disabled = true;
+  document.getElementById("preview").innerHTML = "";
+
+  const preview = document.getElementById("preview");
+
+  // ── Playing Cards ─────────────────────────────────────
+  log("Generating Playing Cards (52)...");
+  for (const suit of PLAYING_SUITS) {
+    for (const rank of PLAYING_RANKS) {
+      const canvas = drawPlayingCardToCanvas(rank, suit);
+      const filename = `${rank}${suit === "♠" ? "S" : suit === "♥" ? "H" : suit === "♦" ? "D" : "C"}.png`;
+      const blob = await new Promise(r => canvas.toBlob(r, "image/png"));
+      _files.push({ name: `Playing/${filename}`, blob });
+
+      // Preview (small)
+      const prev = document.createElement("canvas");
+      prev.width = 30; prev.height = 49; prev.title = filename;
+      prev.getContext("2d").drawImage(canvas, 0, 0, 30, 49);
+      preview.appendChild(prev);
+    }
+    log(`  ${suit} done`);
+    await new Promise(r => setTimeout(r, 0)); // yield to UI
+  }
+  log("Playing Cards complete.", "status");
+
+  // ── Gilded Minima ─────────────────────────────────────
+  log("Generating Gilded Minima (78)...");
+
+  // Majors
+  for (let i = 0; i < GildedMinima.MAJORS.length; i++) {
+    const major = GildedMinima.MAJORS[i];
+    const card  = { type:"gilded", isMajor:true, majorIdx:i, auraH:260 };
+    const canvas = drawGildedCardToCanvas(card);
+    const name   = major.name.replace(/\s+/g,"");
+    const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
+    _files.push({ name: `GildedMinima/${name}.png`, blob });
+
+    const prev = document.createElement("canvas");
+    prev.width = 30; prev.height = 49; prev.title = major.name;
+    prev.getContext("2d").drawImage(canvas, 0, 0, 30, 49);
+    preview.appendChild(prev);
+
+    if (i % 5 === 4) await new Promise(r => setTimeout(r, 0));
+  }
+  log("  Majors done");
+
+  // Minors
+  for (let si = 0; si < GildedMinima.SUITS.length; si++) {
+    for (let ri = 0; ri < GildedMinima.MINOR_RANKS.length; ri++) {
+      const rank = GildedMinima.MINOR_RANKS[ri];
+      const suit = GildedMinima.SUITS[si];
+      const card = { type:"gilded", isMajor:false, rank, suitIdx:si, auraH:260 };
+      const canvas = drawGildedCardToCanvas(card);
+      const name   = `${rank}Of${suit.name}`;
+      const blob   = await new Promise(r => canvas.toBlob(r, "image/png"));
+      _files.push({ name: `GildedMinima/${name}.png`, blob });
+
+      const prev = document.createElement("canvas");
+      prev.width = 30; prev.height = 49; prev.title = name;
+      prev.getContext("2d").drawImage(canvas, 0, 0, 30, 49);
+      preview.appendChild(prev);
+    }
+    log(`  ${GildedMinima.SUITS[si].name} done`);
+    await new Promise(r => setTimeout(r, 0));
+  }
+  log("Gilded Minima complete.", "status");
+  log(`Total: ${_files.length} images generated. Ready to download.`, "status");
+
+  document.getElementById("btnGenerate").disabled = false;
+  document.getElementById("btnDownload").disabled = false;
+}
+
+async function downloadZip() {
+  if (!_files.length) return;
+  log("Building ZIP...");
+
+  // Use JSZip from CDN
+  const script = document.createElement("script");
+  script.src = "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+  document.head.appendChild(script);
+  await new Promise(r => script.onload = r);
+
+  const zip = new JSZip();
+  for (const f of _files) {
+    zip.file(f.name, f.blob);
+  }
+  const blob = await zip.generateAsync({ type:"blob", compression:"DEFLATE" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = "arcana-deck-images.zip";
+  a.click();
+  log("ZIP downloaded!", "status");
+}
+
+document.getElementById("btnGenerate").addEventListener("click", generate);
+document.getElementById("btnDownload").addEventListener("click", downloadZip);
+</script>
+
+<!-- Load GildedMinima after stubs are set up -->
+<script src="./js/gildedMinima.js"></script>
+
+</body>
+</html>

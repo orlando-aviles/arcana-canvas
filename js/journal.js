@@ -342,8 +342,8 @@ window.Journal = (() => {
         e.stopPropagation(); closeRadial();
         const card = CardData.getByNameOrFile(filename);
         if (!card?.imageName) return;
-        const folder = card.section === "Runes" ? "Runes"
-          : (window.App?.activeDeck === "riderwaite" ? "RiderWaite" : "LuminousArc");
+        const folder = card.section === "Runes" ? "decks/Runes"
+          : (window.App?.activeDeck === "riderwaite" ? "decks/RiderWaite" : "decks/LuminousArc");
         if (window.CardIndex) CardIndex._openLightbox(`./${folder}/${card.imageName}.png`);
       });
 
