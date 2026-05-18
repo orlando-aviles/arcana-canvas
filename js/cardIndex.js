@@ -62,11 +62,6 @@ window.CardIndex = (() => {
       <div class="ci-search-row">
         <input class="ci-search" id="ciSearch" type="search"
                placeholder="Search cards…" autocomplete="off" />
-        <select class="ci-deck-select" id="ciDeckSelectList">
-          <option value="all">All</option>
-          <option value="Tarot">Tarot</option>
-          <option value="Oracle">Oracle</option>
-        </select>
       </div>
       <div class="ci-list" id="ciList"></div>
     </div>
@@ -93,9 +88,15 @@ window.CardIndex = (() => {
     <div class="ci-bottom-bar">
       <button class="ci-bottom-btn" id="ciToJournal" title="Open Journal" data-tooltip="Open Journal">&#x270E;</button>
       <button class="ci-bottom-btn ci-save-btn" id="ciSaveCard" title="Save to Journal" data-tooltip="Save to Journal" style="display:none">&#x2B;</button>
-      <button class="ci-bottom-deck-btn" id="ciDeckCycleBtn" title="Switch deck">
-        <span id="ciDeckCycleName">Luminous</span>
-      </button>
+      <div class="ci-bottom-center">
+        <div class="ci-category-toggle">
+          <button class="ci-cat-btn ci-cat-active" id="ciCatTarot" data-cat="Tarot">Tarot</button>
+          <button class="ci-cat-btn" id="ciCatOracle" data-cat="Oracle">Oracle</button>
+        </div>
+        <button class="ci-bottom-deck-btn" id="ciDeckCycleBtn" title="Switch deck">
+          <span id="ciDeckCycleName">Luminous</span>
+        </button>
+      </div>
       <button class="ci-bottom-btn ci-nav-right" id="ciBackBtn" title="Back" data-tooltip="Back" style="display:none">&#x2190;</button>
       <button class="ci-bottom-btn ci-nav-right" id="ciCloseBtn" title="Close" data-tooltip="Close">&#x2715;</button>
     </div>
@@ -213,6 +214,12 @@ window.CardIndex = (() => {
                || _deckCycle.find(d => d.val === deckFilter)
                || { label: "All" };
     if (ciDeckCycleName) ciDeckCycleName.textContent = entry.label;
+    // Sync category toggle highlight
+    const isOracle = _oracleDecks.some(d => d.val === activeDeck || d.val === deckFilter);
+    overlay.querySelectorAll(".ci-cat-btn").forEach(b => {
+      b.classList.toggle("ci-cat-active",
+        isOracle ? b.dataset.cat === "Oracle" : b.dataset.cat === "Tarot");
+    });
   }
 
   ciDeckCycleBtn.addEventListener("click", () => {
@@ -235,6 +242,24 @@ window.CardIndex = (() => {
       renderList();
     }
     syncDeckCycleLabel();
+  });
+
+  // Category toggle buttons
+  const ciCatBtns = overlay.querySelectorAll(".ci-cat-btn");
+  ciCatBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      ciCatBtns.forEach(b => b.classList.remove("ci-cat-active"));
+      btn.classList.add("ci-cat-active");
+      const cat = btn.dataset.cat;
+      deckFilter = cat;
+      // Default deck for category
+      if (cat === "Tarot") activeDeck = "LuminousArc";
+      else activeDeck = "Runes";
+      if (window.App) { App.indexDeckFilter = cat; if (window.saveSettings) saveSettings(); }
+      syncDeckCycleLabel();
+      navList = buildFullNavList();
+      renderList();
+    });
   });
 
   // Bottom bar nav
@@ -762,7 +787,7 @@ window.CardIndex = (() => {
   // Wire deck dropdowns
   function onDeckSelectChange(sel) {
     const val = sel.value;
-    overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = val);
+    // No dropdown to sync — category handled by toggle buttons
     deckFilter = val;
     if (window.App) { App.indexDeckFilter = val; if (window.saveSettings) saveSettings(); }
     // activeDeck — maps category/deck to image folder
@@ -819,6 +844,12 @@ window.CardIndex = (() => {
     if (window.Tooltips) Tooltips.wire(overlay);
     overlay.querySelectorAll(".ci-deck-select").forEach(s => s.value = deckFilter);
     if (typeof syncDeckCycleLabel === "function") syncDeckCycleLabel();
+    // Sync category buttons
+    const _isOracle = _oracleDecks.some(d => d.val === deckFilter);
+    overlay.querySelectorAll(".ci-cat-btn").forEach(b => {
+      b.classList.toggle("ci-cat-active",
+        _isOracle ? b.dataset.cat === "Oracle" : b.dataset.cat === "Tarot");
+    });
     mode = "full";
     searchQuery = "";
     ciSearch.value = "";
