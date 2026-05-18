@@ -481,16 +481,21 @@ window.cycleEquippedDeck = function() {
 /*********************************************************
  * REVERSALS TOGGLE
  *********************************************************/
-const reversalsToggle = document.getElementById("reversalsToggle");
+const reversalsToggle = document.getElementById("reversalsToggle"); // may be null
 
 function syncReversalsUI() {
-  reversalsToggle.checked = App.reversals;
+  if (reversalsToggle) reversalsToggle.checked = App.reversals;
+  const t2 = document.getElementById("reversalsToggleSettings");
+  if (t2) t2.checked = App.reversals;
+  if (window.RadialMenu) RadialMenu.update();
 }
 
-reversalsToggle.addEventListener("change", () => {
-  App.reversals = reversalsToggle.checked;
-  saveSettings();
-});
+if (reversalsToggle) {
+  reversalsToggle.addEventListener("change", () => {
+    App.reversals = reversalsToggle.checked;
+    syncReversalsUI(); saveSettings();
+  });
+}
 
 /*********************************************************
  * BACKGROUND SELECTOR
