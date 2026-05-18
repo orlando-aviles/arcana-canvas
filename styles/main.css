@@ -1539,14 +1539,9 @@ select option {
 .atmo-panel { padding-bottom: 60px; }
 
 /* ── Aura off: white text instead of gray ────────── */
+/* aura-off: --auraColor set to white directly in applyAuras() JS */
 body.aura-off {
-  --auraColor: rgba(255,255,255,0.88) !important;
-}
-body.aura-off .ci-meaning-label,
-body.aura-off .ci-lore-label,
-body.aura-off .upright-label,
-body.aura-off [style*="auraColor"] {
-  color: rgba(255,255,255,0.75) !important;
+  --auraColor: rgba(255,255,255,0.88);
 }
 
 /* ── Button tooltips (tap-hold) ───────────────────── */
